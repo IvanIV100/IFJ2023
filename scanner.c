@@ -7,21 +7,18 @@
 
 /*
 Things to do:
-1) Multilinestring
 2) malocovat tokeny
 3) MELO BY to vracet vsechny Spravne stringy ale nevraci to errory spatnych tokenu
-4) upravit toxic commenty
+
 
 
 
 */
 
-char *keywords[] = {"Double", "Int","String", "else", "func", "if",  "let", "nil", "return", "var", "while"};
-int keyword_types[] = {T_KW_DOUBLE, T_KW_INT,T_KW_STRING, T_ELSE,T_FUNC, T_IF, T_LET,T_NIL, T_RETURN, T_VAR, T_WHILE};
 
 // funkce ktera zjisti jestli dalsi character je whiteSpace or nah
 int isWhiteChar(char input){
-    if (input == ' ' || input == '\t' || (input >= 11 && input <= 13))
+    if (input == ' ' || input == '\t' || input == '\n' || (input >= 11 && input <= 13))
         return 1;
     else
         return 0;
@@ -30,7 +27,6 @@ int isWhiteChar(char input){
 // Ziska char ktery neni Whitespace
 char getNotWhiteChar() {
     char temp = getchar();
-    printf("%c",temp);
     if (isWhiteChar(temp)) {
         return getNotWhiteChar();
     } 
@@ -77,6 +73,11 @@ int SkipComment() {
     return 0; 
 }
 
+char *keywords[] = {"Double", "Int","String", "else", "func", "if",  "let", "nil", "return", "var", "while"};
+enum token_type keyword_types[] = {
+    T_KW_DOUBLE, T_KW_INT, T_KW_STRING, T_ELSE, T_FUNC, T_IF, T_LET, T_NIL, T_RETURN, T_VAR, T_WHILE
+};
+
 // vytvoreni tokenu
 Token createToken(enum token_type type, enum token_Category category) {         // udelej to pres malloc
     Token token;
@@ -116,19 +117,19 @@ Token is_Id(char curr) {                                // muze byt delsi nez 25
 
     // nillable muze se dat jincimu tokenu
     if (keywordi >= 0) {
-        Token token = createToken(keyword_types[keywordi], TC_KEYWORDS);
-        if (keywordi < 3){                              // je to kw a je to Int String nebo Double
-            token.Category=TC_TYPE;
-            token.value.nillable=0;
-        
-            if (curr=='?' && token.Category==TC_TYPE){          // nillable yes or no
-                token.value.nillable=1;
-            }
-            else
+        Token token = createToken(keyword_types[keywordi], TC_KEYWORDS);  // Use keyword_types array
+        if (keywordi < 3) {  // If it's Int, String, or Double
+            token.Category = TC_TYPE;
+            token.value.nillable = 0;
+
+            if (curr == '?' && token.Category == TC_TYPE) {
+                token.value.nillable = 1;
+            } else {
                 ungetc(curr, stdin);
-            return token;
+            }
         }
-    } 
+        return token;
+    }
 
     else { 
         Token token = createToken(T_IDENTIFIER, TC_ID);
@@ -321,6 +322,60 @@ Token isString(char curr) {     // je to string jeste multi
     return token;
 }
 
+Token isMultiLineString() {
+    Token token;
+    token.Category = TC_VALUE;
+    token.type = T_MULTILINE_STRING;
+    token.value.stringVal = malloc(100); 
+
+    int length = 100;
+    int i = 0;
+
+    char curr = getchar();
+
+    while (curr != EOF) {
+        if (i >= length - 5) {  
+            if (!expand_String(&token, &length)) {
+                token.Category = TC_ERR;
+                token.type = T_ERORR;
+                free(token.value.stringVal);
+                return token;
+            }
+        }
+        if (curr == '\\') {
+            escape_Char(&token, i);
+            i++;  
+        } else {
+            addChar(curr, i, &token);
+            i++;  
+        }
+
+        if (curr == '\"') {                 // musi to byt tri za sebou """
+            char next = getchar();
+            if (next == '\"') {
+                next = getchar();
+                if (next == '\"') {
+                    token.value.stringVal[i - 3] = '\0';  
+                    return token;
+                } else {
+                    addChar(curr, i, &token);  
+                    ungetc(next, stdin);  
+                }
+            } else {
+                addChar(curr, i, &token);  
+                ungetc(next, stdin);  
+            }
+        }
+        curr = getchar();  
+    }
+
+    token.Category = TC_ERR;
+    token.type = T_ERORR;
+    free(token.value.stringVal);
+    return token;
+}
+
+
 void free_token_Values(Token *token){       // funkce ktera uvolni pamet kterou jsem mallocoval 
     if (token->type==T_IDENTIFIER)
         free(token->value.ID_name);
@@ -331,14 +386,14 @@ void free_token_Values(Token *token){       // funkce ktera uvolni pamet kterou 
 Token scan() {                             // proste GetToken da ti dasli Token asi prejmenuji whatever
     char curr = getNotWhiteChar();         // next slouzi jako takovy idiot ktery se diva do predu
     char next = curr;
-
+    printf("%c",curr);
     switch (curr) {
         case '/':
-            if (SkipComment() == 1) {       // falesny poplach neni to comment je to deleni asi jsem mel delat pres next ale byla to jedna z prvnich funkci(skipcom) mozna zmenim t
+            if (SkipComment() == 1) {      
                 return createToken(T_DIV,TC_OPERATORS);
             } 
             else {
-                return scan();
+                return scan(); // Recursively call scan() to get the next token
             }
 
         case '(':
@@ -448,7 +503,7 @@ Token scan() {                             // proste GetToken da ti dasli Token 
     
 
         case 'A' ... 'Z':                                       
-        case 'a' ... 'z': 
+        case 'a' ... 'z':
             return(is_Id(curr));               // Identifikator nebo keyword
         
 
@@ -458,7 +513,7 @@ Token scan() {                             // proste GetToken da ti dasli Token 
             if (next == '"'){               // pokud dalsi tak to bude ""
                 next = getchar();
                 if(next =='"'){             // pokud dalsi tak to bude """ ci multi string to funkci dodelam
-                    return createToken(T_MULTILINE_STRING,TC_VALUE);
+                    return isMultiLineString();
                 }
                 else{                       // je to jen "" takze prazdny retezec 
                     ungetc(next,stdin);
@@ -474,10 +529,8 @@ Token scan() {                             // proste GetToken da ti dasli Token 
         case '0' ... '9':                  // budd Double nebo Inter
             return (scanNumber(curr));
 
-        
         // EOF je broken
         case EOF:                           // nevim jak vzit EOF z STDIN mozna budu muset prevest nejak na file idk 
-            printf("1.%c",curr);
             return createToken(T_EOF, TC_ERR);
 
         default:                            // neco co tam nema byt mozna errorum prirad Value at vis jaky presne ERROORORRO
@@ -490,9 +543,10 @@ Token scan() {                             // proste GetToken da ti dasli Token 
 
 int main() {                                    // best debuging ever cant change my mind
     Token xd;
-    while(xd.type!=T_ERORR){
+    while(xd.Category!=TC_ERR){
         xd=scan();
-        printf("%d\n",xd.type);
+        printf("--%d\n",xd.type);
+        /*
         if (xd.type==T_INT)
             printf("%d\n",xd.value.integer);
         else if(xd.type==T_DOUBLE)
@@ -501,10 +555,14 @@ int main() {                                    // best debuging ever cant chang
             printf("xx %s xx\n",xd.value.stringVal);
             free_token_Values(&xd);
         }
+        else if(xd.type==T_MULTILINE_STRING){
+            printf("xx %s xx\n",xd.value.stringVal);
+            free_token_Values(&xd);
+        }
         else if(xd.type==T_IDENTIFIER){
             printf("%s",xd.value.ID_name);
             free_token_Values(&xd);
-        }
+        }*/
     }
     return 0;
 }

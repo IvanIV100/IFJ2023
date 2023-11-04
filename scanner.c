@@ -5,13 +5,15 @@
 #include <string.h>
 #include "scanner.h"
 
+
 /*
 Things to do:
 1) kdyz nedostane nic na vstup je to nekonecne zacikleny a ceka na EOF coz mu nikdy neprijde
-
-3) MELO BY to vracet vsechny Spravne stringy ale idk jestli najde vsechny errory
-
-
+2) ID muzou byt delsi nez 256 znaku a Cislo delsi nez 256
+3) MELO BY to vracet vsechny Spravne tokeny ale idk jestli najde vsechny errory
+4) Kdyz nastane Error tak to upravit at se stane to co se stat ma (mainly malloc)
+5) addChar funkce !! jeste overit jestli ok (uz nevim co jsem tim myslel)
+6) Unice funkce ! over returny kdyz indikejtnou errory (idk zase)
 
 
 */
@@ -142,7 +144,11 @@ Token* is_Id(char curr) {
 
     else { 
         Token* token = createToken(T_IDENTIFIER, TC_ID);
-        token->value.ID_name = malloc(strlen(identifier) + 1);          // dat podminku pokud failne malloc   
+        token->value.ID_name = malloc(strlen(identifier) + 1);
+        if (token->value.ID_name == NULL) {
+            fprintf(stderr, "Malloc error for token.\n");
+            exit(EXIT_FAILURE);
+        }          
         strcpy(token->value.ID_name, identifier);                    
         token->value.nillable=0;
         if (curr=='!')
@@ -300,7 +306,10 @@ int escape_Char(Token *token,int i){
 Token* isString(char curr) {     // je to string jeste multi 
     Token* token = createToken(T_STRING, TC_VALUE);
     token->value.stringVal = malloc(30);
-
+    if (token->value.stringVal == NULL) {
+        fprintf(stderr, "Malloc error for token.\n");
+        exit(EXIT_FAILURE);
+    }
 
     int length=30;
     int i=0;
@@ -335,7 +344,11 @@ Token* isString(char curr) {     // je to string jeste multi
 
 Token* isMultiLineString() {
     Token* token = createToken(T_STRING, TC_VALUE);
-    token->value.stringVal = malloc(100);           // podminka pokud spatne malloc
+    token->value.stringVal = malloc(100);
+    if (token->value.stringVal == NULL) {
+        fprintf(stderr, "Malloc error for token.\n");
+        exit(EXIT_FAILURE);
+    }           
     int length = 100;
     int i = 0;
 
@@ -401,8 +414,10 @@ void free_token_Values(Token *token){       // funkce ktera uvolni pamet kterou 
 Token* scan() {                             // proste GetToken da ti dasli Token asi prejmenuji whatever
     char curr = getNotWhiteChar();         // next slouzi jako takovy idiot ktery se diva do predu
     char next = curr;
-    if (curr!='/')
+
+    if (curr!='/')                          // debug
         printf("%c",curr);
+
     switch (curr) {
         case '/':
             if (SkipComment() == 1) {      
@@ -546,7 +561,7 @@ Token* scan() {                             // proste GetToken da ti dasli Token
             return (scanNumber(curr));
 
         // EOF je broken
-        case EOF:                           // nevim jak vzit EOF z STDIN mozna budu muset prevest nejak na file idk 
+        case EOF:                           
             return createToken(T_EOF, TC_ERR);
 
         default:                            // neco co tam nema byt mozna errorum prirad Value at vis jaky presne ERROORORRO

@@ -53,10 +53,10 @@ enum token_type {
     T_FUNC,                 // 24 func
     T_IF,                   // 25 if
     T_LET,                  // 26 let
-    T_WHILE,                // 27 while
-    T_NIL,                  // 28 nil
-    T_RETURN,               // 29 return
-    T_VAR,                  // 30 var
+    T_NIL,                  // 27 nil
+    T_RETURN,               // 28 return
+    T_VAR,                  // 29 var
+    T_WHILE,                // 30 while
 
     // Typ
     T_KW_STRING,            // 31 String

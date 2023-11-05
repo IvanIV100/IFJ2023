@@ -8,12 +8,11 @@
 
 /*
 Things to do:
-1) kdyz nedostane nic na vstup je to nekonecne zacikleny a ceka na EOF coz mu nikdy neprijde
+1) kdyz nedostane nic na vstup je to nekonecne zacikleny a ceka na EOF coz mu nikdy neprijde (timhle se nemysli prazdny file, ale proste spusteno ./scanner )
 2) ID muzou byt delsi nez 256 znaku a Cislo delsi nez 256
-3) MELO BY to vracet vsechny Spravne tokeny ale idk jestli najde vsechny errory
+
 4) Kdyz nastane Error tak to upravit at se stane to co se stat ma (mainly malloc)
-5) addChar funkce !! jeste overit jestli ok (uz nevim co jsem tim myslel)
-6) Unice funkce ! over returny kdyz indikejtnou errory (idk zase)
+
 
 
 */
@@ -186,7 +185,7 @@ Token* scanNumber(char curr) {
     }
 
     
-    if (curr == 'e' || curr == 'E') {   // Exponentni cast Muze to byt jen kdyz je to exponent ?
+    if (curr == 'e' || curr == 'E') {   // Exponentni cast Muze to byt jen kdyz je to exponent 
         numbers[i] = curr;
         i++;
         curr = getchar();
@@ -250,7 +249,7 @@ int addChar(char curr,int i, Token *token){
 
 
 // Dostali jsme \{ coz znamena Unixovy kod !! nemam presne moc tuseni jak to funguje yoinkl jsem to z StackFlow a implementoval na moje reseni 
-int unicode(int i, Token *token) {          // ! over returny kdyz indikejtnou errory
+int unicode(int i, Token *token) {          // over returny kdyz indikejtnou errory
     // ocekavany format \u{XX}
     if (getchar() != '{') {
         return 0;
@@ -262,7 +261,8 @@ int unicode(int i, Token *token) {          // ! over returny kdyz indikejtnou e
         char next = getchar();
         if ((next >= '0' && next <= '9') || (next >= 'A' && next <= 'F') || (next >= 'a' && next <= 'f')) {
             unicodeValue = unicodeValue * 16 + strtol(&next, NULL, 16);
-        } else {
+        } 
+        else {
             return 0;
         }
     }
@@ -279,28 +279,33 @@ int unicode(int i, Token *token) {          // ! over returny kdyz indikejtnou e
 int escape_Char(Token *token,int i){
     char next;
     next=getchar();
+    int alright;
     switch (next) {
 		case '\"':                          // tohle " 
 			addChar('\"',i,token);
-			break;
+			return 1;
 		case 'n':                           // dalsi radek
 			addChar('\n',i,token);
-			break;
+			return 1;
 		case 'r':                           // Neco sposunutim ukazatele na zacatek radku muze to pak prepisovat veci na tom radku ale to co neprepise zustane
 			addChar('\r',i,token);
-			break;
+			return 1;
 		case 't' :                          // tabulator
 			addChar('\t',i,token);
-			break;
+			return 1;
 		case '\\' :                         // tohle \ 
 			addChar('\\',i,token);
-			break;
+			return 1;
         case 'u':                           // unixocy cod
-            unicode(i,token);
+            alright = unicode(i,token);
+            if (alright==0){
+                return 0; 
+            }
+                
+            
         default:                        // Yoo zadal jsi neco co neni escape char escapni zivot 
             return 0; 
     }
-    return 1; // yay
 }
 
 Token* isString(char curr) {     // je to string jeste multi 
@@ -313,14 +318,14 @@ Token* isString(char curr) {     // je to string jeste multi
 
     int length=30;
     int i=0;
-    
+    int alright = 1;
     // prvni char
     addChar(curr,i , token);
     i++;
 
     curr = getchar();
     while (curr!='"') {                                     // pokud neni konec stringu
-        if (i >= length - 5) {                      // reallocate memory 
+        if (i >= length - 8) {                      // reallocate memory 
             if (!expand_String(token, &length)) {
                 free(token->value.stringVal);
                 token->Category=TC_ERR;
@@ -329,7 +334,14 @@ Token* isString(char curr) {     // je to string jeste multi
             }
         }
         if (curr=='\\'){                        // escape char curr == \ 
-            escape_Char(&token,i);
+            alright = escape_Char(token,i);
+            if (alright == 0){
+                printf("Here%d",alright);
+                free(token->value.stringVal);
+                token->Category=TC_ERR;
+                token->type=T_ERORR;
+                return token;
+            }
         }
         else{                                   // pokud to neni escape tak jen pridej do stringval
             addChar(curr,i,token);
@@ -348,14 +360,15 @@ Token* isMultiLineString() {
     if (token->value.stringVal == NULL) {
         fprintf(stderr, "Malloc error for token.\n");
         exit(EXIT_FAILURE);
-    }           
+    }
+    int alright = 1;          
     int length = 100;
     int i = 0;
 
     char curr = getchar();
 
     while (curr != EOF) {
-        if (i >= length - 5) {  
+        if (i >= length - 8) {  
             if (!expand_String(token, &length)) {
                 token->Category = TC_ERR;
                 token->type = T_ERORR;
@@ -364,9 +377,17 @@ Token* isMultiLineString() {
             }
         }
         if (curr == '\\') {
-            escape_Char(token, i);
+            alright = escape_Char(token,i);
+            if (alright == 0){
+                printf("Here");
+                free(token->value.stringVal);
+                token->Category=TC_ERR;
+                token->type=T_ERORR;
+                return token;
+            }
             i++;  
-        } else {
+        } 
+        else {
             addChar(curr, i, token);
             i++;  
         }
@@ -378,11 +399,13 @@ Token* isMultiLineString() {
                 if (next == '\"') {
                     token->value.stringVal[i - 3] = '\0';  
                     return token;
-                } else {
+                } 
+                else {
                     addChar(curr, i, token);  
                     ungetc(next, stdin);  
                 }
-            } else {
+            } 
+            else {
                 addChar(curr, i, token);  
                 ungetc(next, stdin);  
             }
@@ -513,7 +536,8 @@ Token* scan() {                             // proste GetToken da ti dasli Token
             next = getchar();
             if (next == '?') {
                 return createToken(T_DOUBLE_QUESTION_MARK, TC_Punctation);
-            } else {
+            } 
+            else {
                 ungetc(next, stdin);
                 return createToken(T_ERORR, TC_ERR);
             }
@@ -579,8 +603,15 @@ int main() {                                    // best debuging ever cant chang
         free_token_Values(xd);
         xd=scan();
         printf("--%d\n",xd->type);
+        if(xd->type==T_STRING){
+            printf("xx %s xx\n",xd->value.stringVal);
+        }
+        else if(xd->type==T_MULTILINE_STRING){
+            printf("xx %s xx\n",xd->value.stringVal);
+        }
     }
     free_token_Values(xd);
+    
     /*
     while(xd->Category!=TC_ERR){
         free_token_Values(xd);

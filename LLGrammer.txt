@@ -1,0 +1,41 @@
+<Prog> -> e
+<Prog> -> <stmnt>
+<Prog> -> <funcDef> <prog> // global scope
+<Prog> -> <stmnt> <Prog>
+<stmntList> -> e
+<stmntList> -> <stmnt> <stmntList> 
+<stmnt> -> <varDef>
+//<stmnt> -> <funcCall>
+<stmnt> -> id <FuncCallOps>
+<stmnt> -> <Condition>
+<stmnt> -> <Loop>
+//<stmnt> -> <Return> only in funcDef
+<paramListFirst> -> e
+<paramListFirst> -> <param> <paramList>
+<paramList> -> e
+<paramList> -> , <param> <paramList>
+<param> -> id id : <Type>
+<param> -> _ id : <Type>
+<varDef> -> let/var id ?(: <Type> )  <AssignOps>
+<funcDef> -> func id ( <paramListFirst> ) -> <type> { <stmntList> <return> }
+<FuncCallOps> ->   = <AssignOps>
+<FuncCallOps> -> ( <InParamListFirst> )
+<AssignOps> -> <expr>
+<AssignOps> -> id ( <InParamListFirst> )
+<Condition> -> if <condOps> { <stmntList> } else { <stmntList> }
+<condOps> -> <expr>
+<condOps> -> let id
+<Loop> -> for id in <range> { <loopExe> } //check if supported format for or extension
+<range> -> //fin after check
+<Loop> -> while <expr> { <loopExe> }
+<loopExe> -> <stmnt> <loopExe> //check if not missing (break/cont)
+<loopExe> -> e
+<InParamListFirst> -> e
+<InParamListFirst> -> <inParam> <InParamList>
+<InParamList> -> , <InParam> <InParamList>
+<InParamList> -> e
+<InParam> -> id <opID>
+//<InParam> -> <expr> // can be expre?
+<opID> -> : id
+<return> -> <expr>
+<expre> -> give away to handle 

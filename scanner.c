@@ -541,30 +541,30 @@ Token scan() {                             // proste GetToken da ti dasli Token 
 
 
 
-int main() {                                    // best debuging ever cant change my mind
-    Token xd;
-    while(xd.Category!=TC_ERR){
-        xd=scan();
-        printf("--%d\n",xd.type);
-        /*
-        if (xd.type==T_INT)
-            printf("%d\n",xd.value.integer);
-        else if(xd.type==T_DOUBLE)
-            printf("%f\n",xd.value.decimal);
-        else if(xd.type==T_STRING){
-            printf("xx %s xx\n",xd.value.stringVal);
-            free_token_Values(&xd);
-        }
-        else if(xd.type==T_MULTILINE_STRING){
-            printf("xx %s xx\n",xd.value.stringVal);
-            free_token_Values(&xd);
-        }
-        else if(xd.type==T_IDENTIFIER){
-            printf("%s",xd.value.ID_name);
-            free_token_Values(&xd);
-        }*/
-    }
-    return 0;
-}
+// int main() {                                    // best debuging ever cant change my mind
+//     Token xd;
+//     while(xd.Category!=TC_ERR){
+//         xd=scan();
+//         printf("--%d\n",xd.type);
+//         /*
+//         if (xd.type==T_INT)
+//             printf("%d\n",xd.value.integer);
+//         else if(xd.type==T_DOUBLE)
+//             printf("%f\n",xd.value.decimal);
+//         else if(xd.type==T_STRING){
+//             printf("xx %s xx\n",xd.value.stringVal);
+//             free_token_Values(&xd);
+//         }
+//         else if(xd.type==T_MULTILINE_STRING){
+//             printf("xx %s xx\n",xd.value.stringVal);
+//             free_token_Values(&xd);
+//         }
+//         else if(xd.type==T_IDENTIFIER){
+//             printf("%s",xd.value.ID_name);
+//             free_token_Values(&xd);
+//         }*/
+//     }
+//     return 0;
+// }
 
 

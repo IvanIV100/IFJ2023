@@ -1,0 +1,7 @@
+let multiLineString = """
+    This is a multi-line string.
+    It can contain multiple lines without the need for escape characters.
+    You can include 
+     "quotes" and special characters without any issues.
+    """
+var a=1.02e3

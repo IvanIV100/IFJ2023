@@ -49,6 +49,10 @@ int InsertSymbol(SymTable *table, char *str){
     temp->id = malloc(strlen(str) + 1);
     if (temp->id == NULL)
         return -1;
+
+    if (parametr_init(&temp->parametr) == -1)
+        return -1;
+
     strcpy(temp->id, str);
     (*table)[hash] = temp;
     printf("Pridavam: %li\n", hash);
@@ -57,31 +61,21 @@ int InsertSymbol(SymTable *table, char *str){
     return 1;
 }
 
+
 int RemoveSymbol(SymTable *table, char *str){
-    if (table == NULL || str == NULL)
-        return -1; //error
-
-    unsigned long hash = HashFunction(str);
-    if ((*table)[hash] == NULL)
-            return -1; //retezec neni v tabulce
-
-    while(strcmp((*table)[hash]->id, str)){
-        if (hash == HashFunction(str)-1)
-            return -1; // error, udelalo to uz kolo
-        
-        if ((*table)[hash] == NULL && !tombstone[hash])
-            return -1; //error, symbol se nevyskytuje v symtable
-
-        hash++;
-        if (hash == SYMTABLE_SIZE) //kruhove pole
-            hash = 0;
-    }
+    int hash = Searching(table, str);
+    if(hash == -1)
+        return -1; //nenašlo to
 
     if ((*table)[hash] != NULL) {
         if((*table)[hash]->id != NULL){
             free((*table)[hash]->id);
             (*table)[hash]->id = NULL;
         }
+
+        clear_parametr(&(*table)[hash]->parametr);
+        parametr_free(&(*table)[hash]->parametr);
+
         free((*table)[hash]);
         (*table)[hash] = NULL;
     }
@@ -92,52 +86,22 @@ int RemoveSymbol(SymTable *table, char *str){
     else
         return -1; //chybí pomocné pole
     
-     printf("odstranuju: %li\n", hash);
+     printf("odstranuju: %d\n", hash);
 
     return 1;
 }
 
-Symbol *Search(SymTable *table, char *str){
-    if (table == NULL || str == NULL)
-        return  NULL; //error
-
-    unsigned long hash = HashFunction(str);
-    if ((*table)[hash] == NULL)
-            return NULL; //retezec neni v tabulce
-
-    while(strcmp((*table)[hash]->id, str)){
-        if ((*table)[hash] == NULL && !tombstone[hash])
-            return NULL; //error, symbol se nevyskytuje v symtable
-
-        if (hash == HashFunction(str)-1)
-            return NULL; // error, udelalo to uz kolo a nenaslo to symbol    
-
-        hash++;
-        if (hash == SYMTABLE_SIZE) //kruhove pole
-            hash = 0;
-    }
-
-    return (*table)[hash];
+Symbol *GetSymbol(SymTable *table, char *str){
+    int hash = Searching(table, str);
+    if(hash != -1)
+        return (*table)[hash];
+    return NULL;
 }
 
 int AddVarDetails(SymTable *table, char *str, DataType type, bool init, VarOrLet vol){
-    if (table == NULL || str == NULL)
-        return  -1; //error
-    unsigned long hash = HashFunction(str);
-    if ((*table)[hash] == NULL)
-            return -1; //retezec neni v tabulce
-
-        while(strcmp((*table)[hash]->id, str)){
-            if ((*table)[hash] == NULL && !tombstone[hash])
-                return -1; //error, symbol se nevyskytuje v symtable
-
-            if (hash == HashFunction(str)-1)
-                return -1; // error, udelalo to uz kolo a nenaslo to symbol    
-
-            hash++;
-            if (hash == SYMTABLE_SIZE) //kruhove pole
-                hash = 0;
-    }
+    int hash = Searching(table, str);
+    if(hash == -1)
+        return -1; //nenašlo to
     (*table)[hash]->type = 0;
     (*table)[hash]->variable.init = init;
     (*table)[hash]->variable.datatype = type;
@@ -146,28 +110,47 @@ int AddVarDetails(SymTable *table, char *str, DataType type, bool init, VarOrLet
     return 1;
 }
 
-int AddFunctionDetails(SymTable *table, char *str, DataType returnType, bool defined){
-     if (table == NULL || str == NULL)
-        return  -1; //error
+int Searching(SymTable *table, char *str){ // funkce vracejici hash, aby se to neopakovalo v kazde funkci
+    if (table == NULL || str == NULL)
+        return  -1; //error1
+
     unsigned long hash = HashFunction(str);
     if ((*table)[hash] == NULL)
             return -1; //retezec neni v tabulce
 
-        while(strcmp((*table)[hash]->id, str)){
-            if ((*table)[hash] == NULL && !tombstone[hash])
-                return -1; //error, symbol se nevyskytuje v symtable
+    while(strcmp((*table)[hash]->id, str)){
+        if ((*table)[hash] == NULL && !tombstone[hash])
+            return -1; //error, symbol se nevyskytuje v symtable
 
-            if (hash == HashFunction(str)-1)
-                return -1; // error, udelalo to uz kolo a nenaslo to symbol    
+        if (hash == HashFunction(str)-1)
+            return -1; // error, udelalo to uz kolo a nenaslo to symbol    
 
-            hash++;
-            if (hash == SYMTABLE_SIZE) //kruhove pole
-                hash = 0;
+        hash++;
+        if (hash == SYMTABLE_SIZE) //kruhove pole
+            hash = 0;
     }
+    return hash;
+
+}
+
+int AddFunctionDetails(SymTable *table, char *str, DataType returnType, bool defined){
+    int hash = Searching(table, str);
+    if(hash == -1)
+        return -1; //nenašlo to
+
     (*table)[hash]->type = 1;
     (*table)[hash]->function.defined = defined;
     (*table)[hash]->function.ReturnType = returnType;
     //parametry fce...
+    return 1;
+}
+
+int AddParametr(SymTable *table, char *str, char c){
+    int hash = Searching(table, str);
+    if(hash == -1)
+        return -1; //nenašlo to
+    if (add_parametr(&(*table)[hash]->parametr, c) == -1)
+        return -1;
     return 1;
 }
 
@@ -178,6 +161,8 @@ void SymTableFree(SymTable *table){
      if ((*table)[i] != NULL) {
         if((*table)[i]->id != NULL)
             free((*table)[i]->id);
+        clear_parametr(&(*table)[i]->parametr);
+        parametr_free(&(*table)[i]->parametr);
         free((*table)[i]);
         }
      }
@@ -192,17 +177,22 @@ if (InsertSymbol(&table, "pole") == -1)
 
 Symbol *symbol;
 InsertSymbol(&table, "poal");
-AddVarDetails(&table, "pole", 2, false, 1);
 InsertSymbol(&table, "po");
-RemoveSymbol(&table, "ptroal");
+RemoveSymbol(&table, "pole");
 InsertSymbol(&table, "popal");
+if (AddVarDetails(&table, "popal", 2, true, 1) == -1)
+    printf("Neexistuje \n");
 InsertSymbol(&table, "pollal");
-symbol = Search(&table, "pole");
+AddParametr(&table, "popal", 'd');
+AddParametr(&table, "popal", 'i');
+symbol = GetSymbol(&table, "popal");
+AddParametr(&table, "popal", 'p');
 if (symbol!=NULL){
     printf("string: %s\n", symbol->id);
     printf("init? %d\n", symbol->variable.init);
     printf("datatype %d\n", symbol->variable.datatype);
     printf("VAR or LET %d\n", symbol->variable.VoL);
+    printf("PArametr %s\n", symbol->parametr.str);
 }
 SymTableFree(&table);
 

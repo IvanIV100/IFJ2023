@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include "parametrs.h"
+
 #define SYMTABLE_SIZE 9973
 
 
@@ -45,7 +47,7 @@ typedef struct{
     Type type;   // funkce/promenna
     Function function; // struktura s informacemi o funkci
     Variable variable; // struktura s informacemi o promenné
-    // Hodnota symbolu (může být různého typu, zde používáme int pro jednoduchost)
+    Parametr parametr;
 }Symbol;
 
 
@@ -57,11 +59,15 @@ void SymTableFree(SymTable *table);
 
 int InsertSymbol(SymTable *table, char *str);
 
+int AddParametr(SymTable *table, char *str, char c);
+
 int AddFunctionDetails(SymTable *table, char *str, DataType returnType, bool defined);
 
 int AddVarDetails(SymTable *table, char *str, DataType type, bool init, VarOrLet vol);
 
 Symbol *Search(SymTable *table, char *str);
+
+int Searching(SymTable *table, char *str);
 
 int RemoveSymbol(SymTable *table, char *str);
 

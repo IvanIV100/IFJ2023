@@ -5,11 +5,13 @@
 #include <string.h>
 #include "scanner.h"
 
+
 /*
 Things to do:
-2) malocovat tokeny
-3) MELO BY to vracet vsechny Spravne stringy ale nevraci to errory spatnych tokenu
+1) kdyz nedostane nic na vstup je to nekonecne zacikleny a ceka na EOF coz mu nikdy neprijde (timhle se nemysli prazdny file, ale proste spusteno ./scanner )
+2) ID muzou byt delsi nez 256 znaku a Cislo delsi nez 256
 
+4) Kdyz nastane Error tak to upravit at se stane to co se stat ma (mainly malloc)
 
 
 
@@ -79,10 +81,16 @@ enum token_type keyword_types[] = {
 };
 
 // vytvoreni tokenu
-Token createToken(enum token_type type, enum token_Category category) {         // udelej to pres malloc
-    Token token;
-    token.type = type;
-    token.Category = category;
+Token* createToken(enum token_type type, enum token_Category category) {
+    Token* token = malloc(sizeof(Token)); 
+    if (token == NULL) {
+        fprintf(stderr, "Malloc error for token.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    token->type = type;
+    token->Category = category;
+
     return token;
 }
 
@@ -97,7 +105,9 @@ int isKeyword(char *str) {
 }
 
 // Divame jestli je to ID
-Token is_Id(char curr) {                                // muze byt delsi nez 256
+Token* is_Id(char curr) { 
+                            
+
     char identifier[256];                               // max delka id 256
     int i = 0;
     identifier[i] = curr;                               // prvni pismeno uz vime
@@ -117,13 +127,13 @@ Token is_Id(char curr) {                                // muze byt delsi nez 25
 
     // nillable muze se dat jincimu tokenu
     if (keywordi >= 0) {
-        Token token = createToken(keyword_types[keywordi], TC_KEYWORDS);  // Use keyword_types array
+        Token* token = createToken(keyword_types[keywordi], TC_KEYWORDS);
         if (keywordi < 3) {  // If it's Int, String, or Double
-            token.Category = TC_TYPE;
-            token.value.nillable = 0;
+            token->Category = TC_TYPE;
+            token->value.nillable = 0;
 
-            if (curr == '?' && token.Category == TC_TYPE) {
-                token.value.nillable = 1;
+            if (curr == '?' && token->Category == TC_TYPE) {
+                token->value.nillable = 1;
             } else {
                 ungetc(curr, stdin);
             }
@@ -132,12 +142,16 @@ Token is_Id(char curr) {                                // muze byt delsi nez 25
     }
 
     else { 
-        Token token = createToken(T_IDENTIFIER, TC_ID);
-        token.value.ID_name = malloc(strlen(identifier) + 1);               // alocuji pamet            !!! dat podminku
-        strcpy(token.value.ID_name, identifier);                    
-        token.value.nillable=0;
+        Token* token = createToken(T_IDENTIFIER, TC_ID);
+        token->value.ID_name = malloc(strlen(identifier) + 1);
+        if (token->value.ID_name == NULL) {
+            fprintf(stderr, "Malloc error for token.\n");
+            exit(EXIT_FAILURE);
+        }          
+        strcpy(token->value.ID_name, identifier);                    
+        token->value.nillable=0;
         if (curr=='!')
-            token.value.nillable=2;
+            token->value.nillable=2;
         else
             ungetc(curr, stdin);
         return token;
@@ -146,7 +160,7 @@ Token is_Id(char curr) {                                // muze byt delsi nez 25
 
 
 // nacte cislo
-Token scanNumber(char curr) {
+Token* scanNumber(char curr) {
     char numbers[256];              // Max 256 dlouhy cislo ?
     int i = 0;
     numbers[i] = curr;
@@ -171,7 +185,7 @@ Token scanNumber(char curr) {
     }
 
     
-    if (curr == 'e' || curr == 'E') {   // Exponentni cast Muze to byt jen kdyz je to exponent ?
+    if (curr == 'e' || curr == 'E') {   // Exponentni cast Muze to byt jen kdyz je to exponent 
         numbers[i] = curr;
         i++;
         curr = getchar();
@@ -191,15 +205,17 @@ Token scanNumber(char curr) {
     
 
     numbers[i] = '\0';                      // Pridani konce seznamu
-    Token token;
+
+    Token* token = createToken(T_DOUBLE, TC_TYPE);
 
     if (strchr(numbers, '.') != NULL || strchr(numbers, 'e') != NULL || strchr(numbers, 'E') != NULL) {
-        token = createToken(T_DOUBLE, TC_TYPE);
-        token.value.decimal = atof(numbers);    // Convert string to double
+        token->value.decimal = atof(numbers);    // Convert string to double
         
-    } else {
-        token = createToken(T_INT, TC_TYPE);
-        token.value.integer = atoi(numbers);     // Convert string to int
+    } 
+    
+    else {
+        token->type=T_INT;
+        token->value.integer = atoi(numbers);     // Convert string to int
     }
 
     ungetc(curr, stdin); // Push back the last read character
@@ -233,7 +249,7 @@ int addChar(char curr,int i, Token *token){
 
 
 // Dostali jsme \{ coz znamena Unixovy kod !! nemam presne moc tuseni jak to funguje yoinkl jsem to z StackFlow a implementoval na moje reseni 
-int unicode(int i, Token *token) {          // ! over returny kdyz indikejtnou errory
+int unicode(int i, Token *token) {          // over returny kdyz indikejtnou errory
     // ocekavany format \u{XX}
     if (getchar() != '{') {
         return 0;
@@ -245,7 +261,8 @@ int unicode(int i, Token *token) {          // ! over returny kdyz indikejtnou e
         char next = getchar();
         if ((next >= '0' && next <= '9') || (next >= 'A' && next <= 'F') || (next >= 'a' && next <= 'f')) {
             unicodeValue = unicodeValue * 16 + strtol(&next, NULL, 16);
-        } else {
+        } 
+        else {
             return 0;
         }
     }
@@ -262,91 +279,116 @@ int unicode(int i, Token *token) {          // ! over returny kdyz indikejtnou e
 int escape_Char(Token *token,int i){
     char next;
     next=getchar();
+    int alright;
     switch (next) {
 		case '\"':                          // tohle " 
 			addChar('\"',i,token);
-			break;
+			return 1;
 		case 'n':                           // dalsi radek
 			addChar('\n',i,token);
-			break;
+			return 1;
 		case 'r':                           // Neco sposunutim ukazatele na zacatek radku muze to pak prepisovat veci na tom radku ale to co neprepise zustane
 			addChar('\r',i,token);
-			break;
+			return 1;
 		case 't' :                          // tabulator
 			addChar('\t',i,token);
-			break;
+			return 1;
 		case '\\' :                         // tohle \ 
 			addChar('\\',i,token);
-			break;
+			return 1;
         case 'u':                           // unixocy cod
-            unicode(i,token);
+            alright = unicode(i,token);
+            if (alright==0){
+                return 0; 
+            }
+                
+            
         default:                        // Yoo zadal jsi neco co neni escape char escapni zivot 
             return 0; 
     }
-    return 1; // yay
 }
 
-Token isString(char curr) {     // je to string jeste multi 
-    Token token;
-    token.Category=TC_VALUE;
-    token.type=T_STRING;
-    token.value.stringVal=malloc(30);
+Token* isString(char curr) {     // je to string jeste multi 
+    Token* token = createToken(T_STRING, TC_VALUE);
+    token->value.stringVal = malloc(30);
+    if (token->value.stringVal == NULL) {
+        fprintf(stderr, "Malloc error for token.\n");
+        exit(EXIT_FAILURE);
+    }
 
     int length=30;
     int i=0;
-    
+    int alright = 1;
     // prvni char
-    addChar(curr,i , &token);
+    addChar(curr,i , token);
     i++;
 
     curr = getchar();
     while (curr!='"') {                                     // pokud neni konec stringu
-        if (i >= length - 5) {                      // reallocate memory 
-            if (!expand_String(&token, &length)) {
-                token.Category=TC_ERR;
-                token.type=T_ERORR;
+        if (i >= length - 8) {                      // reallocate memory 
+            if (!expand_String(token, &length)) {
+                free(token->value.stringVal);
+                token->Category=TC_ERR;
+                token->type=T_ERORR;
                 return token;
             }
         }
         if (curr=='\\'){                        // escape char curr == \ 
-            escape_Char(&token,i);
+            alright = escape_Char(token,i);
+            if (alright == 0){
+                printf("Here%d",alright);
+                free(token->value.stringVal);
+                token->Category=TC_ERR;
+                token->type=T_ERORR;
+                return token;
+            }
         }
         else{                                   // pokud to neni escape tak jen pridej do stringval
-            addChar(curr,i,&token);
+            addChar(curr,i,token);
         }
         i++;
         curr = getchar();
     }
 
-    token.value.stringVal[i] = '\0'; // Neco ze musim ukoncit konec stringu idk rekl kamos kdyz mi pomahal s pameti
+    token->value.stringVal[i] = '\0'; // Neco ze musim ukoncit konec stringu idk rekl kamos kdyz mi pomahal s pameti
     return token;
 }
 
-Token isMultiLineString() {
-    Token token;
-    token.Category = TC_VALUE;
-    token.type = T_MULTILINE_STRING;
-    token.value.stringVal = malloc(100); 
-
+Token* isMultiLineString() {
+    Token* token = createToken(T_STRING, TC_VALUE);
+    token->value.stringVal = malloc(100);
+    if (token->value.stringVal == NULL) {
+        fprintf(stderr, "Malloc error for token.\n");
+        exit(EXIT_FAILURE);
+    }
+    int alright = 1;          
     int length = 100;
     int i = 0;
 
     char curr = getchar();
 
     while (curr != EOF) {
-        if (i >= length - 5) {  
-            if (!expand_String(&token, &length)) {
-                token.Category = TC_ERR;
-                token.type = T_ERORR;
-                free(token.value.stringVal);
+        if (i >= length - 8) {  
+            if (!expand_String(token, &length)) {
+                token->Category = TC_ERR;
+                token->type = T_ERORR;
+                free(token->value.stringVal);
                 return token;
             }
         }
         if (curr == '\\') {
-            escape_Char(&token, i);
+            alright = escape_Char(token,i);
+            if (alright == 0){
+                printf("Here");
+                free(token->value.stringVal);
+                token->Category=TC_ERR;
+                token->type=T_ERORR;
+                return token;
+            }
             i++;  
-        } else {
-            addChar(curr, i, &token);
+        } 
+        else {
+            addChar(curr, i, token);
             i++;  
         }
 
@@ -355,38 +397,50 @@ Token isMultiLineString() {
             if (next == '\"') {
                 next = getchar();
                 if (next == '\"') {
-                    token.value.stringVal[i - 3] = '\0';  
+                    token->value.stringVal[i - 3] = '\0';  
                     return token;
-                } else {
-                    addChar(curr, i, &token);  
+                } 
+                else {
+                    addChar(curr, i, token);  
                     ungetc(next, stdin);  
                 }
-            } else {
-                addChar(curr, i, &token);  
+            } 
+            else {
+                addChar(curr, i, token);  
                 ungetc(next, stdin);  
             }
         }
         curr = getchar();  
     }
 
-    token.Category = TC_ERR;
-    token.type = T_ERORR;
-    free(token.value.stringVal);
+    token->Category = TC_ERR;
+    token->type = T_ERORR;
+    free(token->value.stringVal);
     return token;
 }
 
 
 void free_token_Values(Token *token){       // funkce ktera uvolni pamet kterou jsem mallocoval 
-    if (token->type==T_IDENTIFIER)
+    if (token->type==T_IDENTIFIER){
         free(token->value.ID_name);
-    else if(token->type==T_STRING)
+        token->value.ID_name = NULL;
+    }
+    else if(token->type==T_STRING){
         free(token->value.stringVal);
+        token->value.stringVal = NULL;
+    }
+
+    free(token);
+    token = NULL;
 }
 
-Token scan() {                             // proste GetToken da ti dasli Token asi prejmenuji whatever
+Token* scan() {                             // proste GetToken da ti dasli Token asi prejmenuji whatever
     char curr = getNotWhiteChar();         // next slouzi jako takovy idiot ktery se diva do predu
     char next = curr;
-    printf("%c",curr);
+
+    if (curr!='/')                          // debug
+        printf("%c",curr);
+
     switch (curr) {
         case '/':
             if (SkipComment() == 1) {      
@@ -482,7 +536,8 @@ Token scan() {                             // proste GetToken da ti dasli Token 
             next = getchar();
             if (next == '?') {
                 return createToken(T_DOUBLE_QUESTION_MARK, TC_Punctation);
-            } else {
+            } 
+            else {
                 ungetc(next, stdin);
                 return createToken(T_ERORR, TC_ERR);
             }
@@ -530,41 +585,54 @@ Token scan() {                             // proste GetToken da ti dasli Token 
             return (scanNumber(curr));
 
         // EOF je broken
-        case EOF:                           // nevim jak vzit EOF z STDIN mozna budu muset prevest nejak na file idk 
+        case EOF:                           
             return createToken(T_EOF, TC_ERR);
 
         default:                            // neco co tam nema byt mozna errorum prirad Value at vis jaky presne ERROORORRO
-            printf("2.%c",curr);
+            //printf("2.%c",curr);
             return createToken(T_ERORR, TC_ERR);
     }
 }
 
 
 
-// int main() {                                    // best debuging ever cant change my mind
-//     Token xd;
-//     while(xd.Category!=TC_ERR){
-//         xd=scan();
-//         printf("--%d\n",xd.type);
-//         /*
-//         if (xd.type==T_INT)
-//             printf("%d\n",xd.value.integer);
-//         else if(xd.type==T_DOUBLE)
-//             printf("%f\n",xd.value.decimal);
-//         else if(xd.type==T_STRING){
-//             printf("xx %s xx\n",xd.value.stringVal);
-//             free_token_Values(&xd);
-//         }
-//         else if(xd.type==T_MULTILINE_STRING){
-//             printf("xx %s xx\n",xd.value.stringVal);
-//             free_token_Values(&xd);
-//         }
-//         else if(xd.type==T_IDENTIFIER){
-//             printf("%s",xd.value.ID_name);
-//             free_token_Values(&xd);
-//         }*/
-//     }
-//     return 0;
-// }
+int main() {                                    // best debuging ever cant change my mind
+    Token* xd;
+    xd=scan();
+    while(xd->Category!=TC_ERR){
+        free_token_Values(xd);
+        xd=scan();
+        printf("--%d\n",xd->type);
+        if(xd->type==T_STRING){
+            printf("xx %s xx\n",xd->value.stringVal);
+        }
+        else if(xd->type==T_MULTILINE_STRING){
+            printf("xx %s xx\n",xd->value.stringVal);
+        }
+    }
+    free_token_Values(xd);
+    
+    /*
+    while(xd->Category!=TC_ERR){
+        free_token_Values(xd);
+        xd=scan();
+        printf("--%d\n",xd->type);
+        if (xd->type==T_INT)
+            printf("%d\n",xd->value.integer);
+        else if(xd->type==T_DOUBLE)
+            printf("%f\n",xd->value.decimal);
+        else if(xd->type==T_STRING){
+            printf("xx %s xx\n",xd->value.stringVal);
+        }
+        else if(xd->type==T_MULTILINE_STRING){
+            printf("xx %s xx\n",xd->value.stringVal);
+        }
+        else if(xd->type==T_IDENTIFIER){
+            printf("%s",xd->value.ID_name);
+        }
+    }
+    free_token_Values(xd);
+    return 0;*/
+}
 
 

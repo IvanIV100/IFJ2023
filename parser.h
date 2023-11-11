@@ -7,11 +7,11 @@
 
 
 typedef struct node_struct {
-    Token *current;
+    struct Token* current;
     struct node_struct* left;
     struct node_struct* right;
     
-} *node_t;
+} node_t;
 
 
 
@@ -32,3 +32,4 @@ void handle_while(node_t *node);
 void handle_statement(node_t *node);
 void node_init(node_t *node);
 void node_insert(node_t *node);
+void node_clear(node_t *node);

@@ -596,21 +596,21 @@ Token* scan() {                             // proste GetToken da ti dasli Token
 
 
 
-int main() {                                    // best debuging ever cant change my mind
-    Token* xd;
-    xd=scan();
-    while(xd->Category!=TC_ERR){
-        free_token_Values(xd);
-        xd=scan();
-        printf("--%d\n",xd->type);
-        if(xd->type==T_STRING){
-            printf("xx %s xx\n",xd->value.stringVal);
-        }
-        else if(xd->type==T_MULTILINE_STRING){
-            printf("xx %s xx\n",xd->value.stringVal);
-        }
-    }
-    free_token_Values(xd);
+// int main() {                                    // best debuging ever cant change my mind
+//     Token* xd;
+//     xd=scan();
+//     while(xd->Category!=TC_ERR){
+//         free_token_Values(xd);
+//         xd=scan();
+//         printf("--%d\n",xd->type);
+//         if(xd->type==T_STRING){
+//             printf("xx %s xx\n",xd->value.stringVal);
+//         }
+//         else if(xd->type==T_MULTILINE_STRING){
+//             printf("xx %s xx\n",xd->value.stringVal);
+//         }
+//     }
+//     free_token_Values(xd);
     
     /*
     while(xd->Category!=TC_ERR){
@@ -633,6 +633,6 @@ int main() {                                    // best debuging ever cant chang
     }
     free_token_Values(xd);
     return 0;*/
-}
+//}
 
 

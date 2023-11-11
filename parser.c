@@ -11,117 +11,131 @@ xchoda00
 #include <string.h>
 #include "parser.h"
 #include "scanner.c" //change to scanner.h
+#include "scanner.h"
 
 
 /* TODO
-* - sort out return validity if
-* - maybe get token as a pointer
+* - sort out return validity if in func
+* - make error file
+* - optional else?
+* - free of node list
 */
 
-void handle_statement_list(){
-    if (/* } */){
+void handle_statement_list(node_t *node){
+    printf("current token: %d\n", (*node)->current->type);
+    if ((*node)->current->type == T_RIGHT_BRACE){
         return;
     }
-    handle_statement();
-    handle_statement_list;
+    handle_statement(node);
+    handle_statement_list(node);
     return;
 }
 
-void handlle_param(){
-    if (/*is _*/){
+void handle_param(node_t *node){
+    if ((*node)->current->type == T_UNDERSCORE){
         //handle in symtab _ case
-    } else if (/*identifier*/){
+    } else if ((*node)->current->type == T_IDENTIFIER){
         //symtab assign
         return;
     } else {
         //error
         return;
     }
-    //next token
-    if (/*not identifier*/){
+    node_insert(node);
+    if ((*node)->current->type != T_IDENTIFIER){
         //error
         return;
     }
-    //next token
-    if (/*not : */){
+    node_insert(node);
+    if ((*node)->current->type != T_COLON){
         //error
         return;
     }
-    handle_type();
+    handle_type(node);
 
 
 }
 
-void handle_param_list(){
-    handle_param();
-    if (/*not , */){
+void handle_param_list(node_t *node){
+    if ((*node)->current->type == T_RIGHT_PAREN){
+        return;
+    } else {
+        handle_param(node);
+    }
+    node_insert(node);
+    if ((*node)->current->type == T_COMMA){
+        node_insert(node);
+        handle_param_list(node);
+    } else {
+        //error
         return;
     }
-    handle_param_list();
+}
+
+void handle_type(node_t *node){ //what is difference between t_int a t_kw_int
+    if ((*node)->current->type == T_KW_INT){
+        //assign int in symtable with ? check
+        return;
+    } else if ((*node)->current->type == T_KW_DOUBLE){
+        //assign double in symtable with ? check
+        return;
+    } else if ((*node)->current->type == T_KW_STRING){
+        //assign str in symtable with ? check
+        return;
+    } else {
+        /* err */
+        return;
+    }
+    return;
+}
+
+void handle_func_def(node_t *node){
     
-}
+    node_insert(node);
 
-void handle_type(){
-    if (/*not int/double/str*/){
-        //error
-        return;
-    }
-    //assign given type in symtable
-}
-
-void handle_func_def(){
-    //next token
-    if (/*next token is not id*/) {
+    if ((*node)->current->type != T_IDENTIFIER) {
         //error
         return;
     }
     //symtable entry of new func with id
-    //next token
-    if (/*next token is not (*/) {
+    node_insert(node);
+    if ((*node)->current->type != T_LEFT_PAREN) {
         //error
         return;
     }
+    node_insert(node);
+    handle_param_list(node);
     
-    //next token maybe not
-    if (/*next token is not )*/) {
-        //error
-        return;
-    } else {
-        //next token
-        handle_param_list(/*pass struct for func symtab*/);
-        if (/*next token is not )*/) {
+    node_insert(node);
+    if ((*node)->current->type != T_RIGHT_PAREN) {
+        if ((*node)->current->type != T_ARROW) {
             //error
             return;
         }
-    }
-    if (/*next token is not {*/) {
-        if (/*next token is not -> */)
-        {
-            //error
-            return;
-        }
-        handle_type(/*pass struct for func symtab*/);
-        return;
-    } else if (/*next token is {*/) {
-        handle_statement_list(/*pass struct for func symtab*/);
+        node_insert(node);
+        handle_type(node);
 
-    
+        node_insert(node);
+    } else if ((*node)->current->type == T_LEFT_BRACE) {
+        node_insert(node);
+        handle_statement_list(node);
     } else {
         //error
         return;
     }
-    if (/*next token is not }*/) {
+    node_insert(node);
+    if ((*node)->current->type != T_RIGHT_BRACE) {
         //error
         return;
     }
 }
 
-void handle_in_param(){
-    if (/* ID */){
-        //next
-        if ( /* :*/){
-            //next
-            if (/* id*/){
+void handle_in_param(node_t *node){
+    if ((*node)->current->type == T_IDENTIFIER){
+        node_insert(node);
+        if ( (*node)->current->type == T_COLON){
+            node_insert(node);
+            if ((*node)->current->type == T_IDENTIFIER){
                 return;
             }
         }
@@ -130,26 +144,32 @@ void handle_in_param(){
     return;
 }
 
-void handle_in_param_list(){
-    if(/*)*/){
+void handle_in_param_list(node_t *node){
+    node_insert(node);
+    if((*node)->current->type == T_RIGHT_PAREN){
         return;
     }
-    handle_in_param();
-    //next
-    if (/* , */){
-        handle_in_param_list();
+    handle_in_param(node);
+    
+    node_insert(node);
+    if ((*node)->current->type == T_COMMA){
+        handle_in_param_list(node);
     }
-    if (/*not ) */){
+    if ((*node)->current->type != T_RIGHT_PAREN){
         //error
         return;
     }
 }
 
-void handle_assign_ops(){
-    if (/* identifier */){
-        if(/* ( */){
-            handle_in_param_list();
-            if (/* not )*/){
+void handle_assign_ops(node_t *node){
+    if ((*node)->current->type == T_IDENTIFIER){
+        node_insert(node);
+        if((*node)->current->type == T_LEFT_PAREN){
+            node_insert(node);
+            handle_in_param_list(node);
+
+            node_insert(node);
+            if ((*node)->current->type != T_RIGHT_PAREN){
                 //error
                 return;
             }
@@ -165,32 +185,35 @@ void handle_assign_ops(){
 
 }
 
-void handle_var_def(){
-    //next token
-    if (/*next token is not id*/) {
+void handle_var_def(node_t *node){
+    node_insert(node);
+    if ((*node)->current->type != T_IDENTIFIER) {
         //error
         return;
     }
     //symtable entry of new var with id with look back if let or var. implement maybe creation
-    //next token
-    if (/*next token is  :*/) {
-        //next token
+    node_insert(node);
+    if ((*node)->current->type == T_COLON) {
+        node_insert(node);
         //handle and assign type
-        handle_type(/*pass struct for var symtab*/);
-        return;
+        handle_type(node);
+        node_insert(node);
     }
-    //get type from the assop
-    handle_assign_ops();
+    handle_assign_ops(node);
     return;
 }
 
-void handle_funcall_ops(){
-    if (/* = */){
-        handle_assign_ops();
+void handle_funcall_ops(node_t *node){
+    if ((*node)->current->type == T_ASSIGN){
+        node_insert(node);
+        handle_assign_ops(node);
         return;
-    } else if (/* ( */){
-        handle_param_list();
-        if (/* not ) */){
+    } else if ((*node)->current->type == T_LEFT_PAREN){
+        node_insert(node);
+        handle_param_list(node);
+
+        node_insert(node);
+        if ((*node)->current->type != T_RIGHT_PAREN){
             //error
             return;
         } 
@@ -201,39 +224,50 @@ void handle_funcall_ops(){
     }
 }
 
-void handle_cond_ops(){
-    //handle expression
-    if (/* let */){
-        if (/* identifier */){
+void handle_cond_ops(node_t *node){
+    if ((*node)->current->type == T_LET){
+        node_insert(node);
+        if ((*node)->current->type == T_IDENTIFIER){
             //write
-            return
+            return;
         }
     } else {
-        //error
+        //expression handle
         return;
     }
 }
 
-void handle_if(){
-    handle_cond_ops();
-    if (/* { */){
-        handle_statement_list();
-        if (/* not } */){
+void handle_if(node_t *node){
+    node_insert(node);
+    handle_cond_ops(node);
+
+    node_insert(node);
+    if ((*node)->current->type == T_LEFT_BRACE){
+        node_insert(node);
+        handle_statement_list(node);
+
+        node_insert(node);
+        if ((*node)->current->type != T_RIGHT_BRACE){
             //error
             return;
         } else {
             //optional else ?
-            if (/* not  else */){
+            node_insert(node);
+            if ((*node)->current->type != T_ELSE){
                 
                 //error
                 return;
             }
-            if (/* not { */){
+            node_insert(node);
+            if ((*node)->current->type != T_LEFT_BRACE){
                 //error
                 return;
             } else {
-                handle_statement_list();
-                if (/* not }*/){ //maybe insufficient check for {} counter
+                node_insert(node);
+                handle_statement_list(node);
+
+                node_insert(node);
+                if ((*node)->current->type != T_RIGHT_BRACE){ //maybe insufficient check for {} counter
                     //error
                     return;
                 }
@@ -245,64 +279,92 @@ void handle_if(){
     }
 }
 
-void handle_while(){
-    handle_cond_ops();
+void handle_while(node_t *node){
+    node_insert(node);
+    handle_cond_ops(node);
 
-    if (/* not { */){
+    if ((*node)->current->type != T_LEFT_BRACE){
         //error
         return;
     }
-    handle_statement_list(); //check for nested conditions and issues
+    node_insert(node);
+    handle_statement_list(node); //check for nested conditions and issues
     
-    if (/* not } */){
+    node_insert(node);
+    if ((*node)->current->type != T_RIGHT_BRACE){
         //error
         return;
     }
 }
 
-void handle_statement(){
-    switch (/*next token*/){
+void handle_statement(node_t *node){
+    switch ((*node)->current->type){
         case T_LET:
         case T_VAR:
-            handle_var_def(/*token list*/);
+            handle_var_def(node);
             break;
 
         case T_IDENTIFIER:
-            handle_funcall_ops(/*token list*/);
+            handle_funcall_ops(node);
             break;
         case T_IF:
-            handle_if(/*token list*/);
+            handle_if(node);
             break;
         case T_WHILE:
-            handle_while(/*token list*/);
+            handle_while(node);
             break;
         case T_RETURN : 
             //check if in func 
-           // return;
+            return;
         default: 
             //error 
             return;
     }
 }
 
-void parse(){
-    
-    //check if eof
+void node_init(node_t *node){
+    (*node) = NULL;
+}
+
+void node_insert(node_t *node){
+    Token* nextToken = scan();
+    node_t* new_node = malloc(sizeof(struct node_struct));
+    (*new_node)->current = nextToken;
+    (*new_node)->right = NULL;
+    if (node == NULL){
+        node = new_node;
+    } else {
+        node_t* tmp = node;
+        while ( (*tmp)->right  != NULL){
+            tmp = &(*tmp)->right;
+        }
+        (*new_node)->left = *tmp;
+        (*tmp)->right = *new_node;
+    }
+}
+
+void parser(){
+    node_t *root = malloc(sizeof(node_t));
+    node_init(root);
+    node_insert(root);
+
     bool run = true;
     while (run){
-        switch (/*first token*/)
+        switch ((*root)->current->type)
         {
         case T_FUNC:
-            handle_func_def(/*token list*/);
+            node_insert(root);
+            handle_func_def(root);
             break;
         
         default:
-            handle_statement(/*token list*/);
+            node_insert(root);
+            handle_statement(root);
             break;
         }
     }  
 }
-//write for me a basic main function
+
 int main()
 {
     parser();

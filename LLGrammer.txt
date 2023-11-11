@@ -9,19 +9,19 @@
 <stmnt> -> id <FuncCallOps>
 <stmnt> -> <Condition>
 <stmnt> -> <Loop>
-//<stmnt> -> <Return> only in funcDef
+//<stmnt> -> <Return> only in funcDef bool
 <paramListFirst> -> e
 <paramListFirst> -> <param> <paramList>
 <paramList> -> e
 <paramList> -> , <param> <paramList>
 <param> -> id id : <Type>
 <param> -> _ id : <Type>
-<varDef> -> let/var id ?(: <Type> )  <AssignOps>
+<varDef> -> let/var id ?(: <Type> ) = <AssignOps>
 <funcDef> -> func id ( <paramListFirst> ) -> <type> { <stmntList> <return> }
 <FuncCallOps> ->   = <AssignOps>
 <FuncCallOps> -> ( <InParamListFirst> )
-<AssignOps> -> <expr>
-<AssignOps> -> id ( <InParamListFirst> )
+<AssignOps> ->  <expr>
+<AssignOps> ->  id ( <InParamListFirst> )
 <Condition> -> if <condOps> { <stmntList> } else { <stmntList> }
 <condOps> -> <expr>
 <condOps> -> let id

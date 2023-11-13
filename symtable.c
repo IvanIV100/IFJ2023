@@ -168,33 +168,33 @@ void SymTableFree(SymTable *table){
      }
 }
 
-int main(){
-SymTable table;
-SymTableInit(&table);
-InsertSymbol(&table, "pole");
-if (InsertSymbol(&table, "pole") == -1)
-    printf("nepovedlo se\n");
+// int main(){
+// SymTable table;
+// SymTableInit(&table);
+// InsertSymbol(&table, "pole");
+// if (InsertSymbol(&table, "pole") == -1)
+//     printf("nepovedlo se\n");
 
-Symbol *symbol;
-InsertSymbol(&table, "poal");
-InsertSymbol(&table, "po");
-RemoveSymbol(&table, "pole");
-InsertSymbol(&table, "popal");
-if (AddVarDetails(&table, "popal", 2, true, 1) == -1)
-    printf("Neexistuje \n");
-InsertSymbol(&table, "pollal");
-AddParametr(&table, "popal", 'd');
-AddParametr(&table, "popal", 'i');
-symbol = GetSymbol(&table, "popal");
-AddParametr(&table, "popal", 'p');
-if (symbol!=NULL){
-    printf("string: %s\n", symbol->id);
-    printf("init? %d\n", symbol->variable.init);
-    printf("datatype %d\n", symbol->variable.datatype);
-    printf("VAR or LET %d\n", symbol->variable.VoL);
-    printf("PArametr %s\n", symbol->parametr.str);
-}
-SymTableFree(&table);
+// Symbol *symbol;
+// InsertSymbol(&table, "poal");
+// InsertSymbol(&table, "po");
+// RemoveSymbol(&table, "pole");
+// InsertSymbol(&table, "popal");
+// if (AddVarDetails(&table, "popal", 2, true, 1) == -1)
+//     printf("Neexistuje \n");
+// InsertSymbol(&table, "pollal");
+// AddParametr(&table, "popal", 'd');
+// AddParametr(&table, "popal", 'i');
+// symbol = GetSymbol(&table, "popal");
+// AddParametr(&table, "popal", 'p');
+// if (symbol!=NULL){
+//     printf("string: %s\n", symbol->id);
+//     printf("init? %d\n", symbol->variable.init);
+//     printf("datatype %d\n", symbol->variable.datatype);
+//     printf("VAR or LET %d\n", symbol->variable.VoL);
+//     printf("PArametr %s\n", symbol->parametr.str);
+// }
+// SymTableFree(&table);
 
-return 0;
-}
+// return 0;
+// }

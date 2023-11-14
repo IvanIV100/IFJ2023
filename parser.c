@@ -136,7 +136,8 @@ Token* handle_func_def(Token *token){
         printf("Error: Expected left brace\n");
         ThrowError(2);
     }
-    token = scan();
+    // tu je : why
+    printf("150 current token type: %d\n", token->type);
     if ((token)->type != T_RIGHT_BRACE) {
         printf("Error: Expected right brace\n");
         ThrowError(2);
@@ -147,10 +148,13 @@ Token* handle_func_def(Token *token){
 Token* handle_in_param(Token *token){
     if ((token)->type == T_IDENTIFIER){
         token = scan();
+        printf("150 current token type: %d\n", token->type);
         if ( (token)->type == T_COLON){
             token = scan();
+            printf("153 current token type: %d\n", token->type);
             if ((token)->type == T_IDENTIFIER){
                 token = scan();
+                printf("156 current token type: %d\n", token->type);
                 return  token;
 
             } 
@@ -181,6 +185,7 @@ Token* handle_in_param_list(Token *token){
         token = handle_in_param_list(token);
         
     }
+    printf("192 current token type: %d\n", token->type);
     if ((token)->type != T_RIGHT_PAREN){
         printf("Error: Expected right paren\n");
         ThrowError(2);
@@ -207,6 +212,7 @@ Token* handle_assign_ops(Token *token){
                 printf("Error: Expected right paren\n");
                 ThrowError(2);
             }
+            return token;
         } else {
             printf(" 214 Error: Expected left paren\n");
             ThrowError(2);
@@ -243,22 +249,27 @@ Token* handle_var_def(Token* token){
 }
 
 Token* handle_funcall_ops(Token *token){
+    printf("254 token type %d\n", token->type);
     if ((token)->type == T_ASSIGN){
         token = scan();
+        printf("257 token type %d\n", token->type);
         token = handle_assign_ops(token);
         return  token;
     } else if ((token)->type == T_LEFT_PAREN){
         token = scan();
-        token = handle_param_list(token);
+        printf("261 token type %d\n", token->type);
+        token = handle_in_param_list(token);
 
         token = scan();
+        printf("265 token type %d\n", token->type); 
         if ((token)->type != T_RIGHT_PAREN){
             printf("Error: Expected right paren\n");
             ThrowError(2);
         } 
         return  token;
     } else {
-        printf("Error: Expected assign or left paren\n");
+        printf("261 token type %d\n", token->type);
+        printf("261 Error: Expected assign or left paren\n");
         ThrowError(2);
     }
     return  token;
@@ -346,9 +357,11 @@ Token* handle_statement(Token *token){
             token = scan();
             printf("356 token type %d\n", token->type);
             token = handle_var_def(token);
+            token = scan();
             break;
 
         case T_IDENTIFIER:
+            printf("362 token type %d\n", token->type);
             token = scan();
             token = handle_funcall_ops(token);
 
@@ -422,6 +435,7 @@ void parser(){
         case T_FUNC:
             token = scan();
             token = handle_func_def(token);
+            token = scan();
             break;
         case T_EOF:
             exit(0);
@@ -429,7 +443,6 @@ void parser(){
             token = handle_statement_list(token);
             break;
         }
-        token = scan();
     }  
 }
 

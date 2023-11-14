@@ -1,22 +1,26 @@
 <Prog> -> e
-<Prog> -> <stmnt>
+<Prog> -> <stmntList> <prog>
 <Prog> -> <funcDef> <prog> // global scope
-<Prog> -> <stmnt> <Prog>
+<Prog> -> EOF
 <stmntList> -> e
 <stmntList> -> <stmnt> <stmntList> 
 <stmnt> -> <varDef>
-//<stmnt> -> <funcCall>
 <stmnt> -> id <FuncCallOps>
 <stmnt> -> <Condition>
 <stmnt> -> <Loop>
-//<stmnt> -> <Return> only in funcDef bool
+<stmnt> -> <Return> only in funcDef bool
 <paramListFirst> -> e
 <paramListFirst> -> <param> <paramList>
 <paramList> -> e
 <paramList> -> , <param> <paramList>
 <param> -> id id : <Type>
 <param> -> _ id : <Type>
-<varDef> -> let/var id ?(: <Type> ) = <AssignOps>
+<varDef> -> let/var id <varDefOptional>
+<varDefOptional> -> e
+<varDefOptional> -> : <type> <varDefAss>
+<varDefOptional> -> <varDefAss>
+<varDefAss> -> e
+<varDefAss> -> = <AssignOps>
 <funcDef> -> func id ( <paramListFirst> ) -> <type> { <stmntList> <return> }
 <FuncCallOps> ->   = <AssignOps>
 <FuncCallOps> -> ( <InParamListFirst> )

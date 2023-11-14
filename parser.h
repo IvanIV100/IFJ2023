@@ -6,27 +6,29 @@
 #include "scanner.h"
 
 
-// typedef struct node_struct {
-//     struct Token *current;
-//     struct node_struct* left;
-//     struct node_struct* right;
+typedef struct node {
+    struct Token *current;
+    struct node* left;
+    struct node* right;
     
-// } node_t;
+} node_t;
 
 
 
 void parser();
-Token* handle_statement_list(Token* token);
-Token* handle_param(Token* token);
-Token* handle_param_list(Token* token);
-Token* handle_type(Token* token);
-Token* handle_func_def(Token* token);
-Token* handle_in_param(Token* token);
-Token* handle_in_param_list(Token* token);
-Token* handle_assign_ops(Token* token);
-Token* handle_var_def(Token* token);
-Token* handle_funcall_ops(Token* token);
-Token* handle_cond_ops(Token* token);
-Token* handle_if(Token* token);
-Token* handle_while(Token* token);
-Token* handle_statement(Token* token);
+node_t* handle_statement_list(node_t* node);
+node_t* handle_param(node_t* node);
+node_t* handle_param_list(node_t* node);
+node_t* handle_type(node_t* node);
+node_t* handle_func_def(node_t* node);
+node_t* handle_in_param(node_t* node);
+node_t* handle_in_param_list(node_t* node);
+node_t* handle_assign_ops(node_t* node);
+node_t* handle_var_def(node_t* node);
+node_t* handle_funcall_ops(node_t* node);
+node_t* handle_cond_ops(node_t* node);
+node_t* handle_if(node_t* node);
+node_t* handle_while(node_t* node);
+node_t* handle_statement(node_t* node);
+node_t* create_node();
+node_t* get_next(node_t* node);

@@ -98,4 +98,5 @@ typedef struct Token {
 
 
 Token*scan();
+void free_token_Values(Token *token);
 

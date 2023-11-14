@@ -24,14 +24,7 @@ xchoda00
 * - check if err output is correct
 */
 
-Token* handle_statement_list(Token *token){
-    if ((token)->type == T_RIGHT_BRACE){
-        return token;
-    }
-    token = handle_statement(token);
-    token = handle_statement_list(token);
-    return token;
-}
+
 
 Token* handle_param(Token *token){
     printf("HP current token type: %d\n", token->type);
@@ -136,7 +129,7 @@ Token* handle_func_def(Token *token){
         printf("Error: Expected left brace\n");
         ThrowError(2);
     }
-    // tu je : why
+    // tu je : why  
     printf("150 current token type: %d\n", token->type);
     if ((token)->type != T_RIGHT_BRACE) {
         printf("Error: Expected right brace\n");
@@ -157,7 +150,14 @@ Token* handle_in_param(Token *token){
                 printf("156 current token type: %d\n", token->type);
                 return  token;
 
-            } 
+            } else if (token->type == T_INT || token->type == T_STRING || token->type == T_DOUBLE){
+                token = scan();
+                printf("160 current token type: %d\n", token->type);
+                return  token;
+            } else {
+                printf("Error: Param failed\n");
+                ThrowError(2);
+            }
             printf("Error: Param failed\n");
             ThrowError(2);
         } 
@@ -259,8 +259,6 @@ Token* handle_funcall_ops(Token *token){
         token = scan();
         printf("261 token type %d\n", token->type);
         token = handle_in_param_list(token);
-
-        token = scan();
         printf("265 token type %d\n", token->type); 
         if ((token)->type != T_RIGHT_PAREN){
             printf("Error: Expected right paren\n");
@@ -350,6 +348,16 @@ Token* handle_while(Token *token){
     return token;
 }
 
+Token* handle_statement_list(Token *token){
+    printf("HP current token type: %d\n", token->type);
+    if ((token)->type == T_RIGHT_BRACE || (token)->type == T_EOF){
+        return token;
+    }
+    token = handle_statement(token);
+    token = handle_statement_list(token);
+    return token;
+}
+
 Token* handle_statement(Token *token){
     switch ((token)->type){
         case T_LET:
@@ -364,16 +372,18 @@ Token* handle_statement(Token *token){
             printf("362 token type %d\n", token->type);
             token = scan();
             token = handle_funcall_ops(token);
-
+            token = scan();
             printf("367 token type %d\n", token->type);
             break;
         case T_IF:
             token = scan();
             token = handle_if(token);
+            token = scan();
             break;
         case T_WHILE:
             token = scan();
             token = handle_while(token);
+            token = scan();
             break;
         case T_RETURN : 
             token = scan();
@@ -384,6 +394,7 @@ Token* handle_statement(Token *token){
         default: 
             return token;
     }
+    printf("392 token type %d\n", token->type);
     return token;
 }
 
@@ -435,14 +446,16 @@ void parser(){
         case T_FUNC:
             token = scan();
             token = handle_func_def(token);
-            token = scan();
             break;
         case T_EOF:
             exit(0);
         default:
             token = handle_statement_list(token);
+            printf("448token type %d\n", token->type);
             break;
         }
+        token = scan();
+        printf("452token type %d\n", token->type);
     }  
 }
 

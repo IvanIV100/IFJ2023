@@ -84,8 +84,8 @@ enum token_type keyword_types[] = {
 Token* createToken(enum token_type type, enum token_Category category) {
     Token* token = malloc(sizeof(Token)); 
     if (token == NULL) {
-        fprintf(stderr, "Malloc error for token.\n");
-        exit(EXIT_FAILURE);
+        token->Category = TC_ERR;
+        token->type = T_ERORR;
     }
 
     token->type = type;
@@ -145,8 +145,10 @@ Token* is_Id(char curr) {
         Token* token = createToken(T_IDENTIFIER, TC_ID);
         token->value.ID_name = malloc(strlen(identifier) + 1);
         if (token->value.ID_name == NULL) {
-            fprintf(stderr, "Malloc error for token.\n");
-            exit(EXIT_FAILURE);
+            free(token->value.ID_name);
+            token->value.ID_name = NULL;
+            token->Category = TC_ERR;
+            token->type = T_ERORR;
         }          
         strcpy(token->value.ID_name, identifier);                    
         token->value.nillable=0;
@@ -156,71 +158,6 @@ Token* is_Id(char curr) {
             ungetc(curr, stdin);
         return token;
     }
-}
-
-
-// nacte cislo
-Token* scanNumber(char curr) {
-    char numbers[256];              // Max 256 dlouhy cislo ?
-    int i = 0;
-    numbers[i] = curr;
-    i++;
-
-    curr = getchar();
-    while (isdigit(curr)) {
-        numbers[i] = curr;
-        i++;
-        curr = getchar();
-    }
-
-    if (curr == '.') {                  // Desetinna cast
-        numbers[i] = curr;
-        i++;
-        curr = getchar();
-        while (isdigit(curr)) {
-            numbers[i] = curr;
-            i++;
-            curr = getchar();
-        }
-    }
-
-    
-    if (curr == 'e' || curr == 'E') {   // Exponentni cast Muze to byt jen kdyz je to exponent 
-        numbers[i] = curr;
-        i++;
-        curr = getchar();
-        
-        if (curr == '+' || curr == '-') {
-            numbers[i] = curr;
-            i++;
-            curr = getchar();
-        }
-
-        while (isdigit(curr)) {
-            numbers[i] = curr;
-            i++;
-            curr = getchar();
-            }
-        }
-    
-
-    numbers[i] = '\0';                      // Pridani konce seznamu
-
-    Token* token = createToken(T_DOUBLE, TC_TYPE);
-
-    if (strchr(numbers, '.') != NULL || strchr(numbers, 'e') != NULL || strchr(numbers, 'E') != NULL) {
-        token->value.decimal = atof(numbers);    // Convert string to double
-        
-    } 
-    
-    else {
-        token->type=T_INT;
-        token->value.integer = atoi(numbers);     // Convert string to int
-    }
-
-    ungetc(curr, stdin); // Push back the last read character
-
-    return token;
 }
 
 
@@ -293,7 +230,7 @@ int escape_Char(Token *token,int i){
 		case 't' :                          // tabulator
 			addChar('\t',i,token);
 			return 1;
-		case '\\' :                         // tohle \ 
+		case '\\' :                       
 			addChar('\\',i,token);
 			return 1;
         case 'u':                           // unixocy cod
@@ -301,7 +238,8 @@ int escape_Char(Token *token,int i){
             if (alright==0){
                 return 0; 
             }
-                
+            return 1;
+
             
         default:                        // Yoo zadal jsi neco co neni escape char escapni zivot 
             return 0; 
@@ -312,8 +250,10 @@ Token* isString(char curr) {     // je to string jeste multi
     Token* token = createToken(T_STRING, TC_VALUE);
     token->value.stringVal = malloc(30);
     if (token->value.stringVal == NULL) {
-        fprintf(stderr, "Malloc error for token.\n");
-        exit(EXIT_FAILURE);
+        free(token->value.stringVal);
+        token->value.stringVal = NULL;
+        token->Category = TC_ERR;
+        token->type = T_ERORR;
     }
 
     int length=30;
@@ -333,7 +273,7 @@ Token* isString(char curr) {     // je to string jeste multi
                 return token;
             }
         }
-        if (curr=='\\'){                        // escape char curr == \ 
+        if (curr=='\\'){                       
             alright = escape_Char(token,i);
             if (alright == 0){
                 printf("Here%d",alright);
@@ -358,8 +298,10 @@ Token* isMultiLineString() {
     Token* token = createToken(T_STRING, TC_VALUE);
     token->value.stringVal = malloc(100);
     if (token->value.stringVal == NULL) {
-        fprintf(stderr, "Malloc error for token.\n");
-        exit(EXIT_FAILURE);
+        free(token->value.stringVal);
+        token->value.stringVal = NULL;
+        token->Category = TC_ERR;
+        token->type = T_ERORR;
     }
     int alright = 1;          
     int length = 100;
@@ -418,6 +360,73 @@ Token* isMultiLineString() {
     free(token->value.stringVal);
     return token;
 }
+
+// nacte cislo
+Token* scanNumber(char curr) {
+    char numbers[256];              // Max 256 dlouhy cislo ?
+    int i = 0;
+    numbers[i] = curr;
+    i++;
+
+    curr = getchar();
+    while (isdigit(curr)) {
+        numbers[i] = curr;
+        i++;
+        curr = getchar();
+    }
+
+    if (curr == '.') {                  // Desetinna cast
+        numbers[i] = curr;
+        i++;
+        curr = getchar();
+        while (isdigit(curr)) {
+            numbers[i] = curr;
+            i++;
+            curr = getchar();
+        }
+    }
+
+    
+    if (curr == 'e' || curr == 'E') {   // Exponentni cast Muze to byt jen kdyz je to exponent 
+        numbers[i] = curr;
+        i++;
+        curr = getchar();
+        
+        if (curr == '+' || curr == '-') {
+            numbers[i] = curr;
+            i++;
+            curr = getchar();
+        }
+
+        while (isdigit(curr)) {
+            numbers[i] = curr;
+            i++;
+            curr = getchar();
+            }
+        }
+    
+
+    numbers[i] = '\0';                      // Pridani konce seznamu
+
+    Token* token = createToken(T_DOUBLE, TC_TYPE);
+
+    if (strchr(numbers, '.') != NULL || strchr(numbers, 'e') != NULL || strchr(numbers, 'E') != NULL) {
+        token->value.decimal = atof(numbers);    // Convert string to double
+        
+    } 
+    
+    else {
+        token->type=T_INT;
+        token->value.integer = atoi(numbers);     // Convert string to int
+    }
+
+    ungetc(curr, stdin); // Push back the last read character
+
+    return token;
+}
+
+
+
 
 
 void free_token_Values(Token *token){       // funkce ktera uvolni pamet kterou jsem mallocoval 
@@ -556,9 +565,10 @@ Token* scan() {                             // proste GetToken da ti dasli Token
                 return createToken(T_UNDERSCORE, TC_Punctation);
             }
     
-
-        case 'A' ... 'Z':                                       
-        case 'a' ... 'z':
+        case 'a': case 'b': case 'c': case 'd': case 'e':case 'f': case 'g': case 'h': case 'i': case 'j':case 'k': case 'l': case 'm': case 'n': case 'o':
+        case 'p': case 'q': case 'r': case 's': case 't':case 'u': case 'v': case 'w': case 'x': case 'y':case 'z':
+        case 'A': case 'B': case 'C': case 'D': case 'E':case 'F': case 'G': case 'H': case 'I': case 'J':case 'K': case 'L': case 'M': case 'N': case 'O':
+        case 'P': case 'Q': case 'R': case 'S': case 'T':case 'U': case 'V': case 'W': case 'X': case 'Y':case 'Z':
             return(is_Id(curr));               // Identifikator nebo keyword
         
 
@@ -581,7 +591,7 @@ Token* scan() {                             // proste GetToken da ti dasli Token
                 return isString(curr);
             }
 
-        case '0' ... '9':                  // budd Double nebo Inter
+        case '0': case '1': case '2': case '3': case '4':case '5': case '6': case '7': case '8': case '9':                  // budd Double nebo Inter
             return (scanNumber(curr));
 
         // EOF je broken

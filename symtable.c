@@ -200,5 +200,4 @@ SymTableFree(&table);
 SymTableFree(&table1);
 
 return 0;
-}
-*/
+}*/

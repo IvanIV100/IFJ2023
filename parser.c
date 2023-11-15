@@ -15,14 +15,38 @@ xchoda00
 
 
 /* TODO 
-* - sort out return validity if in func
-* - create linked list for node_t* mem free
+* - sort out return validity in func
+* - fix mem free of linked list
 * - optional else?
 * - handle built in funcs
 * - check if err output is correct
 * - check if "var name" is valid
-*/
+* - expression parser
 
+* ---TESTS---
+* valid:
+* - func def
+* - func def with params
+* - func def with params and return
+* - func def with params and return and body
+* - func def with params and return and body and var def
+* - func def with params and return and body and var def and funcall
+* - func def with params and return and body and var def and funcall and if
+* - func def with params and return and body and var def and funcall and if and while
+* - func def with params and return and body and var def and funcall and if and while and return
+* - var def
+* - var def with assign expression
+* - var def with assign  funcall
+* - var def with assign  funcall and in params
+* - id with assign
+* - id with assign and funcall
+* - id with assign and funcall and in params
+* - id funcall
+* - if
+* - if else
+* - while 
+
+*/
 
 
 node_t* handle_param(node_t* node){
@@ -97,6 +121,19 @@ node_t* handle_type(node_t* node){ //what is difference between t_int a t_kw_int
     return  node;
 }
 
+node_t* hadnle_func_retType(node_t* node){
+    printf("funcRetType \n");
+    printf("100 current token type: %d\n", node->current->type);
+    if (node->current->type == T_ARROW){
+        node = get_next(node);
+        printf("103 current token type: %d\n", node->current->type);
+        node = handle_type(node);
+        node = get_next(node);
+    } 
+    return node;
+
+}
+
 node_t* handle_func_def(node_t* node){
     printf("funcDef \n");
     if (node->current->type != T_IDENTIFIER) {
@@ -112,18 +149,13 @@ node_t* handle_func_def(node_t* node){
     node = get_next(node);
     node = handle_param_list(node);
     printf("125 current token type: %d\n", node->current->type);
-    
-    //removed check for ) as its in handle_param_list
-    node = get_next(node);
-    if (node->current->type != T_ARROW) {  //check if arrow is there for node_t* return 
-        printf("133 current token type: %d\n", node->current->type);
-        printf("Error: Expected arrow\n");
+     if (node->current->type != T_RIGHT_PAREN){
         ThrowError(2);
-    }
+    } 
+    //removed check for ) as its in handle_param_list
+    printf("137 current token type: %d\n", node->current->type); 
     node = get_next(node);
-    node = handle_type(node);
-    printf("137 current token type: %d\n", node->current->type);
-    node = get_next(node);   
+    node = hadnle_func_retType(node);
     printf("139 current token type: %d\n", node->current->type);
     if (node->current->type == T_LEFT_BRACE) {
         node = get_next(node);

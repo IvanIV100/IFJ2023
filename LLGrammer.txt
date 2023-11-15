@@ -21,7 +21,9 @@
 <varDefOptional> -> <varDefAss>
 <varDefAss> -> e
 <varDefAss> -> = <AssignOps>
-<funcDef> -> func id ( <paramListFirst> ) -> <type> { <stmntList> <return> }
+<funcDef> -> func id ( <paramListFirst> ) <funcRetType> { <stmntList> <return> }
+<funcRetType> -> -> <type>
+<funcRetType> -> e
 <FuncCallOps> ->   = <AssignOps>
 <FuncCallOps> -> ( <InParamListFirst> )
 <AssignOps> ->  <expr>

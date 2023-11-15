@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+
+
+
 enum token_Category {
     TC_BRACKET,
     TC_OPERATORS,
@@ -92,4 +95,8 @@ typedef struct Token {
     tokenValue_t value;
 } Token;
 
+
+
+Token*scan();
+void free_token_Values(Token *token);
 

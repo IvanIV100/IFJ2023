@@ -1,0 +1,16 @@
+--TEST CASES--
+
+valid:
+--
+func bar(){
+}
+--
+func bar(X Y : Int){
+}
+--
+func bar(X Y : Int) -> String {
+}
+--
+func bar() -> String {
+}
+--

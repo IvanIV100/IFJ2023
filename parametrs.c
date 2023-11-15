@@ -1,4 +1,8 @@
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #include "parametrs.h"
+#define ALLOC_SIZE 4
 
 int parametr_init(Parametr *p){
     if (p == NULL)

@@ -1,8 +1,5 @@
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
 
-#define ALLOC_SIZE 4
+
 
 typedef struct{
 char *str;

@@ -1,6 +1,6 @@
 #include "symtable.h"
 
-/*int *tombstone; //pomocne pole, pri odstraneni symbolu z tabulky*/
+//int *tombstone; //pomocne pole, pri odstraneni symbolu z tabulky
 
 unsigned long HashFunction(char *str)
 {

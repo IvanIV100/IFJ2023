@@ -1,6 +1,6 @@
 #include "symtable.h"
 
-int *tombstone; //pomocne pole, pri odstraneni symbolu z tabulky
+/*int *tombstone; //pomocne pole, pri odstraneni symbolu z tabulky*/
 
 unsigned long HashFunction(char *str)
 {
@@ -15,10 +15,10 @@ unsigned long HashFunction(char *str)
 }
 
 void SymTableInit(SymTable *table){
-        tombstone = (int *)malloc(SYMTABLE_SIZE * sizeof(int));
+     /*   tombstone = (int *)malloc(SYMTABLE_SIZE * sizeof(int));*/
         for (int i = 0; i < SYMTABLE_SIZE; i++){
             (*table)[i] = NULL;
-            tombstone[i] = 0;
+           // tombstone[i] = 0;
 
         }
 
@@ -30,7 +30,7 @@ int InsertSymbol(SymTable *table, char *str){
 
     unsigned long hash = HashFunction(str);
 
-    while((*table)[hash] != NULL && !tombstone[hash]){
+    while((*table)[hash] != NULL/* && !tombstone[hash]*/){
         if (hash == HashFunction(str)-1)
             return -1; // error, udelalo to uz kolo
         
@@ -56,7 +56,7 @@ int InsertSymbol(SymTable *table, char *str){
     strcpy(temp->id, str);
     (*table)[hash] = temp;
     printf("Pridavam: %li\n", hash);
-    tombstone[hash] = 0;
+   // tombstone[hash] = 0;
 
     return 1;
 }
@@ -80,9 +80,9 @@ int RemoveSymbol(SymTable *table, char *str){
         (*table)[hash] = NULL;
     }
 
-    if (tombstone != NULL)
+   /*if (tombstone != NULL)
         tombstone[hash] = 1;
-
+*/
     else
         return -1; //chybí pomocné pole
     
@@ -119,7 +119,7 @@ int Searching(SymTable *table, char *str){ // funkce vracejici hash, aby se to n
             return -1; //retezec neni v tabulce
 
     while(strcmp((*table)[hash]->id, str)){
-        if ((*table)[hash] == NULL && !tombstone[hash])
+        if ((*table)[hash] == NULL/* && !tombstone[hash]*/)
             return -1; //error, symbol se nevyskytuje v symtable
 
         if (hash == HashFunction(str)-1)
@@ -155,8 +155,8 @@ int AddParametr(SymTable *table, char *str, char c){
 }
 
 void SymTableFree(SymTable *table){
-     if(tombstone != NULL)
-        free(tombstone);
+     /*if(tombstone != NULL)
+        free(tombstone);*/
      for (int i = 0; i < SYMTABLE_SIZE; i++) {
      if ((*table)[i] != NULL) {
         if((*table)[i]->id != NULL)
@@ -167,26 +167,28 @@ void SymTableFree(SymTable *table){
         }
      }
 }
-
+/*
 int main(){
 SymTable table;
+SymTable table1;
 SymTableInit(&table);
+SymTableInit(&table1);
 InsertSymbol(&table, "pole");
-if (InsertSymbol(&table, "pole") == -1)
+if (InsertSymbol(*table, "pole") == -1)
     printf("nepovedlo se\n");
 
 Symbol *symbol;
-InsertSymbol(&table, "poal");
-InsertSymbol(&table, "po");
-RemoveSymbol(&table, "pole");
-InsertSymbol(&table, "popal");
-if (AddVarDetails(&table, "popal", 2, true, 1) == -1)
+InsertSymbol(*table, "poal");
+InsertSymbol(*table, "po");
+RemoveSymbol(*table, "pole");
+InsertSymbol(*table, "popal");
+if (AddVarDetails(*table, "popal", 2, true, 1) == -1)
     printf("Neexistuje \n");
-InsertSymbol(&table, "pollal");
-AddParametr(&table, "popal", 'd');
-AddParametr(&table, "popal", 'i');
-symbol = GetSymbol(&table, "popal");
-AddParametr(&table, "popal", 'p');
+InsertSymbol(*table, "pollal");
+AddParametr(*table, "popal", 'd');
+AddParametr(*table, "popal", 'i');
+symbol = GetSymbol(*table, "popal");
+AddParametr(*table, "popal", 'p');
 if (symbol!=NULL){
     printf("string: %s\n", symbol->id);
     printf("init? %d\n", symbol->variable.init);
@@ -195,6 +197,8 @@ if (symbol!=NULL){
     printf("PArametr %s\n", symbol->parametr.str);
 }
 SymTableFree(&table);
+SymTableFree(&table1);
 
 return 0;
 }
+*/

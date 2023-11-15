@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "scanner.h"
+#include "symtable.h"
 
 
 typedef struct node {
@@ -13,6 +14,17 @@ typedef struct node {
     
 } node_t;
 
+
+typedef struct myInfo {
+    bool inFun;
+    struct symTabLVL *currentLVL;
+} myInfo;
+
+typedef struct symTabLVL {
+    SymTable *currentTab;
+    struct symTabLVL *parantLVL;
+    
+} symTabLVL;
 
 
 void parser();
@@ -32,3 +44,7 @@ node_t* handle_while(node_t* node);
 node_t* handle_statement(node_t* node);
 node_t* create_node();
 node_t* get_next(node_t* node);
+void copy_to_child(SymTable *parent, SymTable *child);
+void pop_level();
+void create_level();
+void init_myInfo();

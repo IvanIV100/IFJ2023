@@ -65,7 +65,7 @@ int AddFunctionDetails(SymTable *table, char *str, DataType returnType, bool def
 
 int AddVarDetails(SymTable *table, char *str, DataType type, bool init, VarOrLet vol);
 
-Symbol *Search(SymTable *table, char *str);
+Symbol *GetSymbol(SymTable *table, char *str);
 
 int Searching(SymTable *table, char *str);
 

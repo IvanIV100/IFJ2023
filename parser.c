@@ -15,6 +15,10 @@ xchoda00
 
 
 /* TODO 
+* - symtabLVL
+    -clean up
+    -symtab insert
+
 * - sort out return validity in func
 * - fix mem free of linked list
 * - optional else?
@@ -25,15 +29,7 @@ xchoda00
 
 * ---TESTS---
 * valid:
-* - func def
-* - func def with params
-* - func def with params and return
-* - func def with params and return and body
-* - func def with params and return and body and var def
-* - func def with params and return and body and var def and funcall
-* - func def with params and return and body and var def and funcall and if
-* - func def with params and return and body and var def and funcall and if and while
-* - func def with params and return and body and var def and funcall and if and while and return
+* 
 * - var def
 * - var def with assign expression
 * - var def with assign  funcall
@@ -45,9 +41,17 @@ xchoda00
 * - if
 * - if else
 * - while 
+* x func def 
+* x func def w retT
+* - func def with body
+* - func def with retT and body
+* x func def with params
+* - func def with params and returnt
+* - func def with params and returnt and body
 
 */
 
+myInfo *runInfo;
 
 node_t* handle_param(node_t* node){
     printf("handle_param \n");
@@ -486,9 +490,68 @@ node_t* create_node(){
     return node;
 }
 
+void init_myInfo(){
+    runInfo = malloc(sizeof(struct myInfo));
+    if (runInfo == NULL){
+        ThrowError(99);
+    }
+    runInfo->inFun = false;
+    runInfo->currentLVL = NULL;
+    create_level();
+}
 
+void create_level(){
+    symTabLVL *current_level = malloc(sizeof(struct symTabLVL));
+    if (current_level == NULL){
+        ThrowError(99);
+    }
+    SymTable newSymTab;
+    printf("tu\n");
+    SymTableInit(&newSymTab);
+    printf("tam\n");
+    current_level->currentTab = &newSymTab;
+    if (runInfo->currentLVL == NULL){
+        current_level->parantLVL = NULL;
+    } else {
+        current_level->parantLVL = runInfo->currentLVL;
+        copy_to_child(current_level->parantLVL->currentTab, current_level->currentTab);
+    }
+    runInfo->currentLVL = current_level;
+}
+
+void pop_level(){
+    printf("pred\n");
+    
+    //SymTableFree(runInfo->currentLVL->currentTab); //maybe bad mem free
+    printf("po1\n");
+    runInfo->currentLVL->currentTab = NULL;
+    runInfo->currentLVL = runInfo->currentLVL->parantLVL;
+}
+
+void copy_to_child(SymTable *parent, SymTable *child){
+
+}
 
 void parser(){
+    Symbol *result = NULL;
+    init_myInfo();
+    create_level();
+    InsertSymbol(runInfo->currentLVL->currentTab, "A");
+    AddVarDetails(runInfo->currentLVL->currentTab, "A", INT, true, var);
+    result = GetSymbol(runInfo->currentLVL->currentTab, "A");
+    printf("var or let : %d\n", result->variable.datatype);
+    create_level();
+    InsertSymbol(runInfo->currentLVL->currentTab, "A");
+    AddVarDetails(runInfo->currentLVL->currentTab, "A", STR, true, let);
+    result = GetSymbol(runInfo->currentLVL->currentTab, "A");
+    printf("var or let : %d\n", result->variable.datatype);
+    pop_level();
+    result = GetSymbol(runInfo->currentLVL->currentTab, "A");
+    printf("var or let : %d\n", result->variable.datatype);
+
+    exit(0);
+    
+    
     node_t *node = create_node();
     node->current = scan();
 

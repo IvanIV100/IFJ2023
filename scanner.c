@@ -8,9 +8,6 @@
 
 /*
 Things to do:
-1) kdyz nedostane nic na vstup je to nekonecne zacikleny a ceka na EOF coz mu nikdy neprijde (timhle se nemysli prazdny file, ale proste spusteno ./scanner )
-2) ID muzou byt delsi nez 256 znaku a Cislo delsi nez 256
-
 4) Kdyz nastane Error tak to upravit at se stane to co se stat ma (mainly malloc)
 
 
@@ -105,29 +102,52 @@ int isKeyword(char *str) {
 }
 
 // Divame jestli je to ID
-Token* is_Id(char curr) { 
-                            
+Token* is_Id(char curr) {
+    Token* token = createToken(T_IDENTIFIER, TC_ID);
+    int Id_Length=50;
+    token->value.ID_name = malloc(sizeof(char) * Id_Length);
 
-    char identifier[256];                               // max delka id 256
+    if (token->value.ID_name == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        free(token->value.ID_name);
+        token->Category = TC_ERR;
+        token->type = T_ERORR;
+        return token;
+    }
+
     int i = 0;
-    identifier[i] = curr;                               // prvni pismeno uz vime
+    token->value.ID_name[i] = curr; // First character of the identifier
     i++;
 
     curr = getchar();
-    while (isalnum(curr) || curr == '_') {          // nacteme vse co tam patri bud a-z A-Z _ 0-9
-        identifier[i] = curr;
+    while (isalnum(curr) || curr == '_') {
+        // Check if more memory is needed
+        if (i >= Id_Length - 5) { // -1 to leave room for the null terminator
+            char *temp = realloc(token->value.ID_name, sizeof(char) * (Id_Length * 2));
+            Id_Length = Id_Length * 2; 
+            if (temp == NULL) {
+                fprintf(stderr, "Memory reallocation failed\n");
+                free(token->value.ID_name);
+                token->Category = TC_ERR;
+                token->type = T_ERORR;
+                return token;
+            }
+            token->value.ID_name = temp;
+        }
+
+        token->value.ID_name[i] = curr;
         i++;
         curr = getchar();
     }
 
-    identifier[i] = '\0';                           // konec seznamu
+    token->value.ID_name[i] = '\0'; // Null-terminate the identifier
 
-    int keywordi = isKeyword(identifier);       // pro kontrolu jestli to neni kw
+    int keywordi = isKeyword(token->value.ID_name);
 
-
-    // nillable muze se dat jincimu tokenu
     if (keywordi >= 0) {
-        Token* token = createToken(keyword_types[keywordi], TC_KEYWORDS);
+        token->type=keyword_types[keywordi];
+        token->Category=TC_KEYWORDS;
+        
         if (keywordi < 3) {  // If it's Int, String, or Double
             token->Category = TC_TYPE;
             token->value.nillable = 0;
@@ -138,24 +158,17 @@ Token* is_Id(char curr) {
                 ungetc(curr, stdin);
             }
         }
+        free(token->value.ID_name);
         return token;
-    }
-
-    else { 
-        Token* token = createToken(T_IDENTIFIER, TC_ID);
-        token->value.ID_name = malloc(strlen(identifier) + 1);
-        if (token->value.ID_name == NULL) {
-            free(token->value.ID_name);
-            token->value.ID_name = NULL;
-            token->Category = TC_ERR;
-            token->type = T_ERORR;
-        }          
-        strcpy(token->value.ID_name, identifier);                    
-        token->value.nillable=0;
-        if (curr=='!')
-            token->value.nillable=2;
-        else
+    } 
+    
+    else {
+        token->value.nillable = 0;
+        if (curr == '!') {
+            token->value.nillable = 2;
+        } else {
             ungetc(curr, stdin);
+        }
         return token;
     }
 }
@@ -249,6 +262,7 @@ int escape_Char(Token *token,int i){
 Token* isString(char curr) {     // je to string jeste multi 
     Token* token = createToken(T_STRING, TC_VALUE);
     token->value.stringVal = malloc(30);
+
     if (token->value.stringVal == NULL) {
         free(token->value.stringVal);
         token->value.stringVal = NULL;
@@ -446,10 +460,9 @@ void free_token_Values(Token *token){       // funkce ktera uvolni pamet kterou 
 Token* scan() {                             // proste GetToken da ti dasli Token asi prejmenuji whatever
     char curr = getNotWhiteChar();         // next slouzi jako takovy idiot ktery se diva do predu
     char next = curr;
-
-    if (curr!='/')                          // debug
-        printf("%c",curr);
-
+    //printf("%c",curr);
+    //if current >= a || <= z || >= A || <= Z -> curr = letter
+    
     switch (curr) {
         case '/':
             if (SkipComment() == 1) {      
@@ -606,43 +619,85 @@ Token* scan() {                             // proste GetToken da ti dasli Token
 
 
 
-int main() {                                    // best debuging ever cant change my mind
-    Token* xd;
-    xd=scan();
-    while(xd->Category!=TC_ERR){
-        free_token_Values(xd);
-        xd=scan();
-        printf("--%d\n",xd->type);
-        if(xd->type==T_STRING){
-            printf("xx %s xx\n",xd->value.stringVal);
-        }
+
+
+
+
+
+/*
+const char* token_names[] = {
+    "T_LEFT_PAREN",
+    "T_RIGHT_PAREN",
+    "T_LEFT_BRACE",
+    "T_RIGHT_BRACE",
+    "T_LEFT_BRACKET",
+    "T_RIGHT_BRACKET",
+    "T_DIV",
+    "T_ASSIGN",
+    "T_PLUS",
+    "T_MINUS",
+    "T_MUL",
+    "T_EQUALS",
+    "T_NOT_EQUALS",
+    "T_LESS_THAN",
+    "T_LESS_EQUAL",
+    "T_GREATER",
+    "T_GREATER_EQUAL",
+    "T_COMMA",
+    "T_COLON",
+    "T_ARROW",
+    "T_DOUBLE_QUESTION_MARK",
+    "T_UNDERSCORE",
+    "T_DQUOTE",
+    "T_ELSE",
+    "T_FUNC",
+    "T_IF",
+    "T_LET",
+    "T_NIL",
+    "T_RETURN",
+    "T_VAR",
+    "T_WHILE",
+    "T_KW_STRING",
+    "T_KW_INT",
+    "T_KW_DOUBLE",
+    "T_IDENTIFIER",
+    "T_MULTILINE_STRING",
+    "T_STRING",
+    "T_INT",
+    "T_DOUBLE",
+    "T_EOF",
+    "T_ERROR"
+};
+
+
+
+
+
+
+
+
+ int main() {                                    // best debuging ever cant change my mind
+     Token* xd;
+     xd=scan();
+     while(xd->Category!=TC_ERR){
+         free_token_Values(xd);
+         xd=scan();
+         printf("--%s\n", token_names[xd->type]);
+
+         if(xd->type==T_STRING){
+             printf("xx %s xx \n",xd->value.stringVal);
+         }
         else if(xd->type==T_MULTILINE_STRING){
-            printf("xx %s xx\n",xd->value.stringVal);
-        }
-    }
-    free_token_Values(xd);
-    
-    /*
-    while(xd->Category!=TC_ERR){
-        free_token_Values(xd);
-        xd=scan();
-        printf("--%d\n",xd->type);
-        if (xd->type==T_INT)
-            printf("%d\n",xd->value.integer);
-        else if(xd->type==T_DOUBLE)
-            printf("%f\n",xd->value.decimal);
-        else if(xd->type==T_STRING){
-            printf("xx %s xx\n",xd->value.stringVal);
-        }
+             printf("xx %s xx \n",xd->value.stringVal);
+         }
         else if(xd->type==T_MULTILINE_STRING){
-            printf("xx %s xx\n",xd->value.stringVal);
+            printf("xx %s xx \n",xd->value.stringVal);
         }
         else if(xd->type==T_IDENTIFIER){
-            printf("%s",xd->value.ID_name);
-        }
-    }
-    free_token_Values(xd);
-    return 0;*/
-}
+            printf("xx %s xx \n",xd->value.ID_name);}
+     }
+     free_token_Values(xd);
+ }
+ 
 
-
+*/

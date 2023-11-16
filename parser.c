@@ -54,31 +54,23 @@ xchoda00
 myInfo *runInfo;
 
 node_t* handle_param(node_t* node){
-    printf("handle_param \n");
-    printf("HP current token type: %d\n", node->current->type);
     if (node->current->type == T_UNDERSCORE){
         //handle in symtab _ case
     } else if (node->current->type == T_IDENTIFIER){
         //symtab assign
     } else {
-        printf("Error: Expected identifier/_\n");
         ThrowError(2);
     }
     node = get_next(node);
-    printf("49 current token type: %d\n", node->current->type);
     if (node->current->type != T_IDENTIFIER){
-        printf("Error: Expected identifier\n");
         ThrowError(2);
     }
     node = get_next(node);
-    printf("55 current token type: %d\n", node->current->type);
     if (node->current->type != T_COLON){
-        printf("Error: Expected colon\n");
         ThrowError(2);
     }
     node = get_next(node);
 
-    printf("62 current token type: %d\n", node->current->type);
     node = handle_type(node);
 
     return  node;
@@ -86,20 +78,16 @@ node_t* handle_param(node_t* node){
 
 
 node_t* handle_param_list(node_t* node){
-    printf("handle_param_list \n");
     if (node->current->type == T_RIGHT_PAREN){
-        printf("end of param list\n");
         return node;
     } else {
         node = handle_param(node);
     }
     node = get_next(node);
-    printf("76 current token type: %d\n", node->current->type);
     if (node->current->type == T_COMMA){    
         node = get_next(node);
-        printf("79 current token type: %d\n", node->current->type);
         if (node->current->type == T_RIGHT_PAREN){            // (param,) invalid
-            printf("Error: bad end\n");
+
             ThrowError(2);
         }
         node = handle_param_list(node);
@@ -110,8 +98,7 @@ node_t* handle_param_list(node_t* node){
 }
 
 node_t* handle_type(node_t* node){ //what is difference between t_int a t_kw_int
-    printf("handle_type \n");
-    printf("83 current token type: %d\n", node->current->type);
+
     if (node->current->type == T_KW_INT){
         //assign int in symtable with ? check
     } else if (node->current->type == T_KW_DOUBLE){
@@ -119,18 +106,14 @@ node_t* handle_type(node_t* node){ //what is difference between t_int a t_kw_int
     } else if (node->current->type == T_KW_STRING){
         //assign str in symtable with ? check
     } else {
-        printf("Error: Expected type\n");
         ThrowError(2);
     }
     return  node;
 }
 
 node_t* hadnle_func_retType(node_t* node){
-    printf("funcRetType \n");
-    printf("100 current token type: %d\n", node->current->type);
     if (node->current->type == T_ARROW){
         node = get_next(node);
-        printf("103 current token type: %d\n", node->current->type);
         node = handle_type(node);
         node = get_next(node);
     } 
@@ -139,125 +122,88 @@ node_t* hadnle_func_retType(node_t* node){
 }
 
 node_t* handle_func_def(node_t* node){
-    printf("funcDef \n");
     if (node->current->type != T_IDENTIFIER) {
-        printf("112 Error: Expected identifier\n");
         ThrowError(2);
     }
     //symtable entry of new func with id
     node = get_next(node);
     if (node->current->type != T_LEFT_PAREN) {
-        printf("119 Error: Expected left paren\n");
         ThrowError(2);
      }
     node = get_next(node);
     node = handle_param_list(node);
-    printf("125 current token type: %d\n", node->current->type);
      if (node->current->type != T_RIGHT_PAREN){
         ThrowError(2);
     } 
     //removed check for ) as its in handle_param_list
-    printf("137 current token type: %d\n", node->current->type); 
     node = get_next(node);
     node = hadnle_func_retType(node);
-    printf("139 current token type: %d\n", node->current->type);
     if (node->current->type == T_LEFT_BRACE) {
         node = get_next(node);
-        printf("142 current token type: %d\n", node->current->type);
         node = handle_statement_list(node);
     } else {
-        printf("token type %d\n", node->current->type);
-        printf("Error: Expected left brace\n");
         ThrowError(2);
     }
     // tu je : why  
-    printf("138 current token type: %d\n", node->current->type);
     if (node->current->type != T_RIGHT_BRACE) {
-        printf("Error: Expected right brace\n");
         ThrowError(2);
     }
     return node;
 }
 
 node_t* handle_in_param(node_t* node){
-    printf("inParam \n");
     if (node->current->type == T_IDENTIFIER){
         node = get_next(node);
-        printf("150 current token type: %d\n", node->current->type);
         if (node->current->type == T_COLON){
             node = get_next(node);
-            printf("153 current token type: %d\n", node->current->type);
             if (node->current->type == T_IDENTIFIER){
-                printf("156 current token type: %d\n", node->current->type);
                 return  node;
 
             } else if (node->current->type == T_INT || node->current->type == T_STRING || node->current->type == T_DOUBLE){
-                printf("160 current token type: %d\n", node->current->type);
+               
                 node = get_next(node);
-                printf("162 current token type: %d\n", node->current->type);
                 return  node;
             } else {
-                printf("Error: Param failed\n");
                 ThrowError(2);
             }
-            printf("Error: Param failed\n");
             ThrowError(2);
         } 
         return  node;
     }
-    printf("Error: Param failed\n");
     ThrowError(2);
     return  node;
 }
 
 node_t* handle_in_param_list(node_t* node){
-    printf("inParamList \n");
-    printf("174 current token type: %d\n", node->current->type);
     if(node->current->type == T_RIGHT_PAREN){
         return  node;
     }
-    printf("179 current token type: %d\n", node->current->type);
     node = handle_in_param(node);
-     printf("180 current token type: %d\n", node->current->type);
     if (node->current->type == T_COMMA){
         
         node = get_next(node);
-        printf("181 current token type: %d\n", node->current->type);
         if(node->current->type == T_RIGHT_PAREN){
-            printf("Error: Not right\n");
             ThrowError(2);
         }
         node = handle_in_param_list(node);
-        printf("188 current token type: %d\n", node->current->type);
-        printf("190 current token type: %d\n", node->current->type);  
     }
-     printf("193 current token type: %d\n", node->current->type);
     if (node->current->type != T_RIGHT_PAREN){
-        printf("Error: Expected right paren\n");
         ThrowError(2);
     }
-    printf("196 current token type: %d\n", node->current->type);
     return  node;
 }
 
 node_t* handle_assign_ops(node_t* node){ 
-    printf("assignOps \n");
-    printf("196 curr token %d \n", node->current->type);
     if (node->current->type != T_ASSIGN) {
         return node;
     }
     node = get_next(node);
     if (node->current->type == T_IDENTIFIER){
-        printf("197 current token type: %d\n", node->current->type);
         node = get_next(node);
-        printf("200 current token type: %d\n", node->current->type);
         if(node->current->type == T_LEFT_PAREN){
             node = get_next(node);
-            printf("203 current token type: %d\n", node->current->type);
-            node = handle_in_param_list(node);
-            printf("205 current token type: %d\n", node->current->type);
+            node = handle_in_param_list(node);;
             if (node->current->type != T_RIGHT_PAREN){
-                printf("Error: Expected right paren\n");
                 ThrowError(2);
             }
             return node;
@@ -272,7 +218,6 @@ node_t* handle_assign_ops(node_t* node){
 }
 
 node_t* handle_var_def_ops(node_t* node){
-    printf("varDefOps \n");
     if (node->current->type == T_COLON){
         node = get_next(node);
         node = handle_type(node);
@@ -289,9 +234,7 @@ node_t* handle_var_def_ops(node_t* node){
 }
 
 node_t* handle_var_def(node_t* node){
-    printf("varDef \n");
     if (node->current->type != T_IDENTIFIER) {
-        printf("Error: Expected identifier\n");
         ThrowError(2);
     }
     node = get_next(node);
@@ -300,34 +243,24 @@ node_t* handle_var_def(node_t* node){
 }
 
 node_t* handle_funcall_ops(node_t* node){
-    printf("funcallOps \n");
-    printf("254 token type %d\n", node->current->type);
     if (node->current->type == T_ASSIGN){
         node = get_next(node);
-        printf("257 token type %d\n", node->current->type);
          node = handle_assign_ops(node);
         return node;
     } else if (node->current->type == T_LEFT_PAREN){
         node = get_next(node);
-        printf("261 token type %d\n", node->current->type);
         node = handle_in_param_list(node);
-        printf("265 token type %d\n", node->current->type); 
         if (node->current->type != T_RIGHT_PAREN){
-            printf("Error: Expected right paren\n");
             ThrowError(2);
         } 
         return  node;
     } else {
         return node;
-        // printf("261 token type %d\n", token->type);
-        // printf("261 Error: Expected assign or left paren\n");
-        // ThrowError(2);
     }
     return node;
 }
 
 node_t* handle_cond_ops(node_t* node){
-    printf("condOps \n");
     if (node->current->type == T_LET){
         node = get_next(node);
         if (node->current->type == T_IDENTIFIER){
@@ -342,7 +275,6 @@ node_t* handle_cond_ops(node_t* node){
 }
 
 node_t* handle_if(node_t* node){
-    printf("if \n");
     node = handle_cond_ops(node);
 
     node = get_next(node);
@@ -352,18 +284,16 @@ node_t* handle_if(node_t* node){
 
         node = get_next(node);
         if (node->current->type != T_RIGHT_BRACE){
-            printf("Error: Expected right brace\n");
             ThrowError(2);
         } else {
             
             
             if (node->current->type != T_ELSE){       //optional else ?
-                printf("Error: Expected else\n");
+          
                 ThrowError(2);
             }
             node = get_next(node);
             if (node->current->type != T_LEFT_BRACE){
-                printf("Error: Expected left brace\n");
                 ThrowError(2);
             } else {
                 
@@ -371,24 +301,21 @@ node_t* handle_if(node_t* node){
 
                 node = get_next(node);
                 if (node->current->type != T_RIGHT_BRACE){ //maybe insufficient check for {} counter
-                    printf("Error: Expected right brace\n");
+
                     ThrowError(2);
                 }
             }
         }
     } else {
-        printf("Error: Expected left brace\n");
         ThrowError(2);
     }
     return node;
 }
 
 node_t* handle_while(node_t* node){
-    printf("while \n");
     node = handle_cond_ops(node);
     node = get_next(node);
     if (node->current->type != T_LEFT_BRACE){
-        printf("Error: Expected left brace\n");
         ThrowError(2);
     }
     node = get_next(node);
@@ -396,17 +323,13 @@ node_t* handle_while(node_t* node){
     
     node = get_next(node);
     if (node->current->type != T_RIGHT_BRACE){
-        printf("Error: Expected right brace\n");
         ThrowError(2);
     }
     return node;
 }
 
 node_t* handle_statement_list(node_t* node){
-    printf("stmntList \n");
-    printf("355 stmtntList current token type: %d\n", node->current->type);
     if (node->current->type == T_RIGHT_BRACE ){
-        printf("RB return \n");
         return node;
     }
     node = handle_statement(node);
@@ -415,21 +338,16 @@ node_t* handle_statement_list(node_t* node){
 }
 
 node_t* handle_statement(node_t* node){
-    printf("stmnt \n");
     switch (node->current->type){
         case T_LET:
         case T_VAR:
             node = get_next(node);
-            printf("356 token type %d\n", node->current->type);
             node = handle_var_def(node);
             break;
 
         case T_IDENTIFIER:
-            printf("362 token type %d\n", node->current->type);
             node = get_next(node);
             node = handle_funcall_ops(node);
-            printf("366 token type %d\n", node->current->type);
-            printf("367 token type %d\n", node->current->type);
             break;
         case T_IF:
             node = get_next(node);
@@ -447,10 +365,8 @@ node_t* handle_statement(node_t* node){
             exit(0);
         default: 
             node = get_next(node);
-            printf("391 token type %d\n", node->current->type);
             return node;
     }
-    printf("392 token type %d\n", node->current->type);
     node = get_next(node);
     return node;
 }
@@ -471,7 +387,6 @@ void free_node_list(node_t* node){
 node_t* get_next(node_t* current){
     node_t *node = create_node();
     node->current = scan();
-    printf("token GEN %d\n", node->current->type);
     current->right = node;
     node->left = current;
 
@@ -506,51 +421,29 @@ void create_level(){
         ThrowError(99);
     }
     SymTable newSymTab;
-    printf("tu\n");
     SymTableInit(&newSymTab);
-    printf("tam\n");
     current_level->currentTab = &newSymTab;
     if (runInfo->currentLVL == NULL){
         current_level->parantLVL = NULL;
     } else {
         current_level->parantLVL = runInfo->currentLVL;
-        copy_to_child(current_level->parantLVL->currentTab, current_level->currentTab);
+        //copy_to_child(current_level->parantLVL->currentTab, current_level->currentTab);
     }
     runInfo->currentLVL = current_level;
 }
 
 void pop_level(){
-    printf("pred\n");
     
     //SymTableFree(runInfo->currentLVL->currentTab); //maybe bad mem free
-    printf("po1\n");
+
     runInfo->currentLVL->currentTab = NULL;
     runInfo->currentLVL = runInfo->currentLVL->parantLVL;
 }
 
-void copy_to_child(SymTable *parent, SymTable *child){
 
-}
 
 void parser(){
-    Symbol *result = NULL;
-    init_myInfo();
-    create_level();
-    InsertSymbol(runInfo->currentLVL->currentTab, "A");
-    AddVarDetails(runInfo->currentLVL->currentTab, "A", INT, true, var);
-    result = GetSymbol(runInfo->currentLVL->currentTab, "A");
-    printf("var or let : %d\n", result->variable.datatype);
-    create_level();
-    InsertSymbol(runInfo->currentLVL->currentTab, "A");
-    AddVarDetails(runInfo->currentLVL->currentTab, "A", STR, true, let);
-    result = GetSymbol(runInfo->currentLVL->currentTab, "A");
-    printf("var or let : %d\n", result->variable.datatype);
-    pop_level();
-    result = GetSymbol(runInfo->currentLVL->currentTab, "A");
-    printf("var or let : %d\n", result->variable.datatype);
-
-    exit(0);
-    
+   
     
     node_t *node = create_node();
     node->current = scan();

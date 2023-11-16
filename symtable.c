@@ -1,6 +1,6 @@
 #include "symtable.h"
 
-int *tombstone; //pomocne pole, pri odstraneni symbolu z tabulky
+//int *tombstone; //pomocne pole, pri odstraneni symbolu z tabulky
 
 unsigned long HashFunction(char *str)
 {
@@ -15,10 +15,10 @@ unsigned long HashFunction(char *str)
 }
 
 void SymTableInit(SymTable *table){
-        tombstone = (int *)malloc(SYMTABLE_SIZE * sizeof(int));
+     /*   tombstone = (int *)malloc(SYMTABLE_SIZE * sizeof(int));*/
         for (int i = 0; i < SYMTABLE_SIZE; i++){
             (*table)[i] = NULL;
-            tombstone[i] = 0;
+           // tombstone[i] = 0;
 
         }
 
@@ -30,7 +30,7 @@ int InsertSymbol(SymTable *table, char *str){
 
     unsigned long hash = HashFunction(str);
 
-    while((*table)[hash] != NULL && !tombstone[hash]){
+    while((*table)[hash] != NULL/* && !tombstone[hash]*/){
         if (hash == HashFunction(str)-1)
             return -1; // error, udelalo to uz kolo
         
@@ -49,14 +49,14 @@ int InsertSymbol(SymTable *table, char *str){
     temp->id = malloc(strlen(str) + 1);
     if (temp->id == NULL)
         return -1;
-
     if (parametr_init(&temp->parametr) == -1)
         return -1;
 
+    temp->type = 2; //zatim neni funkce ani var
+
     strcpy(temp->id, str);
     (*table)[hash] = temp;
-    printf("Pridavam: %li\n", hash);
-    tombstone[hash] = 0;
+   // tombstone[hash] = 0;
 
     return 1;
 }
@@ -80,13 +80,11 @@ int RemoveSymbol(SymTable *table, char *str){
         (*table)[hash] = NULL;
     }
 
-    if (tombstone != NULL)
+   /*if (tombstone != NULL)
         tombstone[hash] = 1;
-
+*/
     else
         return -1; //chybí pomocné pole
-    
-     printf("odstranuju: %d\n", hash);
 
     return 1;
 }
@@ -119,7 +117,7 @@ int Searching(SymTable *table, char *str){ // funkce vracejici hash, aby se to n
             return -1; //retezec neni v tabulce
 
     while(strcmp((*table)[hash]->id, str)){
-        if ((*table)[hash] == NULL && !tombstone[hash])
+        if ((*table)[hash] == NULL/* && !tombstone[hash]*/)
             return -1; //error, symbol se nevyskytuje v symtable
 
         if (hash == HashFunction(str)-1)
@@ -155,8 +153,8 @@ int AddParametr(SymTable *table, char *str, char c){
 }
 
 void SymTableFree(SymTable *table){
-     if(tombstone != NULL)
-        free(tombstone);
+     /*if(tombstone != NULL)
+        free(tombstone);*/
      for (int i = 0; i < SYMTABLE_SIZE; i++) {
      if ((*table)[i] != NULL) {
         if((*table)[i]->id != NULL)
@@ -168,33 +166,69 @@ void SymTableFree(SymTable *table){
      }
 }
 
-// int main(){
-// SymTable table;
-// SymTableInit(&table);
-// InsertSymbol(&table, "pole");
-// if (InsertSymbol(&table, "pole") == -1)
-//     printf("nepovedlo se\n");
+void copy_to_child(SymTable *parent, SymTable *current) {
+    if(parent == NULL || current == NULL)
+        return;
+    for (int i = 0; i < SYMTABLE_SIZE; i++) {
+        if ((*parent)[i] != NULL) {
+            Symbol *temp = malloc(sizeof(Symbol));
+            temp->id = malloc(strlen((*parent)[i]->id) + 1);
+            if (temp->id == NULL)
+                return;
+            strcpy(temp->id, (*parent)[i]->id);
 
-// Symbol *symbol;
-// InsertSymbol(&table, "poal");
-// InsertSymbol(&table, "po");
-// RemoveSymbol(&table, "pole");
-// InsertSymbol(&table, "popal");
-// if (AddVarDetails(&table, "popal", 2, true, 1) == -1)
-//     printf("Neexistuje \n");
-// InsertSymbol(&table, "pollal");
-// AddParametr(&table, "popal", 'd');
-// AddParametr(&table, "popal", 'i');
-// symbol = GetSymbol(&table, "popal");
-// AddParametr(&table, "popal", 'p');
-// if (symbol!=NULL){
-//     printf("string: %s\n", symbol->id);
-//     printf("init? %d\n", symbol->variable.init);
-//     printf("datatype %d\n", symbol->variable.datatype);
-//     printf("VAR or LET %d\n", symbol->variable.VoL);
-//     printf("PArametr %s\n", symbol->parametr.str);
-// }
-// SymTableFree(&table);
+            temp->type = (*parent)[i]->type;
+            if (temp->type == 0){ //var
+                temp->variable = (*parent)[i]->variable;
+            }
+            else if (temp->type == 1){ //func
+                temp->function = (*parent)[i]->function;
+                temp->parametr.str = malloc((*parent)[i]->parametr.alloc_size);
+                if(temp->parametr.str == NULL)
+                    return;
+                strcpy(temp->parametr.str, (*parent)[i]->parametr.str);
+                temp->parametr.length = (*parent)[i]->parametr.length;
+                temp->parametr.alloc_size = (*parent)[i]->parametr.alloc_size;
+            }
+            else{
+                   if (parametr_init(&temp->parametr) == -1)
+                    return;
+            }
+           (*current)[i]= temp;
+        }
+            }    }
 
-// return 0;
-// }
+/*
+int main(){
+SymTable table;
+SymTable table1;
+SymTableInit(&table);
+SymTableInit(&table1);
+InsertSymbol(&table, "pole");
+if (InsertSymbol(&table, "pole") == -1)
+    printf("nepovedlo se\n");
+
+Symbol *symbol;
+InsertSymbol(&table, "poal");
+InsertSymbol(&table, "po");
+RemoveSymbol(&table, "pole");
+InsertSymbol(&table, "popal");
+if (AddFunctionDetails(&table, "popal", 2, 1) == -1)
+    printf("Neexistuje \n");
+InsertSymbol(&table, "pollal");
+AddParametr(&table, "popal", 'd');
+AddParametr(&table, "popal", 'i');
+copy_to_child(&table, &table1);
+symbol = GetSymbol(&table1, "popal");
+AddParametr(&table, "popal", 'p');
+if (symbol!=NULL){
+    printf("string: %s\n", symbol->id);
+    printf("init? %d\n", symbol->function.ReturnType);
+    printf("datatype %d\n", symbol->function.defined);
+    printf("PArametr %s\n", symbol->parametr.str);
+}
+SymTableFree(&table);
+SymTableFree(&table1);
+
+return 0;
+}*/

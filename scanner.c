@@ -255,7 +255,8 @@ int escape_Char(Token *token,int i){
 
             
         default:                        // Yoo zadal jsi neco co neni escape char escapni zivot 
-            return 0; 
+        ungetc(next,stdin);
+        return 0; 
     }
 }
 
@@ -322,6 +323,13 @@ Token* isMultiLineString() {
     int i = 0;
 
     char curr = getchar();
+    if (curr != '\n'){                // chyba spatne zapsany Multine line string """ musi byt na samostatnem radku
+        token->Category = TC_ERR;
+        token->type = T_ERORR;
+        free(token->value.stringVal);
+        return token;
+    }
+    curr = getchar();                   // prvni \n co nasleduje za """ ma byt ignorovan
 
     while (curr != EOF) {
         if (i >= length - 8) {  
@@ -335,11 +343,7 @@ Token* isMultiLineString() {
         if (curr == '\\') {
             alright = escape_Char(token,i);
             if (alright == 0){
-                printf("Here");
-                free(token->value.stringVal);
-                token->Category=TC_ERR;
-                token->type=T_ERORR;
-                return token;
+                addChar(curr,i,token);
             }
             i++;  
         } 
@@ -461,7 +465,6 @@ Token* scan() {                             // proste GetToken da ti dasli Token
     char curr = getNotWhiteChar();         // next slouzi jako takovy idiot ktery se diva do predu
     char next = curr;
     //printf("%c",curr);
-    //if current >= a || <= z || >= A || <= Z -> curr = letter
     
     switch (curr) {
         case '/':
@@ -685,13 +688,7 @@ const char* token_names[] = {
          printf("--%s\n", token_names[xd->type]);
 
          if(xd->type==T_STRING){
-             printf("xx %s xx \n",xd->value.stringVal);
-         }
-        else if(xd->type==T_MULTILINE_STRING){
-             printf("xx %s xx \n",xd->value.stringVal);
-         }
-        else if(xd->type==T_MULTILINE_STRING){
-            printf("xx %s xx \n",xd->value.stringVal);
+            printf("xx %s xx\n",xd->value.stringVal);
         }
         else if(xd->type==T_IDENTIFIER){
             printf("xx %s xx \n",xd->value.ID_name);}

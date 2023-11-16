@@ -15,10 +15,10 @@
 <paramList> -> , <param> <paramList>
 <param> -> id id : <Type>
 <param> -> _ id : <Type>
-<varDef> -> let/var id <varDefOptional>
+<varDef> -> let/var id <varDefOptional>  
 <varDefOptional> -> e
 <varDefOptional> -> : <type> <varDefAss>
-<varDefOptional> -> <varDefAss>
+<varDefOptional> -> <varDefAss> //check if in func
 <varDefAss> -> e
 <varDefAss> -> = <AssignOps>
 <funcDef> -> func id ( <paramListFirst> ) <funcRetType> { <stmntList> <return> }

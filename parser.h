@@ -14,11 +14,12 @@ typedef struct node {
     
 } node_t;
 
-
-typedef struct myInfo {
-    bool inFun;
+typedef struct runTimeInfo {
+    SymTable *globalFrame;
+    SymTable *builtInFunctions;
     struct symTabLVL *currentLVL;
-} myInfo;
+
+} runTimeInfo;
 
 typedef struct symTabLVL {
     SymTable *currentTab;
@@ -44,7 +45,11 @@ node_t* handle_while(node_t* node);
 node_t* handle_statement(node_t* node);
 node_t* create_node();
 node_t* get_next(node_t* node);
-void copy_to_child(SymTable *parent, SymTable *child);
+void fill_builtin_symtab(SymTable *builtIn);
+void define_var_ST(node_t* node);
+void assign_varType_ST(node_t* node, int type, int nillable);
+void check_type();
+void define_func_ST();
 void pop_level();
 void create_level();
 void init_myInfo();

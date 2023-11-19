@@ -10,8 +10,6 @@ xchoda00
 #include <ctype.h>
 #include <string.h>
 #include "parser.h"
-#include "scanner.h" //change to scanner.h
-#include "error.h"
 
 
 /* TODO 
@@ -19,13 +17,16 @@ xchoda00
     -clean up
     -symtab insert
 
+* - Documentation
+    -add headers to C files
+    -add comments to functions
 
-* - fix mem free of linked list
-* - optional else?
-* - handle built in funcs
-* - check if err output is correct
-* - check if "var name" is valid
-* - expression parser
+* - Random
+    -fix mem free of linked list
+    -optional else?
+    -handle built in funcs
+    -check if err output is correct
+    -expression parser
 
 
 */
@@ -89,7 +90,7 @@ node_t* handle_type(node_t* node){ //what is difference between t_int a t_kw_int
         ThrowError(2);
     }
     
-    assign_var_ST(node, type, node->current->value.nillable);
+    assign_varType_ST(node, type, node->current->value.nillable);
     return  node;
 }
 

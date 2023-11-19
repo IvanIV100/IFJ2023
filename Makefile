@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -Wpedantic -g -lm
-SRC = parser.c  symtable.c scanner.c parametrs.c error.c
+SRC = parser.c  symtable.c scanner.c parametrs.c error.c expressions.c
 OBJ = $(SRC:.c=.o)
 EXEC = ifj23
 

@@ -595,6 +595,7 @@ Token* scan() {                             // proste GetToken da ti dasli Token
             //printf("2.%c",curr);
             return createToken(T_ERORR, TC_ERR);
     }
+    return NULL;
 }
 
 

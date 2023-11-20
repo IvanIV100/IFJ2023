@@ -59,8 +59,11 @@ typedef struct{
 typedef Symbol* SymTable[SYMTABLE_SIZE]; // tabulka symbolu
 
 void SymTableInit(SymTable **table);
+/*      Symtable *table = NULL;
+        SymTableInit(&table);*/
 
 void SymTableFree(SymTable *table);
+//SymTableFree(&(*table));
 
 int InsertSymbol(SymTable *table, char *key);
 

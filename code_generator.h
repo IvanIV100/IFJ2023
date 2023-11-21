@@ -16,4 +16,4 @@
 #include "scanner.h"
 //#include "expression.h" not done yet
 
-#endif //_CODE_GENERATOR_H
+#endif

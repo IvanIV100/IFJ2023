@@ -1,7 +1,14 @@
+#ifndef SYMTABLE_H
+#define SYMTABLE_H
+
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+
+#include "parametrs.h"
 
 #define SYMTABLE_SIZE 9973
 
@@ -20,7 +27,8 @@ VOID,
 typedef enum{
 variable,    
 function,
-}Type;
+nothing,
+} Type;
 
 typedef enum{
 var,
@@ -32,37 +40,57 @@ typedef struct{
     //parametry
     bool defined; // byla definována
     //navěstí, interní reprezentace idk
-}Function;
+} Function;
 
 typedef struct{
 DataType datatype; //od 0 do 4
 bool init;
 VarOrLet VoL; 
-}Variable;
+int intVal;       //hodnoty    
+double doubleVal; //
+char* strVal;     //
+bool boolVal;     //
+int nillable;
+} Variable;
 
 typedef struct{
     char *id;    // nazev
     Type type;   // funkce/promenna
     Function function; // struktura s informacemi o funkci
     Variable variable; // struktura s informacemi o promenné
-    // Hodnota symbolu (může být různého typu, zde používáme int pro jednoduchost)
+    Parametr parametr; // udelat pres pointery
 }Symbol;
-
 
 typedef Symbol* SymTable[SYMTABLE_SIZE]; // tabulka symbolu
 
-void SymTableInit(SymTable *table);
+void SymTableInit(SymTable **table);
+/*      Symtable *table = NULL;
+        SymTableInit(&table);*/
 
 void SymTableFree(SymTable *table);
 
-int InsertSymbol(SymTable *table, char *str);
+int InsertSymbol(SymTable *table, char *key);
 
-int AddFunctionDetails(SymTable *table, char *str, DataType returnType, bool defined);
+int AddParametr(SymTable *table, char *key, char c);
 
-int AddVarDetails(SymTable *table, char *str, DataType type, bool init, VarOrLet vol);
+int AddFunctionDetails(SymTable *table, char *key, DataType returnType, bool defined);
 
-Symbol *Search(SymTable *table, char *str);
+int AddVarDetails(SymTable *table, char *key, DataType type, bool init, VarOrLet vol);
 
-int RemoveSymbol(SymTable *table, char *str);
+Symbol *GetSymbol(SymTable *table, char *key);
 
-unsigned long HashFunction(char *str);
+int Searching(SymTable *table, char *key);
+
+int RemoveSymbol(SymTable *table, char *key);
+
+<<<<<<< HEAD
+
+
+
+#endif
+=======
+unsigned long HashFunction(char *key);
+>>>>>>> 84247b4b9cf30aa1ddf7c68e883f496547b92c03
+
+
+#endif

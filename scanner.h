@@ -1,8 +1,12 @@
-#pragma once
+#ifndef SCANNER_H
+#define SCANNER_H
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+
+
 
 enum token_Category {
     TC_BRACKET,
@@ -53,10 +57,10 @@ enum token_type {
     T_FUNC,                 // 24 func
     T_IF,                   // 25 if
     T_LET,                  // 26 let
-    T_NIL,                  // 27 nil
-    T_RETURN,               // 28 return
-    T_VAR,                  // 29 var
-    T_WHILE,                // 30 while
+    T_WHILE,                // 27 while
+    T_NIL,                  // 28 nil
+    T_RETURN,               // 29 return
+    T_VAR,                  // 30 var
 
     // Typ
     T_KW_STRING,            // 31 String
@@ -70,7 +74,7 @@ enum token_type {
     T_MULTILINE_STRING,     // 35 Multiline_line_string
     T_STRING,               // 36 String
     T_INT,                  // 37 Int
-    T_DOUBLE,               // 38 Double
+    T_DOUBLE,               // 38 D ouble
 
 
     T_EOF,                  // 39 EOF

@@ -229,9 +229,10 @@ int unicode(int i, Token *token) {          // over returny kdyz indikejtnou err
 int escape_Char(Token *token,int i){
     char next;
     next=getchar();
-    int alright;
+    int alright = 0;
+    
     switch (next) {
-		case '\"':                          // tohle " 
+		case '\"':                          // tohle "  
 			addChar('\"',i,token);
 			return 1;
 		case 'n':                           // dalsi radek
@@ -248,11 +249,11 @@ int escape_Char(Token *token,int i){
 			return 1;
         case 'u':                           // unixocy cod
             alright = unicode(i,token);
-            if (alright==0){
+            if (alright == 0){
                 return 0; 
             }
             return 1;
-
+            break; 
             
         default:                        // Yoo zadal jsi neco co neni escape char escapni zivot 
         ungetc(next,stdin);
@@ -618,6 +619,7 @@ Token* scan() {                             // proste GetToken da ti dasli Token
             //printf("2.%c",curr);
             return createToken(T_ERORR, TC_ERR);
     }
+    return NULL;
 }
 
 

@@ -219,3 +219,4 @@ void free_token_Values(Token *token);
  * @return Token reprezentující část kódu.
  */
 Token* scan();
+#endif

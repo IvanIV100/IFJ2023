@@ -27,7 +27,8 @@ VOID,
 typedef enum{
 variable,    
 function,
-}Type;
+nothing,
+} Type;
 
 typedef enum{
 var,
@@ -39,49 +40,51 @@ typedef struct{
     //parametry
     bool defined; // byla definována
     //navěstí, interní reprezentace idk
-}Function;
+} Function;
 
 typedef struct{
 DataType datatype; //od 0 do 4
 bool init;
 VarOrLet VoL; 
+int intVal;       //hodnoty    
+double doubleVal; //
+char* strVal;     //
+bool boolVal;     //
 int nillable;
-int intVal;
-double doubleVal;
-char *strVal;
-bool boolVal;
-}Variable;
+} Variable;
 
 typedef struct{
     char *id;    // nazev
     Type type;   // funkce/promenna
     Function function; // struktura s informacemi o funkci
     Variable variable; // struktura s informacemi o promenné
-    Parametr parametr;
+    Parametr parametr; // udelat pres pointery
 }Symbol;
-
 
 typedef Symbol* SymTable[SYMTABLE_SIZE]; // tabulka symbolu
 
-void SymTableInit(SymTable *table);
+void SymTableInit(SymTable **table);
+/*      Symtable *table = NULL;
+        SymTableInit(&table);*/
 
 void SymTableFree(SymTable *table);
+//SymTableFree(&(*table));
 
-int InsertSymbol(SymTable *table, char *str);
+int InsertSymbol(SymTable *table, char *key);
 
-int AddParametr(SymTable *table, char *str, char c);
+int AddParametr(SymTable *table, char *key, char c);
 
-int AddFunctionDetails(SymTable *table, char *str, DataType returnType, bool defined);
+int AddFunctionDetails(SymTable *table, char *key, DataType returnType, bool defined);
 
-int AddVarDetails(SymTable *table, char *str, DataType type, bool init, VarOrLet vol);
+int AddVarDetails(SymTable *table, char *key, DataType type, bool init, VarOrLet vol);
 
-Symbol *GetSymbol(SymTable *table, char *str);
+Symbol *GetSymbol(SymTable *table, char *key);
 
-int Searching(SymTable *table, char *str);
+int Searching(SymTable *table, char *key);
 
-int RemoveSymbol(SymTable *table, char *str);
+int RemoveSymbol(SymTable *table, char *key);
 
-unsigned long HashFunction(char *str);
+unsigned long HashFunction(char *key);
 
 
 #endif

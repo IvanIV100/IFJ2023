@@ -187,17 +187,23 @@ int AddParametr(SymTable *table, char *str, char c){
 }
 
 void SymTableFree(SymTable *table){
+    printf("table: %s\n", &table);
      for (int i = 0; i < SYMTABLE_SIZE; i++) {
      if ((*table)[i] != NULL) {
-        if((*table)[i]->id != NULL)
+        if((*table)[i]->id != NULL){
             free((*table)[i]->id);
-        if((*table)[i]->variable.strVal != NULL)
+        }
+        if((*table)[i]->variable.strVal != NULL){
             free((*table)[i]->variable.strVal);
+        }  
+     
         clear_parametr(&(*table)[i]->parametr);
         parametr_free(&(*table)[i]->parametr);
         free((*table)[i]);
+        (*table)[i] = NULL;
         }
      }
+     printf("Symtable free\n");
 }
 
 void copy_to_child(SymTable *parent, SymTable *current) { //jeste by to chtelo alokovat znovu pamet pro str value,

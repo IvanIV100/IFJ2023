@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SCANNER_H
+#define SCANNER_H
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -99,3 +101,6 @@ typedef struct Token {
 Token*scan();
 void free_token_Values(Token *token);
 
+
+
+#endif

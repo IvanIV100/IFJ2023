@@ -10,9 +10,13 @@ xchoda00
 #include <ctype.h>
 #include <string.h>
 #include "parser.h"
+#include "expressions.h"
 
 
 /* TODO 
+* - Mem management
+    - free all allocated memory in a dedicated destructor
+
 * - symtabLVL
     -clean up
     -symtab insert
@@ -22,8 +26,6 @@ xchoda00
     -add comments to functions
 
 * - Random
-    -fix mem free of linked list
-    -optional else?
     -handle built in funcs
     -check if err output is correct
     -expression parser
@@ -212,7 +214,7 @@ node_t* handle_in_param_list(node_t* node){
 node_t* handle_assign_ops(node_t* node){ 
     printf("assignOps \n");
     printf("196 curr token %d \n", node->current->type);
-    if (node->current->type != T_ASSIGN) {
+    if (node->current->type != T_ASSIGN) {  //check for correct exit
         return node;
     }
     node = get_next(node);
@@ -231,12 +233,13 @@ node_t* handle_assign_ops(node_t* node){
             }
             return node;
         } else {
-            return node;
+        //call expression handle
+        //if failed err.         
         }
     } else {
         //call expression handle
         //if failed err.         
-    }
+        }
     return node;
 }
 
@@ -385,6 +388,13 @@ node_t* handle_statement_list(node_t* node){
     return node;
 }
 
+node_t* handle_return(node_t* node){
+    if (runInfo->currentLVL == NULL){
+        ThrowError(2);
+    }
+    return node;
+}
+
 node_t* handle_statement(node_t* node){
     printf("stmnt \n");
     switch (node->current->type){
@@ -410,15 +420,10 @@ node_t* handle_statement(node_t* node){
             node = handle_while(node);
             break;
         case T_RETURN : 
-            node = get_next(node);
-            node = get_next(node);
+            node = handle_return(node);
             return node;
-        case T_EOF:
-            exit(0);
         default: 
-            node = get_next(node);
-            printf("391 token type %d\n", node->current->type);
-            return node;
+            ThrowError(2);
     }
     printf("392 token type %d\n", node->current->type);
     node = get_next(node);
@@ -466,29 +471,40 @@ void init_myInfo(){
         ThrowError(99);
     }
     
-    SymTable globalFrame, builtInFunctions;
-    SymTableInit(&globalFrame);
-    SymTableInit(&builtInFunctions);
+    SymTable *globalFrame = NULL;
+    globalFrame = malloc(sizeof(SymTable));
+    if (globalFrame == NULL){
+        ThrowError(99);
+    }
+    SymTableInit(globalFrame);
 
-    fill_builtin_symtab(&builtInFunctions);
+    SymTable *builtInFunctions;
+    builtInFunctions = malloc(sizeof(SymTable));
+    if (builtInFunctions == NULL){
+        ThrowError(99);
+    }
+    SymTableInit(builtInFunctions);
+    
+    //fill_builtin_symtab(builtInFunctions);
 
     runInfo->currentLVL = NULL;
-    runInfo->globalFrame = &globalFrame;
-    runInfo->builtInFunctions = &builtInFunctions;
+    runInfo->globalFrame = globalFrame;
+    runInfo->builtInFunctions = builtInFunctions;
+   
 }
 
-void fill_builtin_symtab(SymTable *builtIn){
-    return;
-}
+// void fill_builtin_symtab(SymTable *builtIn){ // fill in to check symtab and to global
+
+// }
 
 void create_level(){
     symTabLVL *current_level = malloc(sizeof(struct symTabLVL));
     if (current_level == NULL){
         ThrowError(99);
     }
-    SymTable newSymTab;
-    SymTableInit(&newSymTab);
-    current_level->currentTab = &newSymTab;
+    SymTable *newSymTab = malloc(sizeof(SymTable));
+    SymTableInit(newSymTab);
+    current_level->currentTab = newSymTab;
     if (runInfo->currentLVL == NULL){
         current_level->parantLVL = NULL;
     } else {
@@ -498,9 +514,13 @@ void create_level(){
 }
 
 void pop_level(){
-    //SymTableFree(runInfo->currentLVL->currentTab); //maybe bad mem free
+    SymTableFree(runInfo->currentLVL->currentTab); //maybe bad mem free
     runInfo->currentLVL->currentTab = NULL;
+    symTabLVL *toDelete = runInfo->currentLVL;
     runInfo->currentLVL = runInfo->currentLVL->parantLVL;
+    free(toDelete);
+    toDelete = NULL;
+
 }
 
 void define_var_ST(node_t* node){
@@ -512,7 +532,8 @@ void define_var_ST(node_t* node){
     }
 
     Symbol *result = GetSymbol(current, node->current->value.ID_name);
-    if (result->variable.init){
+    
+    if (result != NULL){
         ThrowError(3);
     } else {
         InsertSymbol(current, node->current->value.ID_name);
@@ -529,7 +550,7 @@ void define_var_ST(node_t* node){
 
 }
 
-void assign_varType_ST(node_t* node, int type, int nillable){
+void assign_varType_ST(node_t* node, int type, int nillable){ // check if nillable is correctly filled and incldues !
     SymTable* current = NULL;
     if (runInfo->currentLVL == NULL){
         current = runInfo->globalFrame;
@@ -541,7 +562,7 @@ void assign_varType_ST(node_t* node, int type, int nillable){
         //error
     }
     updateSymbol->variable.datatype = type;
-    //updateSymbol. = nillable;
+    updateSymbol->variable.nillable = nillable;
     
 }
 
@@ -555,24 +576,29 @@ void check_type(){
 
 void parser(){
     init_myInfo();
-    
-    
     node_t *node = create_node();
     node->current = scan();
+    printf("1\n");
+    ExprType result = expression_parser(node, runInfo);
+    printf("result: %d\n", result);
 
+
+    exit(0);
+
+    
 
     bool run = true;
     while (run){
         switch (node->current->type) {
         case T_FUNC:
             node = get_next(node);
+            printf("token type %d\n", node->current->type);
             node = handle_func_def(node);
             break;
         case T_EOF:
-            exit(0);
+            break;;
         default:
             node = handle_statement_list(node);
-            printf("448token type %d\n", node->current->type);
             break;
         }
         node = get_next(node);
@@ -580,6 +606,7 @@ void parser(){
     }  
 
     free_node_list(node);
+    return;
 }
 
 int main()

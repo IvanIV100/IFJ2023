@@ -1,19 +1,22 @@
+#ifndef EXPRESSIONS_H
+#define EXPRESSIONS_H
+
+
 #include <stdlib.h>
-#include "scanner.h"
 #include "parser.h"
 
 
 
 
 
-typedef enum{
+typedef enum relation_type{
     R_SHIFT,
     R_REDUCE,
     R_EQUAL,
     R_ERROR
 } RelationType;
 
-typedef enum{
+typedef enum term_type{
     T_UNKNOWN,
     T_ADDSUB,
     T_MULDIV,
@@ -22,13 +25,13 @@ typedef enum{
     T_LPAREN,
     T_RPAREN,
     T_VARIABLE,
-    T_FUNC
+    T_$,
 } TermType;
 
-typedef enum{
+typedef enum stack_item_type{
     SHIFT,
     TERMINAL,
-    NONTERMINAL
+    NONTERMINAL,
 } StackItemType;
 
 typedef enum{
@@ -38,13 +41,13 @@ typedef enum{
     E_STRING,
     E_BOOL,
     E_BUILTIN,
-    E_FUN
+    E_FUN,
 } ExprType;
 
 
 typedef struct StackItem{
     StackItemType type;
-    Token *token;
+    Token *term;
     ExprType exprType;
 } *stackItem;
 
@@ -58,12 +61,15 @@ void stack_init(stack stack);
 void stack_dispose(stack stack);
 void stack_push(stack stack, stackItem item);
 stackItem stack_pop(stack stack);
-TermType stack_GetTopTerm(stack stack);
+TermType stack_top(stack stack);
 void stack_shift(stack stack, int index);
 int stack_get_index(stack stack, TermType type);
+void peinr_stack(stack stack);
 RelationType precedence_table(TermType stackTerm, TermType newTerm);
-TermType get_term(Token *token);
-ExprType expression_parser(node_t *node, runTimeInfo *rti);
+TermType token_to_term(Token *token);
+ExprType expression_parser(node_t* node, runTimeInfo *rti);
 int expression_reduce(stack stack, runTimeInfo *rti);
-node_t *expression_generate(stack stack, runTimeInfo *rti);
-int generate_expression_reduce(stack stack, runTimeInfo *rti);
+//node_t *expression_generate(stack stack, runTimeInfo *rti);
+//int generate_expression_reduce(stack stack, runTimeInfo *rti);
+
+#endif

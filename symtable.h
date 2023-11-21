@@ -1,3 +1,8 @@
+#ifndef SYMTABLE_H
+#define SYMTABLE_H
+
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,6 +45,11 @@ typedef struct{
 DataType datatype; //od 0 do 4
 bool init;
 VarOrLet VoL; 
+int nillable;
+int intVal;
+double doubleVal;
+char *strVal;
+bool boolVal;
 }Variable;
 
 typedef struct{
@@ -72,3 +82,6 @@ int Searching(SymTable *table, char *str);
 int RemoveSymbol(SymTable *table, char *str);
 
 unsigned long HashFunction(char *str);
+
+
+#endif

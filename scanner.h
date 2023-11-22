@@ -79,7 +79,7 @@ enum token_type {
 
     T_EOF,                  // 39 EOF
     T_ERORR                 // 40 Error
-};
+}token_type;
 
 typedef struct tokenValue_t{
     char* ID_name;

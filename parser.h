@@ -6,9 +6,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include "scanner.h"
+
 #include "symtable.h"
-#include "error.h"
 
 typedef struct node {
     struct Token *current;

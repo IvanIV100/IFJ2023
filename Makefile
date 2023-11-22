@@ -1,8 +1,8 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -Wpedantic -g -lm
-SRC = parser.c  symtable.c scanner.c parametrs.c error.c expressions.c
+CFLAGS = -std=gnu99 -Wall -Wextra -Wpedantic -g -lm
+SRC = main.c parser.c   expressions.c  symtable.c parametrs.c  error.c scanner.c
 OBJ = $(SRC:.c=.o)
-EXEC = ifj23
+EXEC = main
 
 all: $(EXEC)
 

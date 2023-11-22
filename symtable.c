@@ -187,7 +187,7 @@ int AddParametr(SymTable *table, char *key, char c){
 }
 
 void SymTableFree(SymTable *table){
-    printf("table: %s\n", &table);
+    //printf("table: %s\n", &table);
      for (int i = 0; i < SYMTABLE_SIZE; i++) {
      if ((*table)[i] != NULL) {
         if((*table)[i]->id != NULL){

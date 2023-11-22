@@ -10,8 +10,10 @@ xchoda00
 #include <ctype.h>
 #include <string.h>
 #include "parser.h"
-#include "expressions.h"
 
+#include "scanner.h"
+#include "expressions.h"
+#include "error.h"
 
 /* TODO 
 * - Mem management
@@ -476,14 +478,14 @@ void init_myInfo(){
     if (globalFrame == NULL){
         ThrowError(99);
     }
-    SymTableInit(globalFrame);
+    SymTableInit(&globalFrame);
 
     SymTable *builtInFunctions;
     builtInFunctions = malloc(sizeof(SymTable));
     if (builtInFunctions == NULL){
         ThrowError(99);
     }
-    SymTableInit(builtInFunctions);
+    SymTableInit(&builtInFunctions);
     
     //fill_builtin_symtab(builtInFunctions);
 
@@ -503,7 +505,7 @@ void create_level(){
         ThrowError(99);
     }
     SymTable *newSymTab = malloc(sizeof(SymTable));
-    SymTableInit(newSymTab);
+    SymTableInit(&newSymTab);
     current_level->currentTab = newSymTab;
     if (runInfo->currentLVL == NULL){
         current_level->parantLVL = NULL;
@@ -609,8 +611,8 @@ void parser(){
     return;
 }
 
-int main()
-{
-    parser();
-    return 0;
-}
+// int main()
+// {
+//     parser();
+//     return 0;
+// }

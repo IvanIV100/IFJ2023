@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include "parser.h"
+#include "scanner.h"
 
 
 
@@ -17,11 +18,11 @@ typedef enum relation_type{
 } RelationType;
 
 typedef enum term_type{
-    T_UNKNOWN,
+    T_UNKNOWN, 
     T_ADDSUB,
     T_MULDIV,
-    T_LTGT,
-    T_EQ,
+    T_REL,
+    T_DQ,
     T_LPAREN,
     T_RPAREN,
     T_VARIABLE,
@@ -34,7 +35,7 @@ typedef enum stack_item_type{
     NONTERMINAL,
 } StackItemType;
 
-typedef enum{
+typedef enum exprType{
     E_UNKNOWN,
     E_INT,
     E_DOUBLE,
@@ -42,6 +43,7 @@ typedef enum{
     E_BOOL,
     E_BUILTIN,
     E_FUN,
+    E_NIL,
 } ExprType;
 
 

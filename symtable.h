@@ -83,14 +83,7 @@ int Searching(SymTable *table, char *key);
 
 int RemoveSymbol(SymTable *table, char *key);
 
-<<<<<<< HEAD
-
-
-
-#endif
-=======
 unsigned long HashFunction(char *key);
->>>>>>> 84247b4b9cf30aa1ddf7c68e883f496547b92c03
 
 
 #endif

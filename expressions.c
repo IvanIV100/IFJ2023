@@ -11,6 +11,8 @@
 
 //#include "codegen.h"
 
+int countDown = 0;
+ExprType returnTerm = T_UNKNOWN;
 
 void stack_init(stack stack){
     stack->top = -1;
@@ -67,6 +69,7 @@ void stack_shift(stack stack, int index){
     stackItem item = malloc(sizeof(struct StackItem));
     item->type = SHIFT;
     stack->items[index + 1] = item;
+    
 }
 
 int stack_get_index(stack stack, TermType type){
@@ -158,9 +161,6 @@ RelationType precedence_table(TermType stackTerm, TermType newTerm){
             }
 
         case T_UNKNOWN:
-            break;  
-
-        default:
             break;
     }
     return R_ERROR;
@@ -209,7 +209,8 @@ TermType token_to_term(Token *token){
     }
 }
 
-ExprType expression_parser(node_t *node, runTimeInfo *rti){
+ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
+    countDown = length;
     printf("expression parser\n");
     printf("current node: %d\n", node->current->type);
     // SymTable *currentST = NULL;
@@ -232,7 +233,7 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti){
     int index;
     int EQcount = 0;
 
-    while(newTerm != T_$ && stackTerm != T_$){
+    while((newTerm != T_$ || stackTerm != T_$) && countDown > 0){
         stackTerm = stack_top(stack);
         newTerm = token_to_term(node->current);
         printf("stackTerm: %d\n", stackTerm);
@@ -262,6 +263,13 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti){
                 stack_push(stack, item);
                 //print_stack(stack);
                 node = get_next(node);
+                countDown--;
+                // if (countDown == 0)
+                // {
+                //     return 691;
+                // }
+                
+
                 break;
 
             case R_REDUCE:
@@ -269,7 +277,6 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti){
                 //print_stack(stack);
                 expression_reduce(stack, rti);
                 //print_stack(stack);
-                node = get_next(node);
                 break;
 
             case R_EQUAL:
@@ -279,6 +286,11 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti){
                 item->term = node->current;
                 stack_push(stack, item);
                 node = get_next(node);
+                countDown--;
+                // if (countDown == 0)
+                // {
+                //     return 692;
+                // }
                 break;
 
             case R_ERROR:
@@ -297,12 +309,13 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti){
                 break;
                 
             default:
+                printf("default\n");
                 break;
         }
 
     }
     stack_dispose(stack);
-    return 0;
+    return returnTerm;
 }
 
 int expression_reduce(stack stack, runTimeInfo *rti){
@@ -319,7 +332,8 @@ int expression_reduce(stack stack, runTimeInfo *rti){
     if (item->type == NONTERMINAL){
         stackItem E2 = item;
         stackItem op = stack_pop(stack);
-        if (op->type == TERMINAL && (token_to_term(op->term) != T_VARIABLE || token_to_term(op->term) != T_LPAREN ||
+        if (op->type == TERMINAL && (token_to_term(op->term) != T_VARIABLE || 
+            token_to_term(op->term) != T_LPAREN ||
             token_to_term(op->term) != T_RPAREN || token_to_term(op->term) != T_$)){
         
             stackItem E1 = stack_pop(stack);
@@ -328,92 +342,104 @@ int expression_reduce(stack stack, runTimeInfo *rti){
             if (E1->type == NONTERMINAL){
                 if (E1->exprType == E2->exprType){
                     item->exprType = E1->exprType;
+                    returnTerm = item->exprType;
                 } else if (E1->exprType == E_INT && E2->exprType == E_DOUBLE){
                     item->exprType = E2->exprType;
+                    returnTerm = item->exprType;
                 } else if (E1->exprType == E_DOUBLE && E2->exprType == E_INT){
                     item->exprType = E1->exprType; 
+                    returnTerm = item->exprType;
                 } else if (token_to_term(op->term) == T_REL){
                     item->exprType = E_BOOL;
+                    returnTerm = item->exprType;
                 } else {
                     printf("not same type\n");
                     ThrowError(2);
                 }
             
-            
+                
                 item->type = NONTERMINAL;
                 item->term = NULL;
-        
+                }
             } else{
-                printf("225 not viable\n");
                 ThrowError(2);
             }
-        }
     } else if (item->type == TERMINAL){
         if (token_to_term(item->term) == T_VARIABLE){
             switch (item->term->type) {
 
-            case T_INT:
-                item->type = NONTERMINAL;
-                item->exprType = E_INT;
-                break;
-            
-            case T_DOUBLE:
-                item->type = NONTERMINAL;
-                item->exprType = E_DOUBLE;
-                break;
-
-            case T_STRING:
-                item->type = NONTERMINAL;
-                item->exprType = E_STRING;
-                break;
-            
-            case T_IDENTIFIER: 
-                
-                if (GetSymbol(currentST, item->term->value.ID_name) == NULL){
-                    ThrowError(5);
-                } 
-                Symbol *checkType;
-                checkType = GetSymbol(currentST, item->term->value.ID_name);
-                if (checkType->variable.datatype == INT){
+                case T_INT:
+                    item->type = NONTERMINAL;
                     item->exprType = E_INT;
-                } else if (checkType->variable.datatype == FLOAT){
-                    item->exprType = E_DOUBLE;
-                } else if (checkType->variable.datatype == STR){
-
-                } else if (checkType->variable.datatype == NIL){
-                    item->exprType = E_NIL;
-                }
+                    returnTerm = item->exprType;
+                    break;
                 
-                item->type = NONTERMINAL;
-                break;
-            
-            case T_NIL:
-                item->type = NONTERMINAL;
-                item->exprType = E_NIL;
-                break;
-            
-            default:
-                ThrowError(2);
-            }
-        }
-    } else if (token_to_term(item->term) == T_RPAREN){
+                case T_DOUBLE:
+                    item->type = NONTERMINAL;
+                    item->exprType = E_DOUBLE;
+                    returnTerm = item->exprType;
+                    break;
+
+                case T_STRING:
+                    item->type = NONTERMINAL;
+                    item->exprType = E_STRING;
+                    returnTerm = item->exprType;
+                    break;
+                
+                case T_IDENTIFIER: 
+                    
+                    if (GetSymbol(currentST, item->term->value.ID_name) == NULL){
+                        ThrowError(5);
+                    } 
+                    Symbol *checkType;
+                    checkType = GetSymbol(currentST, item->term->value.ID_name);
+                    if (checkType->variable.datatype == INT){
+                        item->exprType = E_INT;
+                        returnTerm = item->exprType;
+                    } else if (checkType->variable.datatype == FLOAT){
+                        item->exprType = E_DOUBLE;
+                        returnTerm = item->exprType;
+                    } else if (checkType->variable.datatype == STR){
+                        item->exprType = E_STRING;
+                        returnTerm = item->exprType;
+                    } else if (checkType->variable.datatype == NIL){
+                        item->exprType = E_NIL;
+                        returnTerm = item->exprType;
+                    }
+                    
+                    item->type = NONTERMINAL;
+                    break;
+                
+                case T_NIL:
+                    item->type = NONTERMINAL;
+                    item->exprType = E_NIL;
+                    returnTerm = item->exprType;
+                    break;
+                
+                default:
+                    ThrowError(2);
+            }    
+        } else if (token_to_term(item->term) == T_RPAREN){
             item = stack_pop(stack);
             stackItem E = item;
             if (item->type == NONTERMINAL){
                 item = stack_pop(stack);
                 if (item->type == TERMINAL && token_to_term(item->term) == T_LPAREN){
                     item->exprType = E->exprType;
+                    returnTerm = item->exprType;
                     item->type = NONTERMINAL;
                 }
             } else { 
                 printf("348 not viable\n");
                 ThrowError(2);
+            }
+        } else {
+            print_stack(stack);
+            printf("352 not viable\n");
+            ThrowError(2);
+        
+            }   
         }
-    } else {
-        print_stack(stack);
-        printf("352 not viable\n");
-        ThrowError(2);
-    }
 
     stackItem shift = stack_pop(stack);
     if (shift->type == SHIFT){
@@ -421,6 +447,7 @@ int expression_reduce(stack stack, runTimeInfo *rti){
     } 
     stack_push(stack, item);
     return 1;
+    
 }
 
 // node_t* generate_expression(node_t* node, runTimeInfo *rti){

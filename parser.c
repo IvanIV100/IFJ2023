@@ -448,7 +448,7 @@ void free_node_list(node_t* node){
 node_t* get_next(node_t* current){
     node_t *node = create_node();
     node->current = scan();
-    printf("token GEN %d\n", node->current->type);
+    printf("new Current:  %d\n", node->current->type);
     current->right = node;
     node->left = current;
 
@@ -581,7 +581,7 @@ void parser(){
     node_t *node = create_node();
     node->current = scan();
     printf("1\n");
-    ExprType result = expression_parser(node, runInfo);
+    ExprType result = expression_parser(node, runInfo, 3);
     printf("result: %d\n", result);
 
 

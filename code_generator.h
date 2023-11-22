@@ -1,19 +1,15 @@
-/**
- * Project: Implementace překladače IFJ23
- *
- * @brief Code generator interface.
- *
- * @author Robert Zelníček <xzelni06@stud.fit.vutbr.cz>
- */
-
-#ifndef _CODE_GENERATOR_H
-#define _CODE_GENERATOR_H
-
-#include <stdio.h>
-#include <stdbool.h>
-
-//#include "symtable.h" not done yet
+#include "symtable.h"
 #include "scanner.h"
-//#include "expression.h" not done yet
+#include "parser.c"
+#include "parser.h"
 
-#endif
+// code_generator.h
+
+#ifndef CODE_GENERATOR_H
+#define CODE_GENERATOR_H
+
+#include "symtable.h"
+#include "parser.h"
+
+#define MAX_VAR 256
+#define MAX_LIT 8192

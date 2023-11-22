@@ -50,6 +50,20 @@ typedef struct{
     Parametr parametr;
 }Symbol;
 
+typedef struct Symbol_node_t
+{
+    Symbol token;
+    bool deleted;
+}Symbol_node;
+
+
+typedef struct symtable_t
+{
+    Symbol_node* symtb_arr;
+    int size;
+    int capacity;
+    int local_level;
+}SymTable;
 
 typedef Symbol* SymTable[SYMTABLE_SIZE]; // tabulka symbolu
 

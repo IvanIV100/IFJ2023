@@ -1,6 +1,5 @@
 
-#ifndef PARAMETRS_H
-#define PARAMETRS_H
+
 
 typedef struct{
 char *str;
@@ -17,4 +16,3 @@ int clear_parametr(Parametr *p);
 int parametr_free(Parametr *p);
 
 
-#endif

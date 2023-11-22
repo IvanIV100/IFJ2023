@@ -16,70 +16,45 @@ xchoda00
 #include "error.h"
 
 /* TODO 
+* - Mem management
+    - free all allocated memory in a dedicated destructor
+
 * - symtabLVL
     -clean up
     -symtab insert
 
-* - sort out return validity in func
-* - fix mem free of linked list
-* - optional else?
-* - handle built in funcs
-* - check if err output is correct
-* - check if "var name" is valid
-* - expression parser
+* - Documentation
+    -add headers to C files
+    -add comments to functions
 
-* ---TESTS---
-* valid:
-* 
-* - var def
-* - var def with assign expression
-* - var def with assign  funcall
-* - var def with assign  funcall and in params
-* - id with assign
-* - id with assign and funcall
-* - id with assign and funcall and in params
-* - id funcall
-* - if
-* - if else
-* - while 
-* x func def 
-* x func def w retT
-* - func def with body
-* - func def with retT and body
-* x func def with params
-* - func def with params and returnt
-* - func def with params and returnt and body
+* - Random
+    -handle built in funcs
+    -check if err output is correct
+    -expression parser
+
 
 */
 
-myInfo *runInfo;
+runTimeInfo *runInfo;
+
 
 node_t* handle_param(node_t* node){
-    printf("handle_param \n");
-    printf("HP current token type: %d\n", node->current->type);
     if (node->current->type == T_UNDERSCORE){
         //handle in symtab _ case
     } else if (node->current->type == T_IDENTIFIER){
         //symtab assign
     } else {
-        printf("Error: Expected identifier/_\n");
         ThrowError(2);
     }
     node = get_next(node);
-    printf("49 current token type: %d\n", node->current->type);
     if (node->current->type != T_IDENTIFIER){
-        printf("Error: Expected identifier\n");
         ThrowError(2);
     }
     node = get_next(node);
-    printf("55 current token type: %d\n", node->current->type);
     if (node->current->type != T_COLON){
-        printf("Error: Expected colon\n");
         ThrowError(2);
     }
     node = get_next(node);
-
-    printf("62 current token type: %d\n", node->current->type);
     node = handle_type(node);
 
     return  node;
@@ -87,18 +62,14 @@ node_t* handle_param(node_t* node){
 
 
 node_t* handle_param_list(node_t* node){
-    printf("handle_param_list \n");
     if (node->current->type == T_RIGHT_PAREN){
-        printf("end of param list\n");
         return node;
     } else {
         node = handle_param(node);
     }
     node = get_next(node);
-    printf("76 current token type: %d\n", node->current->type);
     if (node->current->type == T_COMMA){    
         node = get_next(node);
-        printf("79 current token type: %d\n", node->current->type);
         if (node->current->type == T_RIGHT_PAREN){            // (param,) invalid
             printf("Error: bad end\n");
             ThrowError(2);
@@ -111,18 +82,19 @@ node_t* handle_param_list(node_t* node){
 }
 
 node_t* handle_type(node_t* node){ //what is difference between t_int a t_kw_int
-    printf("handle_type \n");
-    printf("83 current token type: %d\n", node->current->type);
+    int type;
     if (node->current->type == T_KW_INT){
-        //assign int in symtable with ? check
+        type = 32;
     } else if (node->current->type == T_KW_DOUBLE){
-        //assign double in symtable with ? check
+        type = 33;
     } else if (node->current->type == T_KW_STRING){
-        //assign str in symtable with ? check
+        type = 31;
     } else {
         printf("Error: Expected type\n");
         ThrowError(2);
     }
+    
+    assign_varType_ST(node, type, node->current->value.nillable);
     return  node;
 }
 
@@ -244,7 +216,7 @@ node_t* handle_in_param_list(node_t* node){
 node_t* handle_assign_ops(node_t* node){ 
     printf("assignOps \n");
     printf("196 curr token %d \n", node->current->type);
-    if (node->current->type != T_ASSIGN) {
+    if (node->current->type != T_ASSIGN) {  //check for correct exit
         return node;
     }
     node = get_next(node);
@@ -263,12 +235,13 @@ node_t* handle_assign_ops(node_t* node){
             }
             return node;
         } else {
-            return node;
+        //call expression handle
+        //if failed err.         
         }
     } else {
         //call expression handle
         //if failed err.         
-    }
+        }
     return node;
 }
 
@@ -291,10 +264,12 @@ node_t* handle_var_def_ops(node_t* node){
 
 node_t* handle_var_def(node_t* node){
     printf("varDef \n");
+    node = get_next(node);
     if (node->current->type != T_IDENTIFIER) {
         printf("Error: Expected identifier\n");
         ThrowError(2);
     }
+    define_var_ST(node);
     node = get_next(node);
     node = handle_var_def_ops(node);
     return node;
@@ -415,12 +390,18 @@ node_t* handle_statement_list(node_t* node){
     return node;
 }
 
+node_t* handle_return(node_t* node){
+    if (runInfo->currentLVL == NULL){
+        ThrowError(2);
+    }
+    return node;
+}
+
 node_t* handle_statement(node_t* node){
     printf("stmnt \n");
     switch (node->current->type){
         case T_LET:
         case T_VAR:
-            node = get_next(node);
             printf("356 token type %d\n", node->current->type);
             node = handle_var_def(node);
             break;
@@ -441,15 +422,10 @@ node_t* handle_statement(node_t* node){
             node = handle_while(node);
             break;
         case T_RETURN : 
-            node = get_next(node);
-            node = get_next(node);
+            node = handle_return(node);
             return node;
-        case T_EOF:
-            exit(0);
         default: 
-            node = get_next(node);
-            printf("391 token type %d\n", node->current->type);
-            return node;
+            ThrowError(2);
     }
     printf("392 token type %d\n", node->current->type);
     node = get_next(node);
@@ -492,7 +468,7 @@ node_t* create_node(){
 }
 
 void init_myInfo(){
-    runInfo = malloc(sizeof(struct myInfo));
+    runInfo = malloc(sizeof(struct runTimeInfo));
     if (runInfo == NULL){
         ThrowError(99);
     }
@@ -514,8 +490,14 @@ void init_myInfo(){
     //fill_builtin_symtab(builtInFunctions);
 
     runInfo->currentLVL = NULL;
-    create_level();
+    runInfo->globalFrame = globalFrame;
+    runInfo->builtInFunctions = builtInFunctions;
+   
 }
+
+// void fill_builtin_symtab(SymTable *builtIn){ // fill in to check symtab and to global
+
+// }
 
 void create_level(){
     symTabLVL *current_level = malloc(sizeof(struct symTabLVL));
@@ -529,60 +511,96 @@ void create_level(){
         current_level->parantLVL = NULL;
     } else {
         current_level->parantLVL = runInfo->currentLVL;
-        copy_to_child(current_level->parantLVL->currentTab, current_level->currentTab);
     }
     runInfo->currentLVL = current_level;
 }
 
 void pop_level(){
-    printf("pred\n");
-    
-    //SymTableFree(runInfo->currentLVL->currentTab); //maybe bad mem free
-    printf("po1\n");
+    SymTableFree(runInfo->currentLVL->currentTab); //maybe bad mem free
     runInfo->currentLVL->currentTab = NULL;
+    symTabLVL *toDelete = runInfo->currentLVL;
     runInfo->currentLVL = runInfo->currentLVL->parantLVL;
+    free(toDelete);
+    toDelete = NULL;
+
 }
 
-void copy_to_child(SymTable *parent, SymTable *child){
+void define_var_ST(node_t* node){
+    SymTable* current = NULL;
+    if (runInfo->currentLVL == NULL){
+        current = runInfo->globalFrame;
+    } else {
+        current = runInfo->currentLVL->currentTab;
+    }
 
+    Symbol *result = GetSymbol(current, node->current->value.ID_name);
+    
+    if (result != NULL){
+        ThrowError(3);
+    } else {
+        InsertSymbol(current, node->current->value.ID_name);
+        int vol;
+        if (node->left->current->type == 26){
+            vol = 1;
+        } else {
+            vol = 0;
+        }
+        AddVarDetails(current, node->current->value.ID_name, VOID, false, vol);
+
+    }
+    current = NULL;
+
+}
+
+void assign_varType_ST(node_t* node, int type, int nillable){ // check if nillable is correctly filled and incldues !
+    SymTable* current = NULL;
+    if (runInfo->currentLVL == NULL){
+        current = runInfo->globalFrame;
+    } else {
+        current = runInfo->currentLVL->currentTab;
+    }
+    Symbol *updateSymbol = GetSymbol(current, node->left->left->current->value.ID_name);
+    if (updateSymbol == NULL){
+        //error
+    }
+    updateSymbol->variable.datatype = type;
+    updateSymbol->variable.nillable = nillable;
+    
+}
+
+void define_func_ST(){
+
+}
+
+void check_type(){
+    
 }
 
 void parser(){
-    Symbol *result = NULL;
     init_myInfo();
-    create_level();
-    InsertSymbol(runInfo->currentLVL->currentTab, "A");
-    AddVarDetails(runInfo->currentLVL->currentTab, "A", INT, true, var);
-    result = GetSymbol(runInfo->currentLVL->currentTab, "A");
-    printf("var or let : %d\n", result->variable.datatype);
-    create_level();
-    InsertSymbol(runInfo->currentLVL->currentTab, "A");
-    AddVarDetails(runInfo->currentLVL->currentTab, "A", STR, true, let);
-    result = GetSymbol(runInfo->currentLVL->currentTab, "A");
-    printf("var or let : %d\n", result->variable.datatype);
-    pop_level();
-    result = GetSymbol(runInfo->currentLVL->currentTab, "A");
-    printf("var or let : %d\n", result->variable.datatype);
-
-    exit(0);
-    
-    
     node_t *node = create_node();
     node->current = scan();
+    printf("1\n");
+    ExprType result = expression_parser(node, runInfo);
+    printf("result: %d\n", result);
 
+
+    exit(0);
+
+    
 
     bool run = true;
     while (run){
         switch (node->current->type) {
         case T_FUNC:
             node = get_next(node);
+            printf("token type %d\n", node->current->type);
             node = handle_func_def(node);
             break;
         case T_EOF:
-            exit(0);
+            break;;
         default:
             node = handle_statement_list(node);
-            printf("448token type %d\n", node->current->type);
             break;
         }
         node = get_next(node);
@@ -590,6 +608,7 @@ void parser(){
     }  
 
     free_node_list(node);
+    return;
 }
 
 // int main()

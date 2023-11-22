@@ -27,15 +27,15 @@ void ThrowError(int errorCode){
             fprintf(stderr, "Syntax error.\n");
             break;
         
-        case 3: //UNDEFINED FUNCTION
-            fprintf(stderr, "Undefined function.\n");
+        case 3: //UNDEFINED FUNCTION REDEF VAR
+            fprintf(stderr, "Undefined function/Redefined var.\n");
             break;
         
         case 4: // INVLAID PARAMETER TYPE
             fprintf(stderr, "invalid number or type of the parameters used in the function or invalid return type.\n");
             break;
 
-        case 5: // UNDEFINED VARIABLE
+        case 5: // UNDEFINED/UNINITIALIZED VARIABLE
             fprintf(stderr, "Undefined variable.\n");
             break;
             

@@ -1,9 +1,10 @@
-#pragma once
+#ifndef SCANNER_H
+#define SCANNER_H
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
 
 
 
@@ -96,7 +97,126 @@ typedef struct Token {
 } Token;
 
 
+/**
+ * Funkce, která zjišťuje, zda je další znak bílý znak nebo ne.
+ * @param input - Znak, který se má zkontrolovat.
+ * @return 1, pokud je znak bílý, 0 jinak.
+ */
+int isWhiteChar(char input);
 
-Token*scan();
+
+/**
+ * Získá znak, který není bílý znak.
+ * @return Znak, který není bílý znak.
+ */
+char getNotWhiteChar();
+
+
+/**
+ * Funkce pro přeskočení komentáře.
+ * @return 0, pokud byl komentář úspěšně přeskočen, 1 jinak.
+ */
+int SkipComment();
+
+
+/**
+ * Funkce pro vytvoření tokenu.
+ * @param type - Typ tokenu.
+ * @param category - Kategorie tokenu.
+ * @return Nový token.
+ */
+Token* createToken(enum token_type type, enum token_Category category);
+
+
+/**
+ * Zjistí, zda je řetězec klíčovým slovem.
+ * @param str - Řetězec k ověření.
+ * @return Index klíčového slova, pokud je to klíčové slovo, -1 jinak.
+ */
+int isKeyword(char *str);
+
+
+/**
+ *
+ * Zjistí, zda je vstupní znak identifikátorem nebo klíčovým slovem.
+ * @param curr - Aktuální znak.
+ * @return Token identifikátoru nebo klíčového slova.
+ */
+Token* is_Id(char curr);
+
+
+/**
+ * Expanze dynamické paměti pro řetězec.
+ * @param token - Token obsahující řetězec.
+ * @param length - Aktuální délka řetězce.
+ * @return 1 při úspěšné expanzi paměti, 0 jinak.
+ */
+int expand_String(Token *token, int *length);
+
+
+/**
+ * Přidá znak do řetězce v tokenu.
+ * @param curr - Aktuální znak.
+ * @param i - Index pro přidání znaku.
+ * @param token - Token obsahující řetězec.
+ * @return 1, pokud byl znak úspěšně přidán, 0 jinak.
+ */
+int addChar(char curr, int i, Token *token);
+
+
+/**
+ * Zpracuje Unicode escape sekvenci v řetězci.
+ * @param i - Index pro přidání znaku.
+ * @param token - Token obsahující řetězec.
+ * @return 1, pokud byla escape sekvence úspěšně zpracována, 0 jinak.
+ */
+int unicode(int i, Token *token);
+
+
+/**
+ * Zpracuje escape znaky v řetězci.
+ * @param token - Token obsahující řetězec.
+ * @param i - Index pro přidání znaku.
+ * @return 1, pokud byl escape znak úspěšně zpracován, 0 jinak.
+ */
+int escape_Char(Token *token, int i);
+
+
+/**
+ * Skenuje řetězec a vytváří odpovídající token.
+ * @param curr - Aktuální znak.
+ * @return Token reprezentující řetězec.
+ */
+Token* isString(char curr);
+
+
+/**
+ * Skenuje víceřádkový řetězec a vytváří odpovídající token.
+ * @return Token reprezentující víceřádkový řetězec.
+ */
+Token* isMultiLineString();
+
+
+/**
+ * Skenuje číslo a vytváří odpovídající token.
+ * @param curr - Aktuální znak.
+ * @return Token reprezentující číslo.
+ */
+Token* scanNumber(char curr);
+
+
+/**
+ * Funkce, která uvolňuje paměť alokovanou pro hodnoty tokenu.
+ * @param token - Token k uvolnění paměti.
+ */
 void free_token_Values(Token *token);
 
+
+
+
+/**
+ * Skenuje vstup a vytváří odpovídající token.
+ * @return Token reprezentující část kódu.
+ */
+Token* scan();
+#endif

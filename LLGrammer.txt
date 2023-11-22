@@ -16,7 +16,6 @@
 <param> -> id id : <Type>
 <param> -> _ id : <Type>
 <varDef> -> let/var id <varDefOptional>  
-<varDefOptional> -> e
 <varDefOptional> -> : <type> <varDefAss>
 <varDefOptional> -> <varDefAss> //check if in func
 <varDefAss> -> e

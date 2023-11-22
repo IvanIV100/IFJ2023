@@ -1,7 +1,20 @@
 --TEST CASES--
+valid:
+ 
+
+var def with assign  funcall
+var def with assign  funcall and in params
+id with assign and funcall
+id with assign and funcall and in params
+id funcall
+if
+if else
+while 
 
 valid:
+
 --FUNC DEF--
+
 func bar(){
 }
 --
@@ -13,6 +26,45 @@ func bar(X Y : Int) -> String {
 --
 func bar() -> String {
 }
+--
+func bar(){
+    var a : Int = 5
+    var b :int
+    b = 6
+    var c = a + b
+}
+--
+func bar(X Y : Int){
+    var a : Int = 5
+    var b :int
+    b = 6
+    var c = a + b
+    return
+}
+--
+func bar(X Y : Int) -> int {
+    var a : Int = 5
+    var b :int
+    b = 6
+    var c = a + b
+    return c
+}
+--
+func bar() -> Int {
+    var a : Int = 5
+    var b :int
+    b = 6
+    var c = a + b
+    return c
+}
+--
+
+--Var def --
+
+var a : Int = 5
+var b :int
+b = 6
+var c = a + b
 --
 
 invalid:

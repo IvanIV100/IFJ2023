@@ -67,4 +67,56 @@ b = 6
 var c = a + b
 --
 
+var y: Double
+y = 3.1512
+--
+
+var optionalValue: String? = "This can be nil"
+var _underscoreVariable: Double = 3.14
+
+--
+
+var multilineString = """
+    Toto je
+    multiline
+    řetězec
+    v jazyce Swift.
+    """
+
+--
+
+var positiveExponent: Double = 3.14e2
+var negativeExponent: Double = 0.005e-2
+var combinedExponents: Double = 2.5e3 / 5.0e2 
+
+--
+
 invalid:
+
+
+
+new intresting:
+
+--func def--
+var a = 5
+func a() {
+ write(a)
+}
+
+--
+func foo(_ par : String) -> String {
+  let ret = 8
+return ret
+}
+
+--
+
+func concat(_ x : String, with y : String) -> String {
+  let x = x + y
+  return x + " " + y
+}
+let a = "ahoj "
+ct = concat(a, with: "svete")
+
+--
+

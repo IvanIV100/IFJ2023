@@ -6,9 +6,11 @@
  * @author Robert Zelníček <xzelni06@stud.fit.vutbr.cz>
  */
 
+//TODO
+//ExpressionVariable generation (look)
+//Built in functions looking weird (fix)
+
 #include "code_generator.h"
-#include "symtable.h"
-#include "parser.h"
 #include "parser.c"
 
 char *lolVarForm = "%s@&_%s$%d_&";
@@ -111,7 +113,7 @@ void address3Operator(char *operator, char *result, char *s1, char *s2) {
     }
 }
 
-
+//Juknout na toto
 char *generateExpressionVariable() {
     static int cnt = 0;
     char mx[MAX_VAR];
@@ -126,18 +128,19 @@ char *generateExpressionVariable() {
 char *getVariableName(char *var) {
     Symbol *found;
     SymTable *table;
-    getFromEverywhere(var, &found, &table);
+    Searching(&table,var);
 
     char mx[MAX_VAR];
     char *frame;
     int lvlNameAdd = -1;
-    if (table->local_level == 0) {
+    if (runInfo->currentLVL == 0) {
         frame = "GF";
-    } else if (table->local_level == runInfo->currentLVL) {
+        //TOTO
+    } else if (runInfo->currentLVL->currentTab == runInfo->currentLVL) {
         frame = "TF";
     } else {
         frame = "GF";
-        lvlNameAdd = table->local_level;
+        lvlNameAdd = runInfo->currentLVL;
     }
 
     if (lvlNameAdd == -1) {
@@ -220,7 +223,7 @@ char *generateNewLabel() {
 void moveVariableToGlobal(char *globalVar, char *localVar) {
     move(globalVar, localVar);
 }
-
+//global a symtbas not necessary
 void handleGlobalVariable(char *globalVar, char *localVar) {
     Symbol *found;
 
@@ -240,20 +243,20 @@ void handleGlobalVariable(char *globalVar, char *localVar) {
         // Insert the variable into the global symbol table
         Symbol defined;
         SymTableInit(&defined);
-        symtb_insert(&global_symtb, globalVar, defined);
-        clearSymtbToken(&defined);
+        symtb_insert(runInfo->globalFrame, globalVar, defined);
+        RemoveSymbol(runInfo->currentLVL,&defined);
     }
 }
-
+//global and temp symtabs not neccessary
 void passVariablesToGlobal() {
-    int localLevel = temp_symtb.local_level;
-    for (int i = 0; i < temp_symtb.capacity; i++) {
-        if (temp_symtb.symtb_arr[i].deleted)
+    int localLevel = runInfo->currentLVL;
+    for (int i = 0; i < sizeof(runInfo->currentLVL); i++) {
+        /*if (temp_symtb.symtb_arr[i].deleted)
             continue;
-
+        */
         char globalVar[MAX_VAR];
-        sprintf(globalVar, lolVarForm, "GF", temp_symtb.symtb_arr[i].token.id_name, localLevel);
-        char *localVar = getVariableName(temp_symtb.symtb_arr[i].token.id_name);
+        sprintf(globalVar, lolVarForm, "GF", runInfo->currentLVL->currentTab, localLevel);
+        char *localVar = getVariableName(runInfo->currentLVL->currentTab);
 
         handleGlobalVariable(globalVar, localVar);
 
@@ -274,16 +277,16 @@ void processGlobalVariable(char *variable, char *globalVar) {
         moveGlobalToVariable(variable, globalVar);
     }
 }
-
+//global and temp symtabs not neccessary
 void returnPassedVariables() {
-    int localLevel = temp_symtb.local_level;
-    for (int i = 0; i < temp_symtb.capacity; i++) {
-        if (temp_symtb.symtb_arr[i].deleted)
+    int localLevel = runInfo->currentLVL;
+    for (int i = 0; i < sizeof(runInfo->currentLVL); i++) {
+        /*if (temp_symtb.symtb_arr[i].deleted)
             continue;
-
+        */
         char globalVar[MAX_VAR];
-        sprintf(globalVar, lolVarForm, "GF", temp_symtb.symtb_arr[i].token.id_name, localLevel);
-        char *variable = getVariableName(temp_symtb.symtb_arr[i].token.id_name);
+        sprintf(globalVar, lolVarForm, "GF", runInfo->currentLVL->currentTab, localLevel);
+        char *variable = getVariableName(runInfo->currentLVL->currentTab);
 
         processGlobalVariable(variable, globalVar);
 
@@ -407,7 +410,7 @@ void generateSubstring()
 	"\n CONCAT LF@%%retval LF@%%retval LF@char" \
 	"\n ADD LF@index LF@index int@1" \
 	"\n ADD LF@length LF@length int@1" \
-	"\n LT LF@process_loop_cond LF@index LF@%1" \
+	"\n LT LF@process_loop_cond LF@index LF@%%1" \
 	"\n JUMPIFEQ $substring_loop LF@process_loop_cond bool@true" \
 	"\n POPFRAME" \
 	"\n RETURN");

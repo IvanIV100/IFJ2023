@@ -95,7 +95,7 @@ node_t* handle_type(node_t* node){ //what is difference between t_int a t_kw_int
         ThrowError(2);
     }
     
-    assign_varType_ST(node, type, node->current->value.nillable);
+    //assign_varType_ST(node, type, node->current->value.nillable);
     return  node;
 }
 
@@ -299,7 +299,7 @@ node_t* handle_var_def(node_t* node){
         printf("Error: Expected identifier\n");
         ThrowError(2);
     }
-    define_var_ST(node);
+    //define_var_ST(node);
     node = get_next(node);
     node = handle_var_def_ops(node);
     return node;
@@ -311,7 +311,7 @@ node_t* handle_funcall_ops(node_t* node){
     if (node->current->type == T_ASSIGN){
         node = get_next(node);
         printf("257 token type %d\n", node->current->type);
-         node = handle_assign_ops(node);
+        node = handle_assign_ops(node);
         return node;
     } else if (node->current->type == T_LEFT_PAREN){
         node = get_next(node);

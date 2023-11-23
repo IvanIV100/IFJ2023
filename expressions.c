@@ -12,7 +12,7 @@
 //#include "codegen.h"
 
 int countDown = 0;
-ExprType returnTerm = T_UNKNOWN;
+ExprType returnTerm = E_UNKNOWN;
 
 void stack_init(stack stack){
     stack->top = -1;
@@ -25,14 +25,23 @@ void stack_dispose(stack stack){
         return;
     }
     printf("dispose\n");
-    for (int i = stack->top; i >= 0; i--){
-        free(stack->items[i]);
+    for (int i = stack->top; i > 0; i--){
+        if (stack->items[i] != NULL){
+            free(stack->items[i]);
+            stack->items[i] = NULL;
+        }
+        
     }
     printf("dispose2\n");
-    //free(stack->items);
+    if (stack->items != NULL){
+        free(stack->items);
+        stack->items = NULL;
+    }
     printf("dispose3\n");
-    free(stack);
-    stack = NULL;
+    if (stack != NULL){
+        free(stack);
+        stack = NULL;
+    }
 }
 
 void stack_push(stack stack, stackItem item){
@@ -202,7 +211,6 @@ TermType token_to_term(Token *token){
         case T_INT:
         case T_DOUBLE:
         case T_STRING:
-            printf("variable\n");
             return T_VARIABLE;
 
         case T_DOUBLE_QUESTION_MARK:

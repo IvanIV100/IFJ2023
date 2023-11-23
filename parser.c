@@ -16,28 +16,31 @@ xchoda00
 
 /* TODO 
 * - Mem management
-    - free all allocated memory in a dedicated destructor
+    -free all allocated memory in a dedicated destructor
+    -delete in throwerror
 
 * - symtabLVL
     -clean up
     -symtab insert
 
 * - Documentation
-    -add headers to C files
     -add comments to functions
+    -add comment headers everywhere
 
-* - Random
+* - Implement
+    -handle built in funcs
     -return fix
     -function in param fix
-    -remove semcheck from expressions
+    -add semcheck in expressions
 
+* - Check
+    - can there be just ID alone
     -check let declarations
-    -handle built in funcs
-    -check if err output is correct
-    -expression parser
+
+* - Random
+    
 
 * - Code Gen
-    -provide start of linked list
     -
 
 
@@ -89,21 +92,32 @@ node_t* handle_param_list(node_t* node){
     }
 }
 
-node_t* handle_type(node_t* node){ //what is difference between t_int a t_kw_int
+int handle_type(node_t* node){ //what is difference between t_int a t_kw_int
     int type;
     if (node->current->type == T_KW_INT){
-        type = 32;
+        if (node->current->value.nillable = 1 ){
+            type = INTQ;
+        } else {
+            type = INT;
+        }
     } else if (node->current->type == T_KW_DOUBLE){
-        type = 33;
+        if (node->current->value.nillable = 1 ){
+            type = FLOATQ;
+        } else {
+            type =FLOAT;
+        }
     } else if (node->current->type == T_KW_STRING){
-        type = 31;
+        if (node->current->value.nillable = 1 ){
+            type = STRQ;
+        } else {
+            type = STR;
+        }
     } else {
         printf("Error: Expected type\n");
         ThrowError(2);
     }
     
-    //assign_varType_ST(node, type, node->current->value.nillable);
-    return  node;
+    return  type;
 }
 
 node_t* hadnle_func_retType(node_t* node){
@@ -112,9 +126,12 @@ node_t* hadnle_func_retType(node_t* node){
     if (node->current->type == T_ARROW){
         node = get_next(node);
         printf("103 current token type: %d\n", node->current->type);
-        node = handle_type(node);
+        int type = handle_type(node);
+        AddFunctionDetails(runInfo->globalFrame, runInfo->ID, type , true);
         node = get_next(node);
-    } 
+    } else {
+        AddFunctionDetails(runInfo->globalFrame, runInfo->ID, 0, true);
+    }
     return node;
 
 }
@@ -125,7 +142,18 @@ node_t* handle_func_def(node_t* node){
         printf("112 Error: Expected identifier\n");
         ThrowError(2);
     }
-    //symtable entry of new func with id
+
+    runInfo->ID=node->current->value.ID_name;
+    if (GetSymbol(runInfo->builtInFunctions, runInfo->ID) != NULL ){
+        //clean all
+        ThrowError(3);
+    } else if (GetSymbol(runInfo->globalFrame, runInfo->ID) != NULL ){
+        ThrowError(3);
+    } else {
+        InsertSymbol(runInfo->globalFrame, runInfo->ID);
+        
+    }   
+    
     node = get_next(node);
     if (node->current->type != T_LEFT_PAREN) {
         printf("119 Error: Expected left paren\n");
@@ -199,7 +227,7 @@ node_t* handle_in_param_list(node_t* node){
     }
     printf("179 current token type: %d\n", node->current->type);
     node = handle_in_param(node);
-     printf("180 current token type: %d\n", node->current->type);
+    printf("180 current token type: %d\n", node->current->type);
     if (node->current->type == T_COMMA){
         
         node = get_next(node);
@@ -212,7 +240,7 @@ node_t* handle_in_param_list(node_t* node){
         printf("188 current token type: %d\n", node->current->type);
         printf("190 current token type: %d\n", node->current->type);  
     }
-     printf("193 current token type: %d\n", node->current->type);
+    printf("193 current token type: %d\n", node->current->type);
     if (node->current->type != T_RIGHT_PAREN){
         printf("Error: Expected right paren\n");
         ThrowError(2);
@@ -262,10 +290,11 @@ node_t* handle_assign_ops(node_t* node){
         } else {
             printf("expr id \n");
             int count1;
+            ExprType result1;
             node_t* start = node;
             node = expression_token_count(node, &count1);
             printf("count1: %d\n", count1);
-            expression_parser(start, runInfo, count1);
+            result1 = expression_parser(start, runInfo, count1);
 
         //call expression handle
         //if failed err.         
@@ -273,10 +302,11 @@ node_t* handle_assign_ops(node_t* node){
     } else {
             printf("expr num \n");
             int count2;
+            ExprType result2;
             node_t* start = node;
             node = expression_token_count(node, &count2);
             printf("count2: %d\n", count2);
-            expression_parser(start, runInfo, count2); // add type assign 
+            result2 = expression_parser(start, runInfo, count2); // add type assign 
             printf("expr num end \n");      
         }
     return node;
@@ -286,7 +316,9 @@ node_t* handle_var_def_ops(node_t* node){
     printf("varDefOps \n");
     if (node->current->type == T_COLON){
         node = get_next(node);
-        node = handle_type(node);
+    
+        int type = handle_type(node);
+        assign_varType_ST(node, type, node->current->value.nillable);
         node = get_next(node);
 
     }
@@ -306,7 +338,7 @@ node_t* handle_var_def(node_t* node){
         printf("Error: Expected identifier\n");
         ThrowError(2);
     }
-    //define_var_ST(node);
+    define_var_ST(node);
     node = get_next(node);
     node = handle_var_def_ops(node);
     return node;
@@ -329,6 +361,8 @@ node_t* handle_funcall_ops(node_t* node){
             printf("Error: Expected right paren\n");
             ThrowError(2);
         } 
+        node = get_next(node);
+        printf("2651 token type %d\n", node->current->type); 
         return  node;
     } else {
         return node;
@@ -444,9 +478,10 @@ node_t* handle_while(node_t* node){
 
 node_t* handle_statement_list(node_t* node){
     printf("stmntList \n");
-    printf("355 stmtntList \n current token type: %d\n", node->current->type);
-    if (node->current->type == T_RIGHT_BRACE ){
+    printf("355 stmtntList  current token type: %d\n", node->current->type);
+    if (node->current->type == T_RIGHT_BRACE || node->current->type == T_FUNC ){
         printf("RB return \n");
+        printf("curr: %d \n", node->current->type);
         return node;
     }
     node = handle_statement(node);
@@ -455,9 +490,14 @@ node_t* handle_statement_list(node_t* node){
 }
 
 node_t* handle_return(node_t* node){
+    printf("return\n");
     if (runInfo->currentLVL == NULL){
         ThrowError(2);
     }
+    node = get_next(node);
+    printf("curent node value %d \n", node->current->type);
+
+
     return node;
 }
 
@@ -475,7 +515,6 @@ node_t* handle_statement(node_t* node){
             node = get_next(node);
             node = handle_funcall_ops(node);
             printf("366 token type %d\n", node->current->type);
-            printf("367 token type %d\n", node->current->type);
             break;
         case T_IF:
             node = get_next(node);
@@ -522,7 +561,6 @@ node_t* get_next(node_t* current){
     }
     current->right = node;
     node->left = current;
-
     return node;
 }
 
@@ -538,36 +576,39 @@ node_t* create_node(){
     return node;
 }
 
-void init_myInfo(){
-    runInfo = malloc(sizeof(struct runTimeInfo));
-    if (runInfo == NULL){
-        ThrowError(99);
-    }
-    
-    SymTable *globalFrame = NULL;
-    globalFrame = malloc(sizeof(SymTable));
-    if (globalFrame == NULL){
-        ThrowError(99);
-    }
-    SymTableInit(&globalFrame);
 
-    SymTable *builtInFunctions;
-    builtInFunctions = malloc(sizeof(SymTable));
-    if (builtInFunctions == NULL){
-        ThrowError(99);
-    }
-    SymTableInit(&builtInFunctions);
-    
-    //fill_builtin_symtab(builtInFunctions);
-
-    runInfo->currentLVL = NULL;
-    runInfo->globalFrame = globalFrame;
-    runInfo->builtInFunctions = builtInFunctions;
-   
-}
 
 void fill_builtin_symtab(SymTable *builtIn){ // fill in to check symtab and to global
+    InsertSymbol(builtIn, "write");
+    AddFunctionDetails(builtIn, "write",  0, true);
 
+    InsertSymbol(builtIn, "substring");
+    AddFunctionDetails(builtIn, "substring",  6, true);
+    InsertSymbol(builtIn, "length");
+    AddFunctionDetails(builtIn, "length",  3, true);
+
+    InsertSymbol(builtIn, "ord");
+    AddFunctionDetails(builtIn, "ord",  3, true);
+
+    InsertSymbol(builtIn, "chr");
+    AddFunctionDetails(builtIn, "chr",  5, true);
+
+    InsertSymbol(builtIn, "readDouble");
+    AddFunctionDetails(builtIn, "readDouble",  7, true);
+
+    InsertSymbol(builtIn, "readInt");
+    AddFunctionDetails(builtIn, "readInt",  4, true);
+
+    AddFunctionDetails(builtIn, "readString",  6, true);
+    InsertSymbol(builtIn, "readString");
+
+    InsertSymbol(builtIn, "Double2Int");
+    AddFunctionDetails(builtIn, "Double2Int",  3, true);
+
+    InsertSymbol(builtIn, "Int2Double");
+    AddFunctionDetails(builtIn, "Int2Double",  8, true);
+
+ 
 }
 
 void create_level(){
@@ -643,9 +684,9 @@ void define_func_ST(){
 
 }
 
-void check_type(){
+// void check_type(){
     
-}
+// }
 
 void start_generator(node_t* node){
     while (node->left != NULL){
@@ -658,10 +699,41 @@ void start_generator(node_t* node){
 
 }
 
+void init_myInfo(){
+    runInfo = malloc(sizeof(struct runTimeInfo));
+    if (runInfo == NULL){
+        ThrowError(99);
+    }
+    
+    SymTable *globalFrame = NULL;
+    globalFrame = malloc(sizeof(SymTable));
+    if (globalFrame == NULL){
+        ThrowError(99);
+    }
+    SymTableInit(&globalFrame);
+
+    SymTable *builtInFunctions;
+    builtInFunctions = malloc(sizeof(SymTable));
+    if (builtInFunctions == NULL){
+        ThrowError(99);
+    }
+    SymTableInit(&builtInFunctions);
+    
+    fill_builtin_symtab(builtInFunctions);
+
+    runInfo->currentLVL = NULL;
+    runInfo->globalFrame = globalFrame;
+    runInfo->builtInFunctions = builtInFunctions;
+
+}
+
 void parser(){
     init_myInfo();
     node_t *node = create_node();
     node->current = scan();
+
+
+
     //node_t *start = node;
     // int count = expression_token_count(node);
     // printf("count: %d\n", count);
@@ -669,23 +741,27 @@ void parser(){
     // printf("result: %d\n", result);
     //exit(0);
 
-    
+    printf("token type %s\n", node->current->value.ID_name);
 
     bool run = true;
     while (run){
         switch (node->current->type) {
-        case T_FUNC:
-            node = get_next(node);
-            printf("token type %d\n", node->current->type);
-            node = handle_func_def(node);
-            break;
-        case T_EOF:
-            exit(0); // add clean up
-        default:
-            node = handle_statement_list(node);
-            break;
+            case T_FUNC:
+                node = get_next(node);
+                printf("func t type %d\n", node->current->type);
+                node = handle_func_def(node);
+                break;
+            case T_EOF:
+                exit(0); // add clean up
+            default:
+                printf("token type %d\n", node->current->type);
+                node = handle_statement_list(node);
+                if (node->current->type != T_FUNC){
+                    node = get_next(node);
+                }
+                
+                break;
         }
-        node = get_next(node);
         printf("452token type %d\n", node->current->type);
     }  
 
@@ -693,8 +769,3 @@ void parser(){
     return;
 }
 
-// int main()
-// {
-//     parser();
-//     return 0;
-// }

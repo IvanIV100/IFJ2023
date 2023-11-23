@@ -11,12 +11,16 @@
 
 //data_types
 typedef enum{
-NIL,
-INT,
-STR,
-BOOL,
-FLOAT,
 VOID,
+NIL,
+BOOL,
+INT,
+INTQ,
+STR,
+STRQ,
+FLOAT,
+FLOATQ
+
 }DataType;
 
 typedef enum{
@@ -38,7 +42,7 @@ typedef struct{
 } Function;
 
 typedef struct{
-DataType datatype; //od 0 do 4
+DataType datatype; //od 0 do 8
 bool init;
 VarOrLet VoL; 
 int intVal;       //hodnoty    

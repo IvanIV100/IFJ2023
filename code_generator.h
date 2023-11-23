@@ -13,7 +13,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "parser.h"
+#include "expressions.h"
 
 
 #ifndef CODE_GENERATOR_H
@@ -29,7 +29,7 @@ const char* built_in_functions[] = {
     "$ord",
     "$chr",
     "$substring",
-    "$write"
+    "$write",
     NULL // End of the list marker
 };
 
@@ -89,4 +89,4 @@ void generatechr();
 
 void generateWrite();
 
-#endif CODE_GENERATOR_H
+#endif

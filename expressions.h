@@ -8,7 +8,6 @@
 #include "error.h"
 #include "scanner.h"
 #include "symtable.h"
-#include "code_generator.h"
 
 typedef struct node {
     struct Token *current;
@@ -22,6 +21,8 @@ typedef struct runTimeInfo {
     SymTable* builtInFunctions;
     struct symTabLVL *currentLVL;
 
+    char *ID;
+
 } runTimeInfo;
 
 typedef struct symTabLVL {
@@ -29,6 +30,8 @@ typedef struct symTabLVL {
     struct symTabLVL *parantLVL;
     
 } symTabLVL;
+
+
 
 
 

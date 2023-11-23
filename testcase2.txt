@@ -1,0 +1,162 @@
+--
+var Int: Int
+Int = 3
+--
+
+func divbyzero(x : Int) -> Int {
+var a : Int
+a = x/0
+return a
+}
+
+var a : Int
+a = divbyzero(4)
+
+--
+
+func addDouble(x : Int, y : Double) -> Double {
+var z : Double
+z = x + y
+return z
+}
+
+var z : double
+z = addDouble(4, 2.12)
+
+--
+
+func addString(x : Int, y : String) -> String {
+var z : String
+z = x + y
+return z
+}
+
+var z : String
+z = addString(4,"string")
+
+--
+
+func noReturn(X : Int) -> Int {
+y = x + 3
+}
+
+var a : Int
+
+a = noReturn(4)
+
+--
+
+write("\n\n\n ahoj")
+
+--
+
+var doubl: Int
+doubl = 3.14
+
+--
+
+let myInput = readString()
+if (myInput == "input") {write(myInput) }
+else{write("spatny input"}
+
+--
+
+var a = 3
+while(a != 4) {
+ write("Nacti hodnotu 4")
+ a = readInt()
+}
+
+--
+
+func rekurze(x : Int) {
+var z = x + 1
+if ( x < 5){ 
+write("je rekurze")
+rekurze(z)
+ }
+else{
+write("konec rekurze")
+}
+}
+
+rekurze(2)
+
+--
+
+func vypocet(x : Int, y : Int, z : Int) -> Int {
+var a : Int
+a = x + y * 20 + (z - 9) * 2
+write(a)
+return a
+}
+
+var vypocett : Int
+vypocett = vypocet(3,2,4) 
+
+--
+
+func StringComp(string1 : String, string2 : String) -> Int {
+var x = length(string1)
+var y = length(string2)
+
+if (x > y) {write("prvni retezec je delsi")
+ return x}
+
+else{write("druhy retezec je delsi")
+ return y}
+
+}
+
+var compare : Int
+compare = StringComp("stringg","string")
+
+--
+
+func vypocet2() -> Int {
+var a : Int
+a = 20-6+3*7-(4/2)*4+22+3-160*(6-5)
+14 + 21 -8 +25 -160
+write ("Vysledek je: ", a, "\n")
+return a
+}
+
+var vysledek : Int = vypocet2()
+
+--
+
+func doubleVypocet(x : Double) -> Double {
+var z : Double
+z =  x * 2.1 + 9.78 - x * ( x / x) - 10 * x
+return z
+}
+
+var doublee = 6.1
+doublee = doubleVypocet(doublee)
+
+--
+
+func doubleRekurze(y : Double){
+var z : Double
+z = y / 2
+if(z<1){write("konec rekurze\n")}
+else{write(z "\n")
+doubleRekurze(z)}
+}
+
+var a = 6.2
+doubleRekurze(a)
+
+--
+
+
+
+
+
+
+
+
+
+
+
+

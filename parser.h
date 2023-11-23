@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "symtable.h"
+#include "code_generator.h"
 
 typedef struct node {
     struct Token *current;
@@ -49,6 +50,8 @@ node_t* handle_return(node_t* node);
 node_t* create_node();
 node_t* get_next(node_t* node);
 node_t* expression_token_count(node_t* node,int* count);
+
+void start_generator(node_t* node);
 void fill_builtin_symtab(SymTable *builtIn);
 void define_var_ST(node_t* node);
 void assign_varType_ST(node_t* node, int type, int nillable);

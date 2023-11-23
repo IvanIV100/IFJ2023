@@ -15,6 +15,7 @@ xchoda00
 #include "expressions.h"
 #include "error.h"
 
+
 /* TODO 
 * - Mem management
     - free all allocated memory in a dedicated destructor
@@ -28,10 +29,18 @@ xchoda00
     -add comments to functions
 
 * - Random
+    -return fix
+    -function in param fix
+    -remove semcheck from expressions
+
     -check let declarations
     -handle built in funcs
     -check if err output is correct
     -expression parser
+
+* - Code Gen
+    -provide start of linked list
+    -
 
 
 */
@@ -633,6 +642,17 @@ void define_func_ST(){
 
 void check_type(){
     
+}
+
+void start_generator(node_t* node){
+    while (node->left != NULL){
+        node = node->left;
+    }
+
+    start_generating(node, runInfo);
+
+    exit(0);
+
 }
 
 void parser(){

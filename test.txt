@@ -1,9 +1,50 @@
 func bar(with param : String) -> String {
-let r : String = foo(param)
+let r : String = 4
 return r
 }
-func foo(_ par : String) -> String {
-let ret = bar(with : par)
-return ret
+
+
+
+
+func bar(){
 }
-bar(with: "ahoj")
+ 
+func bar(X Y : Int){
+}
+ 
+func bar(X Y : Int) -> String {
+}
+ 
+func bar() -> String {
+}
+ 
+func bar(){
+    var a : Int = 5
+    var b : Int
+    b = 6
+    var c = a + b
+}
+ 
+func bar(X Y : Int){
+    var a : Int = 5
+    var b :Int
+    b = 6
+    var c = a + b
+    return
+}
+ 
+func bar(X Y : Int) -> Int {
+    var a : Int = 5
+    var b :Int
+    b = 6
+    var c = a + b
+    return c
+}
+ 
+func bar() -> Int {
+    var a : Int = 5
+    var b :Int
+    b = 6
+    var c = a + b
+    return c
+}

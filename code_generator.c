@@ -10,7 +10,8 @@
 //ExpressionVariable generation (look)
 
 #include "code_generator.h"
-#include "parser.c"
+#include "expressions.h"
+//#include "parser.c"
 
 char *llvlVarForm = "%s@&_%s$%d_&";
 char *globVar1 = "GF@$%otempvar%$";

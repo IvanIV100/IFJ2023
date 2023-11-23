@@ -4,10 +4,10 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include "parser.h"
+
 #include "expressions.h"
-#include "error.h"
-#include "symtable.h"
+
+
 
 //#include "codegen.h"
 

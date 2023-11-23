@@ -1,18 +1,18 @@
-#include "symtable.h"
-#include "scanner.h"
-#include "parser.c"
-#include "parser.h"
+
+//#include "parser.h"
 
 // code_generator.h
 
 #ifndef CODE_GENERATOR_H
 #define CODE_GENERATOR_H
 
-#include "symtable.h"
-#include "parser.h"
+#include "scanner.h"
+
+//#include "parser.h"
+struct runTimeInfo;
+struct node_t;
 
 #define MAX_VAR 256
-<<<<<<< HEAD
 #define MAX_LIT 8192
 
 extern char *llvlVarForm;
@@ -39,8 +39,8 @@ void passVariablesToGlobal();
 void moveGlobalToVariable(char *variable, char *globalVar);
 void processGlobalVariable(char *variable, char *globalVar);
 void returnPassedVariables();
-void writeCallPutprmtr(Token prmtr, Symbol CFunc);
-void functionCallPutprmtr(Token prmtr, Symbol CFunc);
+//void writeCallPutprmtr(Token prmtr, Symbol CFunc);
+//void functionCallPutprmtr(Token prmtr, Symbol CFunc);
 //BUILT-IN functions 
 void generateInt2Double();
 void generateDouble2Int();
@@ -53,7 +53,4 @@ void generateord();
 void generatechr();
 void generateWrite();
 
-#endif CODE_GENERATOR_H
-=======
-#define MAX_LIT 8192
->>>>>>> 9b1427c4e147c41b9f453655f2c63677e48b99ef
+#endif

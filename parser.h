@@ -7,28 +7,12 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "symtable.h"
-#include "code_generator.h"
 
-typedef struct node {
-    struct Token *current;
-    struct node* left;
-    struct node* right;
-    
-} node_t;
 
-typedef struct runTimeInfo {
-    SymTable* globalFrame;
-    SymTable* builtInFunctions;
-    struct symTabLVL *currentLVL;
 
-} runTimeInfo;
 
-typedef struct symTabLVL {
-    SymTable *currentTab;
-    struct symTabLVL *parantLVL;
-    
-} symTabLVL;
+
+#include "expressions.h"
 
 
 void parser();
@@ -52,6 +36,7 @@ node_t* get_next(node_t* node);
 node_t* expression_token_count(node_t* node,int* count);
 
 void start_generator(node_t* node);
+//void start_generating(node_t* node, runTimeInfo* runInfo);
 void fill_builtin_symtab(SymTable *builtIn);
 void define_var_ST(node_t* node);
 void assign_varType_ST(node_t* node, int type, int nillable);

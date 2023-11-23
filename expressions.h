@@ -3,8 +3,33 @@
 
 
 #include <stdlib.h>
-#include "parser.h"
+
+
+#include "error.h"
 #include "scanner.h"
+#include "symtable.h"
+#include "code_generator.h"
+
+typedef struct node {
+    struct Token *current;
+    struct node* left;
+    struct node* right;
+    
+} node_t;
+
+typedef struct runTimeInfo {
+    SymTable* globalFrame;
+    SymTable* builtInFunctions;
+    struct symTabLVL *currentLVL;
+
+} runTimeInfo;
+
+typedef struct symTabLVL {
+    SymTable *currentTab;
+    struct symTabLVL *parantLVL;
+    
+} symTabLVL;
+
 
 
 

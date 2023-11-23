@@ -9,11 +9,9 @@ xchoda00
 #include <stdbool.h>
 #include <ctype.h>
 #include <string.h>
+
 #include "parser.h"
 
-#include "scanner.h"
-#include "expressions.h"
-#include "error.h"
 
 
 /* TODO 
@@ -132,11 +130,11 @@ node_t* handle_func_def(node_t* node){
     if (node->current->type != T_LEFT_PAREN) {
         printf("119 Error: Expected left paren\n");
         ThrowError(2);
-     }
+    }
     node = get_next(node);
     node = handle_param_list(node);
     printf("125 current token type: %d\n", node->current->type);
-     if (node->current->type != T_RIGHT_PAREN){
+    if (node->current->type != T_RIGHT_PAREN){
         ThrowError(2);
     } 
     //removed check for ) as its in handle_param_list
@@ -517,6 +515,11 @@ node_t* get_next(node_t* current){
     node_t *node = create_node();
     node->current = scan();
     printf("new Current:  %d\n", node->current->type);
+    if (node->current->type == T_ERORR){
+        int err = node->current->value.integer;
+        free_node_list(node);
+        ThrowError(err);
+    }
     current->right = node;
     node->left = current;
 
@@ -563,9 +566,9 @@ void init_myInfo(){
    
 }
 
-// void fill_builtin_symtab(SymTable *builtIn){ // fill in to check symtab and to global
+void fill_builtin_symtab(SymTable *builtIn){ // fill in to check symtab and to global
 
-// }
+}
 
 void create_level(){
     symTabLVL *current_level = malloc(sizeof(struct symTabLVL));
@@ -649,7 +652,7 @@ void start_generator(node_t* node){
         node = node->left;
     }
 
-    start_generating(node, runInfo);
+    //start_generating(node, runInfo);
 
     exit(0);
 

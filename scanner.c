@@ -9,9 +9,8 @@
 
 /*
 Things to do:
-4) Kdyz nastane Error tak to upravit at se stane to co se stat ma (mainly malloc)
 
-
+rewrite stavovy automam (dat pryc multiline_string)
 
 */
 
@@ -62,7 +61,7 @@ int SkipComment() {
             } 
 
             else if (curr == EOF) {
-                return T_ERORR; 
+                return T_EOF; 
             }
         }
     } 
@@ -84,6 +83,7 @@ Token* createToken(enum token_type type, enum token_Category category) {
     if (token == NULL) {
         token->Category = TC_ERR;
         token->type = T_ERORR;
+        token->value.integer=99;
     }
 
     token->type = type;
@@ -109,10 +109,10 @@ Token* is_Id(char curr) {
     token->value.ID_name = malloc(sizeof(char) * Id_Length);
 
     if (token->value.ID_name == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
         free(token->value.ID_name);
         token->Category = TC_ERR;
         token->type = T_ERORR;
+        token->value.integer=99;
         return token;
     }
 
@@ -127,10 +127,10 @@ Token* is_Id(char curr) {
             char *temp = realloc(token->value.ID_name, sizeof(char) * (Id_Length * 2));
             Id_Length = Id_Length * 2; 
             if (temp == NULL) {
-                fprintf(stderr, "Memory reallocation failed\n");
                 free(token->value.ID_name);
                 token->Category = TC_ERR;
                 token->type = T_ERORR;
+                token->value.integer=99;
                 return token;
             }
             token->value.ID_name = temp;
@@ -199,7 +199,7 @@ int addChar(char curr,int i, Token *token){
     }
 
 
-// Dostali jsme \{ coz znamena Unixovy kod !! nemam presne moc tuseni jak to funguje yoinkl jsem to z StackFlow a implementoval na moje reseni 
+// Dostali jsme \{ coz znamena Unixovy kod !! nemam presne moc tuseni jak
 int unicode(int i, Token *token) {          // over returny kdyz indikejtnou errory
     // ocekavany format \u{XX}
     if (getchar() != '{') {
@@ -271,6 +271,7 @@ Token* isString(char curr) {     // je to string jeste multi
         token->value.stringVal = NULL;
         token->Category = TC_ERR;
         token->type = T_ERORR;
+        token->value.integer=99;
     }
 
     int length=30;
@@ -287,16 +288,17 @@ Token* isString(char curr) {     // je to string jeste multi
                 free(token->value.stringVal);
                 token->Category=TC_ERR;
                 token->type=T_ERORR;
+                token->value.integer=99;
                 return token;
             }
         }
         if (curr=='\\'){                       
             alright = escape_Char(token,i);
             if (alright == 0){
-                printf("Here%d",alright);
                 free(token->value.stringVal);
                 token->Category=TC_ERR;
                 token->type=T_ERORR;
+                token->value.integer=1;
                 return token;
             }
         }
@@ -319,6 +321,7 @@ Token* isMultiLineString() {
         token->value.stringVal = NULL;
         token->Category = TC_ERR;
         token->type = T_ERORR;
+        token->value.integer=99;
     }
     int alright = 1;          
     int length = 100;
@@ -328,6 +331,7 @@ Token* isMultiLineString() {
     if (curr != '\n'){                // chyba spatne zapsany Multine line string """ musi byt na samostatnem radku
         token->Category = TC_ERR;
         token->type = T_ERORR;
+        token->value.integer=1;
         free(token->value.stringVal);
         return token;
     }
@@ -338,6 +342,7 @@ Token* isMultiLineString() {
             if (!expand_String(token, &length)) {
                 token->Category = TC_ERR;
                 token->type = T_ERORR;
+                token->value.integer=99;
                 free(token->value.stringVal);
                 return token;
             }
@@ -377,6 +382,7 @@ Token* isMultiLineString() {
 
     token->Category = TC_ERR;
     token->type = T_ERORR;
+    token->value.integer=1;
     free(token->value.stringVal);
     return token;
 }
@@ -466,6 +472,8 @@ void free_token_Values(Token *token){       // funkce ktera uvolni pamet kterou 
 Token* scan() {                             // proste GetToken da ti dasli Token asi prejmenuji whatever
     char curr = getNotWhiteChar();         // next slouzi jako takovy idiot ktery se diva do predu
     char next = curr;
+    Token* token;
+
     //printf("%c",curr);
     
     switch (curr) {
@@ -530,7 +538,9 @@ Token* scan() {                             // proste GetToken da ti dasli Token
             }
             else {
                 ungetc(next, stdin);
-                return createToken(T_ERORR, TC_ERR);
+                token = createToken(T_ERORR, TC_ERR);
+                token->value.integer=1;
+                return token;
             }
 
         case '<':
@@ -566,7 +576,9 @@ Token* scan() {                             // proste GetToken da ti dasli Token
             } 
             else {
                 ungetc(next, stdin);
-                return createToken(T_ERORR, TC_ERR);
+                token = createToken(T_ERORR, TC_ERR);
+                token->value.integer=1;
+                return token;
             }
 
 
@@ -618,11 +630,12 @@ Token* scan() {                             // proste GetToken da ti dasli Token
 
         default:                            // neco co tam nema byt mozna errorum prirad Value at vis jaky presne ERROORORRO
             //printf("2.%c",curr);
-            return createToken(T_ERORR, TC_ERR);
+            token = createToken(T_ERORR, TC_ERR);
+            token->value.integer=1;
+            return token;
     }
     return NULL;
 }
-
 
 
 
@@ -695,9 +708,11 @@ const char* token_names[] = {
         }
         else if(xd->type==T_IDENTIFIER){
             printf("xx %s xx \n",xd->value.ID_name);}
+        else if(xd->type==T_ERORR){
+            printf("xx %d xx \n",xd->value.integer);
+            }
      }
      free_token_Values(xd);
  }
  
-
 */

@@ -177,37 +177,40 @@ int AddFunctionDetails(SymTable *table, char *key, DataType returnType, bool def
     return 1;
 }
 
-int AddParametr(SymTable *table, char *key, char c){
+int AddParametr(SymTable *table, char *key, char *name, char type){
     int hash = Searching(table, key);
     if(hash == -1)
         return -1; //nenašlo to
-    if (add_parametr(&(*table)[hash]->parametr, c) == -1)
+    if (add_parametr_name(&(*table)[hash]->parametr, key, type) == -1)
+        return -1;
+    return 1;
+}
+
+int AddParametrID(SymTable *table, char *key, char *id){
+    int hash = Searching(table, key);
+    if(hash == -1)
+        return -1; //nenašlo to
+    if (add_parametr_id(&(*table)[hash]->parametr, id) == -1)
         return -1;
     return 1;
 }
 
 void SymTableFree(SymTable *table){
-    //printf("table: %s\n", &table);
      for (int i = 0; i < SYMTABLE_SIZE; i++) {
      if ((*table)[i] != NULL) {
-        if((*table)[i]->id != NULL){
+        if((*table)[i]->id != NULL)
             free((*table)[i]->id);
-        }
-        if((*table)[i]->variable.strVal != NULL){
+        if((*table)[i]->variable.strVal != NULL)
             free((*table)[i]->variable.strVal);
-        }  
-     
         clear_parametr(&(*table)[i]->parametr);
         parametr_free(&(*table)[i]->parametr);
         free((*table)[i]);
-        (*table)[i] = NULL;
         }
      }
      free(table);
-     printf("Symtable free\n");
 }
 
-
+/* // kdyby se funkce potrebovala, tak ji musim dodelat
 void copy_to_child(SymTable *parent, SymTable *current) { //jeste by to chtelo alokovat znovu pamet pro str value,
     if(parent == NULL || current == NULL)
         return;
@@ -241,7 +244,7 @@ void copy_to_child(SymTable *parent, SymTable *current) { //jeste by to chtelo a
             temp->variable.strVal = NULL;
            (*current)[i]= temp;
         }
-            }    }
+            }    }*/
 /*
 int main(){
 SymTable *table= NULL;
@@ -262,9 +265,13 @@ InsertSymbol(&(*table), "popal");
 if (AddFunctionDetails(&(*table), "popal", 2, 1) == -1)
     printf("Neexistuje \n");
 InsertSymbol(&(*table), "pollal");
-AddParametr(&(*table), "popal", 'd');
-AddParametr(&(*table), "popal", 'i');
-AddParametr(&(*table), "popal", 'p');
+AddParametr(&(*table), "popal", "jmena", 'd');
+AddParametr(&(*table), "popal", "jmenaa" ,'i');
+AddParametr(&(*table), "popal", "x" ,'p');
+AddParametrID(&(*table), "popal", "id");
+AddParametrID(&(*table), "popal", "idadwdwadaw");
+AddParametrID(&(*table), "popal", "iddsadadwdwada");
+
 AddVarDetails(&(*table), "pollal", 0, 1, 0);
 insert_string_value(&(*table), "pollal", "ahoj");
 symbol = GetSymbol(&(*table), "popal");
@@ -273,7 +280,8 @@ if (symbol!=NULL){
     printf("string: %s\n", symbol->id);
     printf("init? %d\n", symbol->function.ReturnType);
     printf("datatype %d\n", symbol->function.defined);
-    printf("PArametr %s\n", symbol->parametr.str);
+    printf("PArametr %s\n", symbol->parametr.name);
+    printf("PArametr %s\n", symbol->parametr.id);
 }
 printf("value: %s\n", symbol1->variable.strVal);
 printf("type: %d\n", symbol1->variable.datatype);

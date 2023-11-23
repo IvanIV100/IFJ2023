@@ -1,8 +1,3 @@
-#ifndef SYMTABLE_H
-#define SYMTABLE_H
-
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -68,10 +63,11 @@ void SymTableInit(SymTable **table);
         SymTableInit(&table);*/
 
 void SymTableFree(SymTable *table);
+//SymTableFree(&(*table));
 
 int InsertSymbol(SymTable *table, char *key);
 
-int AddParametr(SymTable *table, char *key, char c);
+int AddParametr(SymTable *table, char *key, char *name, char c);
 
 int AddFunctionDetails(SymTable *table, char *key, DataType returnType, bool defined);
 
@@ -84,6 +80,3 @@ int Searching(SymTable *table, char *key);
 int RemoveSymbol(SymTable *table, char *key);
 
 unsigned long HashFunction(char *key);
-
-
-#endif

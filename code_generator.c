@@ -8,14 +8,13 @@
 
 //TODO
 //ExpressionVariable generation (look)
-//Built in functions looking weird (fix)
 
 #include "code_generator.h"
 #include "parser.c"
 
-char *lolVarForm = "%s@&_%s$%d_&";
-char *globVar1 = "GF@$%operatortempvar%$";
-char *globVar2 = "GF@$%operatortempvar2%$";
+char *llvlVarForm = "%s@&_%s$%d_&";
+char *globVar1 = "GF@$%otempvar%$";
+char *globVar2 = "GF@$%otempvar2%$";
 
 void initializeEnvironment() {
     printf(".ifjcode23\n");
@@ -26,8 +25,16 @@ void initializeEnvironment() {
     // Initialize stack parameter counter
     printf("PUSHS int@0\n");
 
-    // Generate code to read integer
     generateReadInt();
+    generateWrite();
+    //generatechr();
+    //generateDouble2Int();
+    //generateInt2Double();
+    //generateLength();
+    //generateord();
+    //generatereadDouble();
+    //generatereadSrting();
+    //generateSubstring();    
 }
 
 void initializeFrameAndVariables() {
@@ -59,41 +66,41 @@ void jump(char *lbl) {
     printf("JUMP %s\n", lbl);
 }
 
-void address3Operator(char *operator, char *result, char *s1, char *s2) {
-    if (strcmp(operator, "CONCAT") == 0) {
-        printf("CONCAT %s %s %s\n", result, s1, s2);
-    } else if (strcmp(operator, "OR") == 0) {
-        printf("OR %s %s %s\n", result, s1, s2);
-    } else if (strcmp(operator, "AND") == 0) {
-        printf("AND %s %s %s\n", result, s1, s2);
-    } else if (strcmp(operator, "NOT") == 0) {
-        printf("NOT %s %s\n", result, s1);
-    } else if (strcmp(operator, "PLUS") == 0) {
-        printf("ADD %s %s %s\n", result, s1, s2);
-    } else if (strcmp(operator, "MINUS") == 0) {
-        printf("SUB %s %s %s\n", result, s1, s2);
-    } else if (strcmp(operator, "MUL") == 0) {
-        printf("MUL %s %s %s\n", result, s1, s2);
-    } else if (strcmp(operator, "DIV") == 0) {
-        printf("DIV %s %s %s\n", result, s1, s2);
-    } else if (strcmp(operator, "NEQ") == 0) {
+void address3Operator(char *op, char *res, char *s1, char *s2) {
+    if (strcmp(op, "CONCAT") == 0) {
+        printf("CONCAT %s %s %s\n", res, s1, s2);
+    } else if (strcmp(op, "OR") == 0) {
+        printf("OR %s %s %s\n", res, s1, s2);
+    } else if (strcmp(op, "AND") == 0) {
+        printf("AND %s %s %s\n", res, s1, s2);
+    } else if (strcmp(op, "NOT") == 0) {
+        printf("NOT %s %s\n", res, s1);
+    } else if (strcmp(op, "PLUS") == 0) {
+        printf("ADD %s %s %s\n", res, s1, s2);
+    } else if (strcmp(op, "MINUS") == 0) {
+        printf("SUB %s %s %s\n", res, s1, s2);
+    } else if (strcmp(op, "MUL") == 0) {
+        printf("MUL %s %s %s\n", res, s1, s2);
+    } else if (strcmp(op, "DIV") == 0) {
+        printf("DIV %s %s %s\n", res, s1, s2);
+    } else if (strcmp(op, "NEQ") == 0) {
         printf("EQ %s %s %s\n", s1, s1, s2);
-        printf("NOT %s %s\n", result, s1);
-    }  else if (strcmp(operator, "EQ") == 0) {
-        printf("EQ %s %s %s\n", result, s1, s2);
-    } else if (strcmp(operator, "LT") == 0) {
-        printf("LT %s %s %s\n", result, s1, s2);
-    } else if (strcmp(operator, "GT") == 0) {
-        printf("GT %s %s %s\n", result, s1, s2);
-    } else if (strcmp(operator, "LTE") == 0) {
+        printf("NOT %s %s\n", res, s1);
+    }  else if (strcmp(op, "EQ") == 0) {
+        printf("EQ %s %s %s\n", res, s1, s2);
+    } else if (strcmp(op, "LT") == 0) {
+        printf("LT %s %s %s\n", res, s1, s2);
+    } else if (strcmp(op, "GT") == 0) {
+        printf("GT %s %s %s\n", res, s1, s2);
+    } else if (strcmp(op, "LTE") == 0) {
         printf("LT %s %s %s\n", globVar1, s1, s2);
         printf("EQ %s %s %s\n", globVar2, s1, s2);
-        printf("OR %s %s %s\n", result, globVar1, globVar2);
-    } else if (strcmp(operator, "GTE") == 0) {
+        printf("OR %s %s %s\n", res, globVar1, globVar2);
+    } else if (strcmp(op, "GTE") == 0) {
         printf("GT %s %s %s\n", globVar1, s1, s2);
         printf("EQ %s %s %s\n", globVar2, s1, s2);
-        printf("OR %s %s %s\n", result, globVar1, globVar2);
-    } else if (strcmp(operator, "QQ") == 0) {
+        printf("OR %s %s %s\n", res, globVar1, globVar2);
+    } else if (strcmp(op, "QQ") == 0) {
         char *lbl1 = generateLabel();
         char *lbl2 = generateLabel();
         char *lbl3 = generateLabel();
@@ -101,10 +108,10 @@ void address3Operator(char *operator, char *result, char *s1, char *s2) {
         printf("JUMPIFEQ %s %s %s\n", lbl1, s1, "nil@nil");
         printf("JUMP %s\n", lbl2);
         printf("LABEL %s\n", lbl1);
-        printf("MOVE %s %s\n", result, s2);
+        printf("MOVE %s %s\n", res, s2);
         printf("JUMP %s\n", lbl3);
         printf("LABEL %s\n", lbl2);
-        printf("MOVE %s %s\n", result, s1);
+        printf("MOVE %s %s\n", res, s1);
         printf("LABEL %s\n", lbl3);
 
         free(lbl1);
@@ -113,22 +120,21 @@ void address3Operator(char *operator, char *result, char *s1, char *s2) {
     }
 }
 
-//Juknout na toto
 char *generateExpressionVariable() {
     static int cnt = 0;
     char mx[MAX_VAR];
     sprintf(mx, "TF@$generated_on_stack_%d$", cnt);
     printf("DEFVAR %s\n", mx);
-    char *result = malloc(sizeof(char) * (strlen(mx) + 1));
-    strcpy(result, mx);
+    char *res = malloc(sizeof(char) * (strlen(mx) + 1));
+    strcpy(res, mx);
     cnt++;
-    return result;
+    return res;
 }
 
-char *getVariableName(char *var) {
-    Symbol *found;
-    SymTable *table;
-    Searching(&table,var);
+char *getVarName(char *var) {
+    Symbol *Cur;
+    SymTable *tbl;
+    Searching(&tbl,var);
 
     char mx[MAX_VAR];
     char *frame;
@@ -146,34 +152,34 @@ char *getVariableName(char *var) {
     if (lvlNameAdd == -1) {
         sprintf(mx, "%s@%s", frame, var);
     } else {
-        sprintf(mx, lolVarForm, frame, var, lvlNameAdd);
+        sprintf(mx, llvlVarForm, frame, var, lvlNameAdd);
     }
 
-    char *result = malloc(sizeof(char) * (strlen(mx) + 1));
-    strcpy(result, mx);
+    char *res = malloc(sizeof(char) * (strlen(mx) + 1));
+    strcpy(res, mx);
 
-    return result;
+    return res;
 }
 
-char *convertString(const char *inputStr) {
+char *convStr(const char *inputStr) {
     size_t inputLength = strlen(inputStr);
-    char *resultStr = (char *)malloc(sizeof(char) * inputLength * 5);
+    char *resStr = (char *)malloc(sizeof(char) * inputLength * 5);
     size_t i = 0, j = 0;
     for (; i < inputLength; i++) {
         char current = inputStr[i];
 
         if (((int)current >= 0 && (int)current <= 32) || (int)current == 35 || (int)current == 92) {
-            sprintf(resultStr + j, "\\%03d", (int)current);
+            sprintf(resStr + j, "\\%03d", (int)current);
             j += 4;
         } else {
-            resultStr[j++] = current;
+            resStr[j++] = current;
         }
     }
-    resultStr[j] = '\0';
-    return resultStr;
+    resStr[j] = '\0';
+    return resStr;
 }
 
-char *getLiteralName(Token liter) {
+char *getLitName(Token liter) {
     char mx[MAX_LIT];
     switch (liter.Category) {
         case NIL: {
@@ -181,7 +187,7 @@ char *getLiteralName(Token liter) {
             break;
         }
         case T_KW_STRING: {
-            char *tmp = convertString(liter.value.stringVal);
+            char *tmp = convStr(liter.value.stringVal);
             sprintf(mx, "string@%s", tmp);
             free(tmp);
             break;
@@ -197,38 +203,37 @@ char *getLiteralName(Token liter) {
         default:
             break;
     }
-    char *result = malloc(sizeof(char) * (strlen(mx) + 1));
-    strcpy(result, mx);
-    return result;
+    char *res = malloc(sizeof(char) * (strlen(mx) + 1));
+    strcpy(res, mx);
+    return res;
 }
 
-char *getIntLiteralName(int c) {
+char *getIntLitName(int c) {
     char mx[MAX_LIT];
     sprintf(mx, "int@%d", c);
-    char *result = malloc(sizeof(char) * (strlen(mx) + 1));
-    strcpy(result, mx);
-    return result;
+    char *res = malloc(sizeof(char) * (strlen(mx) + 1));
+    strcpy(res, mx);
+    return res;
 }
 
-char *generateNewLabel() {
+char *generateNewlbl() {
     static int cnt = 0;
     char mx[MAX_VAR];
     sprintf(mx, "$help_label_%d$", cnt);
-    char *result = malloc(sizeof(char) * (strlen(mx) + 1));
-    strcpy(result, mx);
+    char *res = malloc(sizeof(char) * (strlen(mx) + 1));
+    strcpy(res,mx);
     cnt++;
-    return result;
+    return res;
 }
 
 void moveVariableToGlobal(char *globalVar, char *localVar) {
     move(globalVar, localVar);
 }
-//global a symtbas not necessary
 void handleGlobalVariable(char *globalVar, char *localVar) {
-    Symbol *found;
+    Symbol *Cur;
 
     // Check if the variable exists in the global table
-    if (getFromGlobalTable(globalVar, &found)) {
+    if (getFromGlobaltbl(globalVar, &Cur)) {
         moveVariableToGlobal(globalVar, localVar);
     } else {
         // If not, define the variable and handle recursion
@@ -242,21 +247,17 @@ void handleGlobalVariable(char *globalVar, char *localVar) {
 
         // Insert the variable into the global symbol table
         Symbol defined;
-        SymTableInit(&defined);
+        SymtblInit(&defined);
         symtb_insert(runInfo->globalFrame, globalVar, defined);
-        RemoveSymbol(runInfo->currentLVL,&defined);
+        RemoveSymbol(runInfo->currentLVL->currentTab,&defined);
     }
 }
-//global and temp symtabs not neccessary
 void passVariablesToGlobal() {
     int localLevel = runInfo->currentLVL;
     for (int i = 0; i < sizeof(runInfo->currentLVL); i++) {
-        /*if (temp_symtb.symtb_arr[i].deleted)
-            continue;
-        */
         char globalVar[MAX_VAR];
-        sprintf(globalVar, lolVarForm, "GF", runInfo->currentLVL->currentTab, localLevel);
-        char *localVar = getVariableName(runInfo->currentLVL->currentTab);
+        sprintf(globalVar, llvlVarForm, "GF", runInfo->currentLVL->currentTab, localLevel);
+        char *localVar = getVarName(runInfo->currentLVL->currentTab);
 
         handleGlobalVariable(globalVar, localVar);
 
@@ -270,23 +271,19 @@ void moveGlobalToVariable(char *variable, char *globalVar) {
 }
 
 void processGlobalVariable(char *variable, char *globalVar) {
-    Symbol *found;
+    Symbol *Cur;
 
-    // Check if the variable exists in the global table
-    if (getFromGlobalTable(globalVar, &found)) {
+    // Check if the variable exists in the global tbl
+    if (getFromGlobaltbl(globalVar, &Cur)) {
         moveGlobalToVariable(variable, globalVar);
     }
 }
-//global and temp symtabs not neccessary
 void returnPassedVariables() {
     int localLevel = runInfo->currentLVL;
     for (int i = 0; i < sizeof(runInfo->currentLVL); i++) {
-        /*if (temp_symtb.symtb_arr[i].deleted)
-            continue;
-        */
         char globalVar[MAX_VAR];
-        sprintf(globalVar, lolVarForm, "GF", runInfo->currentLVL->currentTab, localLevel);
-        char *variable = getVariableName(runInfo->currentLVL->currentTab);
+        sprintf(globalVar, llvlVarForm, "GF", runInfo->currentLVL->currentTab, localLevel);
+        char *variable = getVarName(runInfo->currentLVL->currentTab);
 
         processGlobalVariable(variable, globalVar);
 
@@ -295,57 +292,61 @@ void returnPassedVariables() {
 }
 
 
-void writeCallPutprmtr(Token prmtr, Symbol calledFun) {
+void writeCallPutprmtr(Token prmtr, Symbol CFunc) {
     printf("PUSHS %s\n", globVar1);
     printf("ADD %s %s int@1\n", globVar1, globVar1);
     if (prmtr.Category == TC_ID) {
-        char *varName = getVariableName(prmtr.value.stringVal);
-        printf("PUSHS %s\n", varName);
-        free(varName);
+        char *varN = getVarName(prmtr.value.stringVal);
+        printf("PUSHS %s\n", varN);
+        free(varN);
     } else {
-        char *litName = getLiteralName(prmtr);
-        printf("PUSHS %s\n", litName);
-        free(litName);
+        char *litN = getLitName(prmtr);
+        printf("PUSHS %s\n", litN);
+        free(litN);
     }
     printf("PUSHS %s\n", globVar1);
 }
 
-void functionCallPutprmtr(Token prmtr, Symbol calledFun) {
-    if (strcmp(calledFun.id, "write") == 0) {
-        writeCallPutprmtr(prmtr, calledFun);
+void functionCallPutprmtr(Token prmtr, Symbol CFunc) {
+    if (strcmp(CFunc.id, "write") == 0) {
+        writeCallPutprmtr(prmtr, CFunc);
         return;
     }
 
     if (prmtr.Category == TC_ID) {
-        char *varName = getVariableName(prmtr.value.stringVal);
-        printf("PUSHS %s\n", varName);
-        free(varName);
+        char *varN = getVarName(prmtr.value.stringVal);
+        printf("PUSHS %s\n", varN);
+        free(varN);
     } else {
-        char *litName = getLiteralName(prmtr);
-        printf("PUSHS %s\n", litName);
-        free(litName);
+        char *litN = getLitName(prmtr);
+        printf("PUSHS %s\n", litN);
+        free(litN);
     }
 }
 
 
-void generateInt2Double()
-{
+void generateInt2Double() {
     printf(
-    "\n LABEL $Int2Double" \
-	"\n PUSHFRAME" \
-	"\n DEFVAR LF@%%retval" \
-	"\n INT2FLOAT LF@%%retval LF@%%0" \
-	"\n POPFRAME" \
-	"\n RETURN");
+        "\n LABEL $int2Double" \
+        "\n PUSHFRAME" \
+        "\n DEFVAR LF@%retval" \
+        "\n INT2FLOAT LF@%retval LF@%0" \
+        "\n MOVE LF@%retval float@0.0" \ 
+        "\n ADD LF@%retval LF@%retval LF@%0" \ 
+        "\n POPFRAME" \
+        "\n RETURN");
 }
+
 
 void generateDouble2Int()
 {
     printf(
     "\n LABEL $Double2Int" \
 	"\n PUSHFRAME" \
-	"\n DEFVAR LF@%%retval" \
-	"\n FLOAT2INT LF@%%retval LF@%%0" \
+	"\n DEFVAR LF@%retval" \
+	"\n FLOAT2INT LF@%retval LF@%0" \
+    "\n MOVE LF @%retval int@0"\
+    "\n ADD LF@%retval LF@%retval LF@%0"
 	"\n POPFRAME" \
 	"\n RETURN");
 }
@@ -355,7 +356,8 @@ void generatereadString()
     printf(
     "\n LABEL $readString" \
 	"\n PUSHFRAME" \
-	"\n READ LF@%%retval string" \
+    "\n DEFVAR LF @%retval"\
+	"\n READ LF@%retval string" \
 	"\n POPFRAME" \
 	"\n RETURN");
 }
@@ -365,19 +367,20 @@ void generatereadInt()
     printf(
 	"\n LABEL $readInt" \
 	"\n PUSHFRAME" \
-	"\n READ LF@%%retval int" \
+    "\n DEFVAR LF@%retval" \
+	"\n READ LF@%retval int" \
 	"\n POPFRAME" \
 	"\n RETURN");
 }
 
-void generatereadDouble()
-{
+void generatereadDouble() {
     printf(
-	"\n LABEL $readDouble" \
-	"\n PUSHFRAME" \
-	"\n READ LF@%%retval float" \
-	"\n POPFRAME" \
-	"\n RETURN");
+        "\n LABEL $readDouble" \
+        "\n PUSHFRAME" \
+        "\n DEFVAR LF@%retval" \
+        "\n READ LF@%retval double" \
+        "\n POPFRAME" \
+        "\n RETURN");
 }
 
 void generateLength()
@@ -385,55 +388,100 @@ void generateLength()
     printf(
 	"\n LABEL $length" \
 	"\n PUSHFRAME" \
-	"\n DEFVAR LF@%%retval" \
-	"\n STRLEN LF@%%retval LF@%%0" \
+	"\n DEFVAR LF@%retval" \
+	"\n STRLEN LF@%retval LF@%0" \
 	"\n POPFRAME" \
 	"\n RETURN");
 }
 
-void generateSubstring()
-{
+void generateSubstring() {
     printf(
-	"\n LABEL $substring" \
-	"\n PUSHFRAME" \
-	"\n DEFVAR LF@%%retval" \
-	"\n MOVE LF@%%retval string@" \
-	"\n DEFVAR LF@index" \
-	"\n MOVE LF@index int@0" \
-	"\n DEFVAR LF@length" \
-	"\n MOVE LF@length int@0" \
-	"\n STRLEN LF@length LF@%%0" \
-	"\n DEFVAR LF@char" \
-	"\n DEFVAR LF@process_loop_cond" \
-	"\n LABEL $substring_loop" \
-	"\n GETCHAR LF@char LF@%%0 LF@index" \
-	"\n CONCAT LF@%%retval LF@%%retval LF@char" \
-	"\n ADD LF@index LF@index int@1" \
-	"\n ADD LF@length LF@length int@1" \
-	"\n LT LF@process_loop_cond LF@index LF@%%1" \
-	"\n JUMPIFEQ $substring_loop LF@process_loop_cond bool@true" \
-	"\n POPFRAME" \
-	"\n RETURN");
+        "\n LABEL $substr" \
+        "\n PUSHFRAME" \
+        "\n DEFVAR LF@%retval" \
+        "\n MOVE LF@%retval string@" \
+        "\n DEFVAR LF@length_str" \
+        "\n CREATEFRAME" \
+        "\n DEFVAR TF@%0" \
+        "\n MOVE TF@%0 LF@%0" \
+        "\n CALL $length" \
+        "\n MOVE LF@length_str TF@%retval" \
+        "\n DEFVAR LF@ret_cond" \
+        "\n LT LF@ret_cond LF@length_str int@0"	\
+        "\n JUMPIFEQ $substr$return LF@ret_cond bool@true" \
+        "\n EQ LF@ret_cond LF@length_str int@0"	\
+        "\n JUMPIFEQ $substr$return LF@ret_cond bool@true" \
+        "\n LT LF@ret_cond LF@%1 int@0"	\
+        "\n JUMPIFEQ $substr$return LF@ret_cond bool@true" \
+        "\n EQ LF@ret_cond LF@%1 int@0"	\
+        "\n JUMPIFEQ $substr$return LF@ret_cond bool@true" \
+        "\n GT LF@ret_cond LF@%1 LF@length_str"	\
+        "\n JUMPIFEQ $substr$return LF@ret_cond bool@true" \
+        "\n EQ LF@ret_cond LF@%2 int@0" \
+        "\n JUMPIFEQ $substr$return LF@ret_cond bool@true" \
+        "\n DEFVAR LF@max_n" \
+        "\n MOVE LF@max_n LF@length_str" \
+        "\n SUB LF@max_n LF@max_n LF@%1" \
+        "\n ADD LF@max_n LF@max_n int@1" \
+        "\n DEFVAR LF@edit_n_cond" \
+        "\n LT LF@edit_n_cond LF@%2 int@0" \
+        "\n JUMPIFEQ $substr$edit_n LF@edit_n_cond bool@true" \
+        "\n GT LF@edit_n_cond LF@%2 LF@max_n" \
+        "\n JUMPIFEQ $substr$edit_n LF@edit_n_cond bool@true" \
+        "\n JUMP $substr$process" \
+        "\n LABEL $substr$edit_n" \
+        "\n MOVE LF@%2 LF@max_n" \
+        "\n LABEL $substr$process" \
+        "\n DEFVAR LF@index" \
+        "\n MOVE LF@index LF@%1" \
+        "\n SUB LF@index LF@index int@1" \
+        "\n DEFVAR LF@char"	\
+        "\n DEFVAR LF@process_loop_cond" \
+        "\n LABEL $substr$process_loop"	\
+        "\n GETCHAR LF@char LF@%0 LF@index"	\
+        "\n CONCAT LF@%retval LF@%retval LF@char" \
+        "\n ADD LF@index LF@index int@1" \
+        "\n SUB LF@%2 LF@%2 int@1" \
+        "\n GT LF@process_loop_cond LF@%2 int@0" \
+        "\n JUMPIFEQ $substr$process_loop LF@process_loop_cond bool@true" \
+        "\n LABEL $substr$return" \
+        "\n POPFRAME" \
+        "\n RETURN");
 }
 
-void generateord()
-{
+
+void generateord() {
     printf(
-	"\n LABEL $ord" \
-	"\n PUSHFRAME" \
-	"\n DEFVAR LF@%%retval" \
-	"\n STRI2INT LF@%%retval LF@%%0 LF@%%1" \
-	"\n POPFRAME" \
-	"\n RETURN");
+        "\n LABEL $ord" \
+        "\n PUSHFRAME" \
+        "\n DEFVAR LF@%retval" \
+        "\n MOVE LF@%retval int@0" \
+        "\n DEFVAR LF@cond_range" \
+        "\n LT LF@cond_range LF@%0 int@0" \
+        "\n JUMPIFEQ $ord$return LF@cond_range bool@true" \
+        "\n GT LF@cond_range LF@%0 int@255" \
+        "\n JUMPIFEQ $ord$return LF@cond_range bool@true" \
+        "\n STR2INT LF@%retval LF@%0" \
+        "\n LABEL $ord$return" \
+        "\n POPFRAME" \
+        "\n RETURN");
 }
+
 
 void generatechr()
 {
     printf(
-	"\n LABEL $chr" \
-	"\n PUSHFRAME" \
-	"\n DEFVAR LF@%%retval" \
-	"\n INT2CHAR LF@%%retval LF@%%0" \
+	"\n LABEL $chr"	\
+	"\n PUSHFRAME"	\
+	"\n DEFVAR LF@%retval" \
+	"\n MOVE LF@%retval string@" \
+	"\n DEFVAR LF@cond_range" \
+	"\n LT LF@cond_range LF@%0 int@0" \
+	"\n JUMPIFEQ $chr$return LF@cond_range bool@true" \
+	"\n GT LF@cond_range LF@%0 int@255" \
+	"\n JUMPIFEQ $chr$return LF@cond_range bool@true" \
+	"\n INT2CHAR LF@%retval LF@%0" \
+	"\n LABEL $chr$return" \
 	"\n POPFRAME" \
 	"\n RETURN");
 }

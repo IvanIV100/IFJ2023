@@ -220,9 +220,9 @@ node_t* expression_token_count(node_t* node, int* count){
     printf("202 current token type: %d\n", node->current->type);
     while ((6 <= node->current->type && node->current->type <= 16) || 
             (34 <= node->current->type && node->current->type <= 38) ||
-            node->current->type == T_LEFT_PAREN || node->current->type == T_RIGHT_PAREN){
+            node->current->type == T_LEFT_PAREN || node->current->type == T_RIGHT_PAREN || node->current->type == T_DOUBLE_QUESTION_MARK){
                 if (node->current->type == T_IDENTIFIER){
-                    if(node->current->type != 0 || (6 >= node->left->current->type && node->left->current->type <= 16)){
+                    if(node->left->current->type != 0  && 6 >= node->left->current->type && node->left->current->type <= 16){
                         break;
                     } 
                 }
@@ -269,7 +269,7 @@ node_t* handle_assign_ops(node_t* node){
             node_t* start = node;
             node = expression_token_count(node, &count2);
             printf("count2: %d\n", count2);
-            expression_parser(start, runInfo, count2);  
+            expression_parser(start, runInfo, count2); // add type assign 
             printf("expr num end \n");      
         }
     return node;
@@ -334,35 +334,63 @@ node_t* handle_funcall_ops(node_t* node){
 
 node_t* handle_cond_ops(node_t* node){
     printf("condOps \n");
+    //node = get_next(node);
+
+    int count3;
+    node_t* start = node;
+    node = expression_token_count(node, &count3);
+    printf("count3: %d\n", count3);
+    printf("curent token type: %d\n", node->current->type);
+
     if (node->current->type == T_LET){
         node = get_next(node);
         if (node->current->type == T_IDENTIFIER){
             //write
+            node = get_next(node);
+            node = get_next(node);
             return node;
+        } else {
+            ThrowError(2);
+        }
+    }
+
+    expression_parser(start->right, runInfo, count3 - 2); // add type assign 
+    printf("if cond end \n");      
+    return node;
+
+
+    if (node->current->type == T_LET){
+        node = get_next(node);
+        if (node->current->type == T_IDENTIFIER){
+            //write
+            node = get_next(node);
+            node = get_next(node);
+            return node;
+        } else {
+            ThrowError(2);
         }
     } else {
-        //expression handle
-        return node;
+       
     }
     return node;
 }
 
-node_t* handle_if(node_t* node){
+node_t* handle_if(node_t* node){ //check if ( is passed
     printf("if \n");
     node = handle_cond_ops(node);
-
-    node = get_next(node);
+    printf("after cond token %d\n", node->current->type);
+    //node = get_next(node);
     if (node->current->type == T_LEFT_BRACE){
         node = get_next(node);
         node = handle_statement_list(node);
 
-        node = get_next(node);
+        //node = get_next(node);
         if (node->current->type != T_RIGHT_BRACE){
             printf("Error: Expected right brace\n");
             ThrowError(2);
         } else {
             
-            
+            node = get_next(node);
             if (node->current->type != T_ELSE){       //optional else ?
                 printf("Error: Expected else\n");
                 ThrowError(2);
@@ -372,10 +400,9 @@ node_t* handle_if(node_t* node){
                 printf("Error: Expected left brace\n");
                 ThrowError(2);
             } else {
-                
+                node = get_next(node);
                 node = handle_statement_list(node);
 
-                node = get_next(node);
                 if (node->current->type != T_RIGHT_BRACE){ //maybe insufficient check for {} counter
                     printf("Error: Expected right brace\n");
                     ThrowError(2);

@@ -48,6 +48,7 @@ node_t* handle_statement(node_t* node);
 node_t* handle_return(node_t* node);
 node_t* create_node();
 node_t* get_next(node_t* node);
+node_t* expression_token_count(node_t* node,int* count);
 void fill_builtin_symtab(SymTable *builtIn);
 void define_var_ST(node_t* node);
 void assign_varType_ST(node_t* node, int type, int nillable);

@@ -262,7 +262,7 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
                 item->term = node->current;
                 stack_push(stack, item);
                 //print_stack(stack);
-                node = get_next(node);
+                node = node->right;
                 countDown--;
                 // if (countDown == 0)
                 // {
@@ -285,7 +285,7 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
                 item->type = TERMINAL;
                 item->term = node->current;
                 stack_push(stack, item);
-                node = get_next(node);
+                node = node->right;
                 countDown--;
                 // if (countDown == 0)
                 // {
@@ -297,6 +297,7 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
                 printf("error\n");
                 if ((newTerm == T_$ || newTerm == T_RPAREN) && stackTerm == T_$){
                     if ((node->current->type == T_RIGHT_PAREN) && stack->top >= 0){
+                        printf("fail\n");
                         return stack_pop(stack)->exprType;
                     } else {
                         printf("not ) and empty\n");
@@ -444,6 +445,7 @@ int expression_reduce(stack stack, runTimeInfo *rti){
     stackItem shift = stack_pop(stack);
     if (shift->type == SHIFT){
         free(shift);
+        stack->top--;
     } 
     stack_push(stack, item);
     return 1;

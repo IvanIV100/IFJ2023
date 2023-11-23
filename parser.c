@@ -28,6 +28,7 @@ xchoda00
     -add comments to functions
 
 * - Random
+    -check let declarations
     -handle built in funcs
     -check if err output is correct
     -expression parser
@@ -213,13 +214,30 @@ node_t* handle_in_param_list(node_t* node){
     return  node;
 }
 
+node_t* expression_token_count(node_t* node, int* count){
+    printf("exprTokenCount \n");
+    *count = 0;
+    printf("202 current token type: %d\n", node->current->type);
+    while ((6 <= node->current->type && node->current->type <= 16) || 
+            (34 <= node->current->type && node->current->type <= 38) ||
+            node->current->type == T_LEFT_PAREN || node->current->type == T_RIGHT_PAREN){
+                if (node->current->type == T_IDENTIFIER){
+                    if(node->current->type != 0 || (6 >= node->left->current->type && node->left->current->type <= 16)){
+                        break;
+                    } 
+                }
+        (*count)++;
+        node = get_next(node);
+    }
+    //printf ("in count: %d\n", *count);
+    return node;
+}
+
 node_t* handle_assign_ops(node_t* node){ 
     printf("assignOps \n");
     printf("196 curr token %d \n", node->current->type);
-    if (node->current->type != T_ASSIGN) {  //check for correct exit
-        return node;
-    }
-    node = get_next(node);
+
+    //node = get_next(node);  //check for correct sync
     if (node->current->type == T_IDENTIFIER){
         printf("197 current token type: %d\n", node->current->type);
         node = get_next(node);
@@ -235,12 +253,23 @@ node_t* handle_assign_ops(node_t* node){
             }
             return node;
         } else {
+            printf("expr id \n");
+            int count1;
+            node_t* start = node;
+            node = expression_token_count(node, &count1);
+            printf("count1: %d\n", count1);
+            expression_parser(start, runInfo, count1);
+
         //call expression handle
         //if failed err.         
         }
     } else {
-        //call expression handle
-        //if failed err.         
+            printf("expr num \n");
+            int count2;
+            node_t* start = node;
+            node = expression_token_count(node, &count2);
+            printf("count2: %d\n", count2);
+            expression_parser(start, runInfo, count2);        
         }
     return node;
 }
@@ -380,7 +409,7 @@ node_t* handle_while(node_t* node){
 
 node_t* handle_statement_list(node_t* node){
     printf("stmntList \n");
-    printf("355 stmtntList current token type: %d\n", node->current->type);
+    printf("355 stmtntList \n current token type: %d\n", node->current->type);
     if (node->current->type == T_RIGHT_BRACE ){
         printf("RB return \n");
         return node;
@@ -398,7 +427,7 @@ node_t* handle_return(node_t* node){
 }
 
 node_t* handle_statement(node_t* node){
-    printf("stmnt \n");
+    printf("420 token type %d\n", node->current->type);
     switch (node->current->type){
         case T_LET:
         case T_VAR:
@@ -580,12 +609,12 @@ void parser(){
     init_myInfo();
     node_t *node = create_node();
     node->current = scan();
-    printf("1\n");
-    ExprType result = expression_parser(node, runInfo, 3);
-    printf("result: %d\n", result);
-
-
-    exit(0);
+    //node_t *start = node;
+    // int count = expression_token_count(node);
+    // printf("count: %d\n", count);
+    // ExprType result = expression_parser(start, runInfo, count);
+    // printf("result: %d\n", result);
+    //exit(0);
 
     
 

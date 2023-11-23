@@ -91,6 +91,32 @@ var combinedExponents: Double = 2.5e3 / 5.0e2
 
 --
 
+
+-- syntax --
+let result = (5 + 3) * 2 - 7
+
+--
+var a: Int? = 42
+var b: Int = 0
+let result = a ?? b
+
+--
+
+let x = 5
+let y = 10
+
+if x > y {
+    print("x je větší než y.")
+} else {
+    print("x není větší než y.")
+}
+
+--
+
+let a = 5
+let b = 2
+let result = (5 + a) * b - 5
+
 invalid:
 
 
@@ -120,3 +146,8 @@ ct = concat(a, with: "svete")
 
 --
 
+func multiply(_ a: Int, with b: Int) -> Int {
+    return a * b
+}
+var result: Int = multiply(3, with: 4)
+--

@@ -1,11 +1,13 @@
+#ifndef PARSER_H
+#define PARSER_H
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include "scanner.h"
-#include "symtable.h"
 
+#include "symtable.h"
 
 typedef struct node {
     struct Token *current;
@@ -14,11 +16,12 @@ typedef struct node {
     
 } node_t;
 
-
-typedef struct myInfo {
-    bool inFun;
+typedef struct runTimeInfo {
+    SymTable* globalFrame;
+    SymTable* builtInFunctions;
     struct symTabLVL *currentLVL;
-} myInfo;
+
+} runTimeInfo;
 
 typedef struct symTabLVL {
     SymTable *currentTab;
@@ -42,8 +45,17 @@ node_t* handle_cond_ops(node_t* node);
 node_t* handle_if(node_t* node);
 node_t* handle_while(node_t* node);
 node_t* handle_statement(node_t* node);
+node_t* handle_return(node_t* node);
 node_t* create_node();
 node_t* get_next(node_t* node);
+node_t* expression_token_count(node_t* node,int* count);
+void fill_builtin_symtab(SymTable *builtIn);
+void define_var_ST(node_t* node);
+void assign_varType_ST(node_t* node, int type, int nillable);
+void check_type();
+void define_func_ST();
 void pop_level();
 void create_level();
 void init_myInfo();
+
+#endif

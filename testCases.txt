@@ -1,7 +1,20 @@
 --TEST CASES--
+valid:
+ 
+
+var def with assign  funcall
+var def with assign  funcall and in params
+id with assign and funcall
+id with assign and funcall and in params
+id funcall
+if
+if else
+while 
 
 valid:
---
+
+--FUNC DEF--
+
 func bar(){
 }
 --
@@ -13,4 +26,129 @@ func bar(X Y : Int) -> String {
 --
 func bar() -> String {
 }
+--
+func bar(){
+    var a : Int = 5
+    var b : Int
+    b = 6
+    var c = a + b
+}
+--
+func bar(X Y : Int){
+    var a : Int = 5
+    var b :Int
+    b = 6
+    var c = a + b
+    return
+}
+--
+func bar(X Y : Int) -> Int {
+    var a : Int = 5
+    var b :Int
+    b = 6
+    var c = a + b
+    return c
+}
+--
+func bar() -> Int {
+    var a : Int = 5
+    var b :Int
+    b = 6
+    var c = a + b
+    return c
+}
+--
+
+--Var def --
+
+var a : Int = 5
+var b :Int
+b = 6
+var c = a + b
+--
+
+var y: Double
+y = 3.1512
+--
+
+var optionalValue: String? = "This can be nil"
+var _underscoreVariable: Double = 3.14
+
+--
+
+var multilineString = """
+    Toto je
+    multiline
+    řetězec
+    v jazyce Swift.
+    """
+
+--
+
+var positiveExponent: Double = 3.14e2
+var negativeExponent: Double = 0.005e-2
+var combinedExponents: Double = 2.5e3 / 5.0e2 
+
+--
+
+
+-- syntax --
+
+let result = (5 + 3) * 2 - 7
+
+--
+var a: Int? = 42
+var b: Int = 0
+let result = a ?? b
+
+--
+
+let x = 5
+let y = 10
+
+if x > y {
+    prInt("x je větší než y.")
+} else {
+    prInt("x není větší než y.")
+}
+
+--
+
+let a = 5
+let b = 2
+let result = (5 + a) * b - 5
+
+invalid:
+
+
+
+new Intresting:
+
+--func def--
+var a = 5
+func a() {
+ write(a)
+}
+
+--
+func foo(_ par : String) -> String {
+  let ret = 8
+return ret
+}
+
+--
+
+func concat(_ x : String, with y : String) -> String {
+  let x = x + y
+  return x + " " + y
+}
+let a = "ahoj "
+ct = concat(a, with: "svete")
+
+--
+
+func multiply(_ a: Int, with b: Int) -> Int {
+    return a * b
+}
+var result: Int = multiply(3, with: 4)
 --

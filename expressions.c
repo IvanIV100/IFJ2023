@@ -24,10 +24,13 @@ void stack_dispose(stack stack){
     if (stack == NULL){
         return;
     }
+    printf("dispose\n");
     for (int i = stack->top; i >= 0; i--){
         free(stack->items[i]);
     }
-    free(stack->items);
+    printf("dispose2\n");
+    //free(stack->items);
+    printf("dispose3\n");
     free(stack);
     stack = NULL;
 }
@@ -85,13 +88,13 @@ void print_stack(stack stack){
     printf("new round: \n");
     for (int i = 0; i <= stack->top; i++){
         if (stack->items[i]->type == TERMINAL){
-            printf("terminal, ");
+            printf("Pterminal, ");
             printf("type %d \n", token_to_term(stack->items[i]->term));   
         } else if (stack->items[i]->type == NONTERMINAL){
-            printf("nonterminal, ");
+            printf("Pnonterminal, ");
             printf("type %d \n", stack->items[i]->exprType);
         } else {
-            printf("shift, ");
+            printf("Pshift, ");
         }
     }
     printf("\n");
@@ -254,7 +257,7 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
 
         switch (precedence_table(stackTerm, newTerm)){
             case R_SHIFT:
-                printf("shift\n");
+                printf("SWshift\n");
                 //print_stack(stack);
                 index = stack_get_index(stack, stackTerm);
                 stack_shift(stack, index);
@@ -264,6 +267,7 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
                 //print_stack(stack);
                 node = node->right;
                 countDown--;
+                printf("countDown: %d\n", countDown);
                 // if (countDown == 0)
                 // {
                 //     return 691;
@@ -315,6 +319,7 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
         }
 
     }
+    printf("end\n");
     stack_dispose(stack);
     return returnTerm;
 }

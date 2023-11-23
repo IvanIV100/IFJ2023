@@ -269,7 +269,8 @@ node_t* handle_assign_ops(node_t* node){
             node_t* start = node;
             node = expression_token_count(node, &count2);
             printf("count2: %d\n", count2);
-            expression_parser(start, runInfo, count2);        
+            expression_parser(start, runInfo, count2);  
+            printf("expr num end \n");      
         }
     return node;
 }
@@ -453,11 +454,13 @@ node_t* handle_statement(node_t* node){
         case T_RETURN : 
             node = handle_return(node);
             return node;
+        case T_EOF:
+            exit(0); // add clean up
         default: 
             ThrowError(2);
     }
     printf("392 token type %d\n", node->current->type);
-    node = get_next(node);
+    //node = get_next(node);
     return node;
 }
 
@@ -627,7 +630,7 @@ void parser(){
             node = handle_func_def(node);
             break;
         case T_EOF:
-            break;;
+            exit(0); // add clean up
         default:
             node = handle_statement_list(node);
             break;

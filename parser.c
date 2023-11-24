@@ -328,7 +328,6 @@ node_t* handle_cond_ops(node_t* node){
     int count3;
     node_t* start = node;
     node = expression_token_count(node, &count3);
-    printf("count3: %d\n", count3);
     if (node->current->type == T_LET){
         node = get_next(node);
         if (node->current->type == T_IDENTIFIER){
@@ -363,13 +362,11 @@ node_t* handle_cond_ops(node_t* node){
 }
 
 node_t* handle_if(node_t* node){ //check if ( is passed
-    printf("if currrent type: %d\n", node->current->type);    
     node = handle_cond_ops(node);
     //node = get_next(node);
     if (node->current->type == T_LEFT_BRACE){
         node = get_next(node);
         node = handle_statement_list(node);
-        printf("else currrent type: %d\n", node->current->type);
         //node = get_next(node);
        
         if (node->current->type != T_ELSE){     
@@ -412,7 +409,6 @@ node_t* handle_statement_list(node_t* node){
     if (node->current->type == T_RIGHT_BRACE || node->current->type == T_FUNC || node->current->type == T_ELSE ){
         return node;
     }
-    printf("ste currrent type: %d\n", node->current->type);
     node = handle_statement(node);
     node = handle_statement_list(node);
     return node;
@@ -442,7 +438,6 @@ node_t* handle_statement(node_t* node){
             break;
         case T_IF:
             node = get_next(node);
-            printf("if  type: %d\n", node->current->type);
             node = handle_if(node);
             break;
         case T_WHILE:

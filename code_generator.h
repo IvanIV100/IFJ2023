@@ -33,35 +33,6 @@ const char* built_in_functions[] = {
     NULL // End of the list marker
 };
 
-<<<<<<< HEAD
-extern char *llvlVarForm;
-extern char *globVar1;
-extern char *globVar2;
-
-void initializeEnvironment();
-void initializeFrameAndVariables();
-void initializeFrame();
-void defineAndMoveVariable(char *variable, char *value);
-void defineVariable(char *name);
-void move(char *var, char *symb);
-void jump(char *lbl);
-void address3Operator(char *op, char *res, char *s1, char *s2);
-char *generateExpressionVariable();
-char *getVariableName(char *var);
-char *convertString(const char *inputStr);
-char *getLiteralName(Token liter);
-char *getIntLiteralName(int c);
-char *generateNewLabel();
-void moveVariableToGlobal(char *globalVar, char *localVar);
-void handleGlobalVariable(char *globalVar, char *localVar);
-void passVariablesToGlobal();
-void moveGlobalToVariable(char *variable, char *globalVar);
-void processGlobalVariable(char *variable, char *globalVar);
-void returnPassedVariables();
-void writeCallPutprmtr(Token prmtr, Symbol CFunc);
-void functionCallPutprmtr(Token prmtr, Symbol CFunc);
-//BUILT-IN functions 
-=======
 
 
 bool is_builtin_function(const char* identifier);
@@ -100,7 +71,6 @@ void generate_statement_code(node_t* node);
 
 //BUILT IN funcs
 
->>>>>>> a9c18ffac15f1c3345932eae617f34bfef6b099f
 void generateInt2Double();
 
 void generateDouble2Int();

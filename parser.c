@@ -50,23 +50,29 @@ runTimeInfo *runInfo;
 
 
 node_t* handle_param(node_t* node){
+    char* name;
     if (node->current->type == T_UNDERSCORE){
-        //handle in symtab _ case
+        name = "_";
     } else if (node->current->type == T_IDENTIFIER){
-        //symtab assign
+        name = node->current->value.ID_name;
     } else {
         ThrowError(2);
     }
+    
     node = get_next(node);
+    
     if (node->current->type != T_IDENTIFIER){
         ThrowError(2);
     }
+    char* ID = node->current->value.ID_name;
     node = get_next(node);
     if (node->current->type != T_COLON){
         ThrowError(2);
     }
     node = get_next(node);
-    node = handle_type(node);
+    char* type = handle_type(node);
+    AddParametr(runInfo->globalFrame, runInfo->ID, name, type);
+    AddParametrID(runInfo->globalFrame, runInfo->ID, ID);
 
     return  node;
 }
@@ -95,19 +101,19 @@ node_t* handle_param_list(node_t* node){
 int handle_type(node_t* node){ //what is difference between t_int a t_kw_int
     int type;
     if (node->current->type == T_KW_INT){
-        if (node->current->value.nillable = 1 ){
+        if (node->current->value.nillable == 1 ){
             type = INTQ;
         } else {
             type = INT;
         }
     } else if (node->current->type == T_KW_DOUBLE){
-        if (node->current->value.nillable = 1 ){
+        if (node->current->value.nillable == 1 ){
             type = FLOATQ;
         } else {
             type =FLOAT;
         }
     } else if (node->current->type == T_KW_STRING){
-        if (node->current->value.nillable = 1 ){
+        if (node->current->value.nillable == 1 ){
             type = STRQ;
         } else {
             type = STR;
@@ -150,6 +156,7 @@ node_t* handle_func_def(node_t* node){
     } else if (GetSymbol(runInfo->globalFrame, runInfo->ID) != NULL ){
         ThrowError(3);
     } else {
+        printf("insert func \n");
         InsertSymbol(runInfo->globalFrame, runInfo->ID);
         
     }   

@@ -71,7 +71,8 @@ void SymTableFree(SymTable *table);
 
 int InsertSymbol(SymTable *table, char *key);
 
-int AddParametr(SymTable *table, char *key, char *name, char c);
+int AddParametr(SymTable *table, char *key, char *name, char type);
+int AddParametrID(SymTable *table, char *key, char *id);
 
 int AddFunctionDetails(SymTable *table, char *key, DataType returnType, bool defined);
 

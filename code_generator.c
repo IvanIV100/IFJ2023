@@ -249,7 +249,7 @@ void generate_return_statement_code(node_t* node) {
 
 void generate_statement_list_code(node_t* node) {
     while (node != NULL) {
-        generate_statement_code(node->left);
+        generate_statement_code(node);
         node = node->right;
     }
 }

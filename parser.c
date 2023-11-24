@@ -87,8 +87,7 @@ node_t* handle_param_list(node_t* node){
     node = get_next(node);
     if (node->current->type == T_COMMA){    
         node = get_next(node);
-        if (node->current->type == T_RIGHT_PAREN){            // (param,) invalid
-            printf("Error: bad end\n");
+        if (node->current->type == T_RIGHT_PAREN){ 
             ThrowError(2);
         }
         node = handle_param_list(node);
@@ -119,7 +118,6 @@ int handle_type(node_t* node){ //what is difference between t_int a t_kw_int
             type = STR;
         }
     } else {
-        printf("Error: Expected type\n");
         ThrowError(2);
     }
     
@@ -127,11 +125,8 @@ int handle_type(node_t* node){ //what is difference between t_int a t_kw_int
 }
 
 node_t* hadnle_func_retType(node_t* node){
-    printf("funcRetType \n");
-    printf("100 current token type: %d\n", node->current->type);
     if (node->current->type == T_ARROW){
         node = get_next(node);
-        printf("103 current token type: %d\n", node->current->type);
         int type = handle_type(node);
         AddFunctionDetails(runInfo->globalFrame, runInfo->ID, type , true);
         node = get_next(node);
@@ -143,9 +138,7 @@ node_t* hadnle_func_retType(node_t* node){
 }
 
 node_t* handle_func_def(node_t* node){
-    printf("funcDef \n");
     if (node->current->type != T_IDENTIFIER) {
-        printf("112 Error: Expected identifier\n");
         ThrowError(2);
     }
 
@@ -156,19 +149,16 @@ node_t* handle_func_def(node_t* node){
     } else if (GetSymbol(runInfo->globalFrame, runInfo->ID) != NULL ){
         ThrowError(3);
     } else {
-        printf("insert func \n");
         InsertSymbol(runInfo->globalFrame, runInfo->ID);
         
     }   
     
     node = get_next(node);
     if (node->current->type != T_LEFT_PAREN) {
-        printf("119 Error: Expected left paren\n");
         ThrowError(2);
     }
     node = get_next(node);
     node = handle_param_list(node);
-    printf("125 current token type: %d\n", node->current->type);
     if (node->current->type != T_RIGHT_PAREN){
         ThrowError(2);
     } 

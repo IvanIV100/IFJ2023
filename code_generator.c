@@ -22,6 +22,10 @@ bool is_builtin_function(const char* identifier) {
     return false;
 }
 
+void start_code_generation(node_t* parse_tree) {
+    generate_statement_list_code(parse_tree);
+}
+
 void generate_builtin_function_call(node_t* node) {
     if (strcmp(node->current->value.ID_name, "Int2Double") == 0) {
         generateInt2Double();

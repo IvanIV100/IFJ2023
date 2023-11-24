@@ -4,6 +4,8 @@
 
 #define ALLOC_SIZE 8
 
+
+
 typedef struct{
 char *id;
 char *name;

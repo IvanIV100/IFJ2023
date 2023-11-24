@@ -33,6 +33,8 @@ const char* built_in_functions[] = {
     NULL // End of the list marker
 };
 
+
+
 bool is_builtin_function(const char* identifier);
 
 void generate_builtin_function_call(node_t* node);

@@ -70,7 +70,7 @@ node_t* handle_param(node_t* node){
         ThrowError(2);
     }
     node = get_next(node);
-    char* type = handle_type(node);
+    char type = handle_type(node);
     AddParametr(runInfo->globalFrame, runInfo->ID, name, type);
     AddParametrID(runInfo->globalFrame, runInfo->ID, ID);
 
@@ -535,9 +535,11 @@ node_t* handle_statement(node_t* node){
             node = handle_return(node);
             return node;
         case T_EOF:
-            exit(0); // add clean up
+            start_generator(node);
+            break; // add clean up
         default: 
             ThrowError(2);
+
     }
     printf("392 token type %d\n", node->current->type);
     //node = get_next(node);
@@ -699,7 +701,8 @@ void start_generator(node_t* node){
     while (node->left != NULL){
         node = node->left;
     }
-
+    printf("gen\n");
+    start_code_generation(node);
     //start_generating(node, runInfo);
 
     exit(0);
@@ -759,7 +762,8 @@ void parser(){
                 node = handle_func_def(node);
                 break;
             case T_EOF:
-                exit(0); // add clean up
+                start_generator(node); 
+                break;// add clean up
             default:
                 printf("token type %d\n", node->current->type);
                 node = handle_statement_list(node);

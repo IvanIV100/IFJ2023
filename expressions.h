@@ -87,6 +87,8 @@ typedef struct Stack{
     stackItem *items;
 } *stack;
 
+void start_code_generation(node_t* parse_tree);
+
 void stack_init(stack stack);
 void stack_dispose(stack stack);
 void stack_push(stack stack, stackItem item);

@@ -24,7 +24,6 @@ void stack_dispose(stack stack){
     if (stack == NULL){
         return;
     }
-    printf("dispose\n");
     for (int i = stack->top; i > 0; i--){
         if (stack->items[i] != NULL){
             free(stack->items[i]);
@@ -32,12 +31,10 @@ void stack_dispose(stack stack){
         }
         
     }
-    printf("dispose2\n");
     if (stack->items != NULL){
         free(stack->items);
         stack->items = NULL;
     }
-    printf("dispose3\n");
     if (stack != NULL){
         free(stack);
         stack = NULL;
@@ -222,8 +219,6 @@ TermType token_to_term(Token *token){
 
 ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
     countDown = length;
-    printf("expression parser\n");
-    printf("current node: %d\n", node->current->type);
     // SymTable *currentST = NULL;
     // if (rti->currentLVL == NULL){
     //     currentST = rti->globalFrame;
@@ -239,7 +234,6 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
     if(node->current->type >= 23 && node->current->type <= 33){
         return E_BUILTIN;
     }
-    printf("not keyword\n");
     TermType newTerm, stackTerm;
     int index;
     int EQcount = 0;
@@ -247,8 +241,6 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
     while((newTerm != T_$ || stackTerm != T_$) && countDown > 0){
         stackTerm = stack_top(stack);
         newTerm = token_to_term(node->current);
-        printf("stackTerm: %d\n", stackTerm);
-        printf("newTerm: %d\n", newTerm);
         
         stackItem item = malloc(sizeof(struct StackItem));
         if (item == NULL){
@@ -258,76 +250,52 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
         if (newTerm == T_REL || newTerm == T_DQ){
             EQcount++;
             if (EQcount > 2){
-                printf("eq\n");
                 ThrowError(2);
             }
         }
 
         switch (precedence_table(stackTerm, newTerm)){
             case R_SHIFT:
-                printf("SWshift\n");
-                //print_stack(stack);
                 index = stack_get_index(stack, stackTerm);
                 stack_shift(stack, index);
                 item->type = TERMINAL;
                 item->term = node->current;
                 stack_push(stack, item);
-                //print_stack(stack);
                 node = node->right;
                 countDown--;
-                printf("countDown: %d\n", countDown);
-                // if (countDown == 0)
-                // {
-                //     return 691;
-                // }
                 
 
                 break;
 
             case R_REDUCE:
-                printf("reduce\n");
-                //print_stack(stack);
                 expression_reduce(stack, rti);
-                //print_stack(stack);
                 break;
 
             case R_EQUAL:
-                printf("equal\n");
-                //print_stack(stack);
                 item->type = TERMINAL;
                 item->term = node->current;
                 stack_push(stack, item);
                 node = node->right;
                 countDown--;
-                // if (countDown == 0)
-                // {
-                //     return 692;
-                // }
                 break;
 
             case R_ERROR:
-                printf("error\n");
                 if ((newTerm == T_$ || newTerm == T_RPAREN) && stackTerm == T_$){
                     if ((node->current->type == T_RIGHT_PAREN) && stack->top >= 0){
-                        printf("fail\n");
                         return stack_pop(stack)->exprType;
                     } else {
-                        printf("not ) and empty\n");
                         ThrowError(2);
                     }
                 } else {
-                    printf("not $ or )\n");
                     ThrowError(2);
                 }
                 break;
                 
             default:
-                printf("default\n");
                 break;
         }
 
     }
-    printf("end\n");
     stack_dispose(stack);
     return returnTerm;
 }
@@ -367,7 +335,6 @@ int expression_reduce(stack stack, runTimeInfo *rti){
                     item->exprType = E_BOOL;
                     returnTerm = item->exprType;
                 } else {
-                    printf("not same type\n");
                     ThrowError(2);
                 }
             
@@ -444,12 +411,9 @@ int expression_reduce(stack stack, runTimeInfo *rti){
                     item->type = NONTERMINAL;
                 }
             } else { 
-                printf("348 not viable\n");
                 ThrowError(2);
             }
         } else {
-            print_stack(stack);
-            printf("352 not viable\n");
             ThrowError(2);
         
             }   

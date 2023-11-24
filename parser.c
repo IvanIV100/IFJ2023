@@ -193,13 +193,19 @@ node_t* handle_in_param(node_t* node){
             ThrowError(2);
         } 
         return  node;
+    } else {
+        node = get_next(node);
+        return node;
+        
     }
     ThrowError(2);
     return  node;
 }
 
 node_t* handle_in_param_list(node_t* node){
+    
     if(node->current->type == T_RIGHT_PAREN){
+        
         return  node;
     }
     node = handle_in_param(node);
@@ -211,6 +217,7 @@ node_t* handle_in_param_list(node_t* node){
         }
         node = handle_in_param_list(node);
     }
+    
     if (node->current->type != T_RIGHT_PAREN){
         ThrowError(2);
     }
@@ -431,6 +438,7 @@ node_t* handle_statement(node_t* node){
         case T_LET:
         case T_VAR:
             node = handle_var_def(node);
+            node = get_next(node);
             break;
 
         case T_IDENTIFIER:
@@ -452,6 +460,7 @@ node_t* handle_statement(node_t* node){
             start_generator(node);
             break; // add clean up
         default: 
+        
             ThrowError(2);
 
     }

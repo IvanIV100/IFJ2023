@@ -54,3 +54,5 @@ parser
 ifj23
 scanner
 .vscode/settings.json
+test.py
+/tests

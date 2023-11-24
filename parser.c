@@ -277,7 +277,7 @@ node_t* handle_var_def_ops(node_t* node){
         node = get_next(node);
     
         int type = handle_type(node);
-        assign_varType_ST(node, type, node->current->value.nillable);
+        //assign_varType_ST(node, type, node->current->value.nillable);
         node = get_next(node);
 
     }
@@ -295,7 +295,7 @@ node_t* handle_var_def(node_t* node){
     if (node->current->type != T_IDENTIFIER) {
         ThrowError(2);
     }
-    define_var_ST(node);
+    //define_var_ST(node);
     node = get_next(node);
     node = handle_var_def_ops(node);
     return node;
@@ -325,11 +325,10 @@ node_t* handle_funcall_ops(node_t* node){
 
 node_t* handle_cond_ops(node_t* node){
     //node = get_next(node);
-
     int count3;
     node_t* start = node;
     node = expression_token_count(node, &count3);
-
+    printf("count3: %d\n", count3);
     if (node->current->type == T_LET){
         node = get_next(node);
         if (node->current->type == T_IDENTIFIER){
@@ -340,7 +339,7 @@ node_t* handle_cond_ops(node_t* node){
         } else {
             ThrowError(2);
         }
-    }
+    } 
 
     expression_parser(start->right, runInfo, count3 - 2); // add type assign 
 
@@ -364,32 +363,27 @@ node_t* handle_cond_ops(node_t* node){
 }
 
 node_t* handle_if(node_t* node){ //check if ( is passed
-
+    printf("if currrent type: %d\n", node->current->type);    
     node = handle_cond_ops(node);
     //node = get_next(node);
     if (node->current->type == T_LEFT_BRACE){
         node = get_next(node);
         node = handle_statement_list(node);
-
+        printf("else currrent type: %d\n", node->current->type);
         //node = get_next(node);
-        if (node->current->type != T_RIGHT_BRACE){
+       
+        if (node->current->type != T_ELSE){     
+            ThrowError(2);
+        }
+        node = get_next(node);
+        if (node->current->type != T_LEFT_BRACE){
             ThrowError(2);
         } else {
-            
             node = get_next(node);
-            if (node->current->type != T_ELSE){     
-                ThrowError(2);
-            }
-            node = get_next(node);
-            if (node->current->type != T_LEFT_BRACE){
-                ThrowError(2);
-            } else {
-                node = get_next(node);
-                node = handle_statement_list(node);
+            node = handle_statement_list(node);
 
-                if (node->current->type != T_RIGHT_BRACE){ 
-                    ThrowError(2);
-                }
+            if (node->current->type != T_RIGHT_BRACE){ 
+                ThrowError(2);
             }
         }
     } else {
@@ -415,9 +409,10 @@ node_t* handle_while(node_t* node){
 }
 
 node_t* handle_statement_list(node_t* node){
-    if (node->current->type == T_RIGHT_BRACE || node->current->type == T_FUNC ){
+    if (node->current->type == T_RIGHT_BRACE || node->current->type == T_FUNC || node->current->type == T_ELSE ){
         return node;
     }
+    printf("ste currrent type: %d\n", node->current->type);
     node = handle_statement(node);
     node = handle_statement_list(node);
     return node;
@@ -447,6 +442,7 @@ node_t* handle_statement(node_t* node){
             break;
         case T_IF:
             node = get_next(node);
+            printf("if  type: %d\n", node->current->type);
             node = handle_if(node);
             break;
         case T_WHILE:
@@ -460,7 +456,6 @@ node_t* handle_statement(node_t* node){
             start_generator(node);
             break; // add clean up
         default: 
-        
             ThrowError(2);
 
     }
@@ -610,9 +605,7 @@ void assign_varType_ST(node_t* node, int type, int nillable){ // check if nillab
     
 }
 
-void define_func_ST(){
 
-}
 
 // void check_type(){
     
@@ -622,8 +615,8 @@ void start_generator(node_t* node){
     while (node->left != NULL){
         node = node->left;
     }
-    start_code_generation(node);
-    free_node_list(node);
+    //start_code_generation(node);
+    //free_node_list(node);
     exit(0);
 
 }

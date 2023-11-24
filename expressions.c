@@ -31,10 +31,10 @@ void stack_dispose(stack stack){
         }
         
     }
-    if (stack->items != NULL){
-        free(stack->items);
-        stack->items = NULL;
-    }
+    // if (stack->items != NULL){
+    //     free(stack->items);
+    //     stack->items = NULL;
+    // }
     if (stack != NULL){
         free(stack);
         stack = NULL;
@@ -124,9 +124,9 @@ RelationType precedence_table(TermType stackTerm, TermType newTerm){
             }
         
         case T_REL: //check if ltgt and eq arent the same
-            if (newTerm == T_REL|| newTerm == T_$){
+            if (newTerm == T_REL){
                 return R_ERROR;
-            } else if (newTerm == T_DQ || newTerm == T_RPAREN ){
+            } else if (newTerm == T_DQ || newTerm == T_RPAREN || newTerm == T_$){
                 return R_REDUCE;
             } else {
                 return R_SHIFT;

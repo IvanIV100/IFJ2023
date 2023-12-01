@@ -56,3 +56,4 @@ scanner
 .vscode/settings.json
 test.py
 /tests
+main

@@ -34,7 +34,8 @@ xchoda00
     -add semcheck in expressions
 
 * - Check
-    - can there be just ID alone
+    -if and while expressions conditions - check if they are correct
+    -can there be just ID alone
     -check let declarations
 
 * - Random

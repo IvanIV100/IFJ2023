@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -std=gnu99 -Wall -Wextra -Wpedantic -g -lm
-SRC = main.c parser.c  scanner.c  symtable.c parametrs.c  error.c expressions.c  code_generator.c
+CFLAGS =  -Wall -Wextra -Wpedantic -g -lm
+SRC = main.c parser.c    symtable.c parametrs.c  error.c expressions.c  code_generator.c scanner.c
 OBJ = $(SRC:.c=.o)
 EXEC = main
 

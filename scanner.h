@@ -20,7 +20,7 @@ enum token_Category {
     TC_ERR
 };
 
-enum token_type {
+extern enum token_type {
     //Bracket
     T_LEFT_PAREN,           // 0 (
     T_RIGHT_PAREN,          // 1 )

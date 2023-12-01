@@ -6,8 +6,8 @@
 
 
 #include "error.h"
-#include "scanner.h"
 #include "symtable.h"
+#include "scanner.h"
 
 typedef struct node {
     struct Token *current;

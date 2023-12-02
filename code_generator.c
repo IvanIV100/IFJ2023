@@ -8,9 +8,6 @@
 
 #include "code_generator.h"
 
-//TODO
-//while def vars
-
 // Function to check if an identifier corresponds to a built-in function
 bool is_builtin_function(const char* identifier) {
     for (int i = 0; built_in_functions[i] != NULL; ++i) {
@@ -22,7 +19,10 @@ bool is_builtin_function(const char* identifier) {
 }
 
 void start_code_generation(node_t* parse_tree) {
-    generate_statement_list_code(parse_tree);
+    if (parse_tree != NULL && parse_tree->current != NULL) {
+        generate_statement_list_code(parse_tree);
+    } else {
+    }
 }
 
 void generate_builtin_function_call(node_t* node) {
@@ -57,17 +57,18 @@ void generate_expression_code(node_t* node) {
         case T_MUL:
         case T_DIV:
             // Binary arithmetic operations
-            generate_binary_arithmetic_code(node);
+            generate_binary_arithmetic_code(node->current);
             break;
         case T_STRING:
             // Generate code for a string literal
-            printf("PUSHS string@%s\n", node->current->value.stringVal);
+            printf("WRITE string@%s\n", node->current->value.stringVal);
             break;
 
         case T_MULTILINE_STRING:
             // Generate code for a multiline string literal
-            printf("PUSHS string@%s\n", node->current->value.stringVal);
+            printf("WRITE string@%s\n", node->current->value.stringVal);
             break;
+
         case T_IDENTIFIER:
             // Variable reference
             printf("MOVE LF@%s TF@%s\n", node->current->value.ID_name, node->current->value.ID_name);
@@ -75,12 +76,12 @@ void generate_expression_code(node_t* node) {
 
         case T_INT:
             // Integer literal
-            printf("MOVE LF@t%s int@%d\n", get_temp_variable, node->current->value.integer);
+            printf("MOVE LF@t%s int@%d\n", get_temp_variable(), node->current->value.integer);
             break;
 
         case T_DOUBLE:
             // Double literal
-            printf("MOVE LF@t%s float@%f\n", get_temp_variable, node->current->value.decimal);
+            printf("MOVE LF@t%s float@%f\n", get_temp_variable(), node->current->value.decimal);           
             break;
         
 
@@ -91,9 +92,12 @@ void generate_expression_code(node_t* node) {
 }
 
 void generate_binary_arithmetic_code(node_t* node) {
+    if (node->left->current == NULL || node->right->current == NULL) {
+        return;
+    }
     //node has a left and right child representing operands
-    generate_expression_code(node->left);
-    generate_expression_code(node->right);
+    generate_expression_code(node->left->current);
+    generate_expression_code(node->right->current);
 
     if (node->left->current->type == T_INT) {
         printf("INT2FLOAT LF@%d LF@%f\n", node->left->current->value.integer, node->left->current->value.decimal);
@@ -106,16 +110,16 @@ void generate_binary_arithmetic_code(node_t* node) {
     // Generate code for the binary operation
     switch (node->current->type) {
         case T_PLUS:
-            printf("ADD LF@%sLF@%f LF@%f\n", get_temp_variable, node->left->current->value.decimal, node->right->current->value.decimal);
+            printf("ADD LF@%sLF@%f LF@%f\n", get_temp_variable(), node->left->current->value.decimal, node->right->current->value.decimal);
             break;
         case T_MINUS:
-            printf("SUB LF@%sLF@%f LF@%f\n", get_temp_variable, node->left->current->value.decimal, node->right->current->value.decimal);
+            printf("SUB LF@%sLF@%f LF@%f\n", get_temp_variable(), node->left->current->value.decimal, node->right->current->value.decimal);
             break;
         case T_MUL:
-            printf("MUL LF@%sLF@%f LF@%f\n", get_temp_variable, node->left->current->value.decimal, node->right->current->value.decimal);
+            printf("MUL LF@%sLF@%f LF@%f\n", get_temp_variable(), node->left->current->value.decimal, node->right->current->value.decimal);
             break;
         case T_DIV:
-            printf("DIV LF@%s LF@%f LF@%f\n", get_temp_variable, node->left->current->value.decimal, node->right->current->value.decimal);
+            printf("DIV LF@%s LF@%f LF@%f\n", get_temp_variable(), node->left->current->value.decimal, node->right->current->value.decimal);
             break;
         default:
             // Handle other cases if needed
@@ -127,7 +131,7 @@ void generate_binary_arithmetic_code(node_t* node) {
 char* get_temp_variable() {
     static int temp_variable_count = 0;
     char* temp_variable_name = malloc(10);
-    sprintf(temp_variable_name, "temp%f", temp_variable_count++);
+    sprintf(temp_variable_name, "temp%d", temp_variable_count++);
     return temp_variable_name;
 }
 
@@ -137,48 +141,54 @@ void free_temp_variable(char * temp_variable_name){
 
 void generate_assignment_code(node_t* node) {
     // Generate code for the expression on the right-hand side
-    generate_expression_code(node->right);
+    generate_expression_code(node->right->current);
 
-    //Print the left side of assigment
+    // Print the left side of the assignment
     if (node->left->current->type == T_IDENTIFIER) {
-        printf("POP VAR, %s\n", node->left->current->value.ID_name);
+        printf("PUSHS LF@%s\n", node->left->current->value.ID_name);
+        printf("POPS LF@%s\n", node->left->current->value.ID_name);
     }
 }
+
 
 void generate_variable_definition_code(node_t* node) {
     if (node->right != NULL) {
         generate_assignment_code(node->right);
     }
-
-    if (node->left->current->type == T_IDENTIFIER) {
+    if (node->left->current != NULL && node->left->current->type == T_IDENTIFIER) {
         printf("DECLARE VAR, %s\n", node->left->current->value.ID_name);
     }
 }
 
 void generate_function_call_code(node_t* node) {
-    //generates all params
-    generate_in_param_list_code(node->right);
-
-    if (node->left->current->type == T_IDENTIFIER) {
-        printf("CALL %s\n", node->left->current->value.ID_name);
+    // generates all params
+    if (node->right != NULL) {
+        generate_in_param_list_code(node->right);
+    }
+    if (is_builtin_function(node->current->value.ID_name)) {
+        generate_builtin_function_call(node);
+    } else {
+        printf("CALL %s\n", node->right->current->value.ID_name);
     }
 }
 
+
+
+
 void generate_in_param_list_code(node_t* node) {
     // Generate code for each parameter in the list
-    while (node->left != NULL) {
-        generate_in_param_code(node->left);
-        node = node->left;
+    while (node != NULL && node->current->type != 1) {
+        generate_in_param_code(node);
+        node = node->right;
     }
 }
 
 void generate_in_param_code(node_t* node) {
- 
-    generate_expression_code(node->right);
-
     if (node->left->current->type == T_IDENTIFIER) {
-        printf("PUSH VAR, %s\n", node->left->current->value.ID_name);
+        printf("DEFVAR %s\n", node->left->current->value.ID_name);
     } 
+    generate_expression_code(node);
+
 }
 
 void generate_if_statement_code(node_t* node) {
@@ -202,8 +212,10 @@ void generate_if_statement_code(node_t* node) {
 
 void generate_cond_ops_code(node_t* node) {
     generate_expression_code(node);
+    printf("NOT\n");
     printf("JUMP_IF_FALSE L%d\n", generate_label());
 }
+
 
 int generate_label() {
     static int label_counter = 0;
@@ -235,30 +247,35 @@ void generate_return_statement_code(node_t* node) {
 }
 
 void generate_statement_list_code(node_t* node) {
-    while (node != NULL) {
-        generate_statement_code(node);
-        if (node->right != NULL) {
+    while (node != NULL && node->current != NULL) {
+        if (node != NULL) {
+            if (node->current->type != T_UNKNOWN) {
+            } else {
+            }
+            generate_statement_code(node);
+        } else {
+        }
+        if (node->right->current != NULL) {
             node = node->right;
         } else {
-            break;  // Break out of the loop if node->right is NULL
+            break;  // Break out of the loop if node->right or node->right->current is NULL
         }
     }
 }
 
 
+
+
 void generate_statement_code(node_t* node) {
     switch (node->current->type) {
+        case T_IDENTIFIER:
+            generate_expression_code(node);
         case T_LET:
         case T_VAR:
-            generate_variable_definition_code(node->right);
+            generate_variable_definition_code(node);
             break;
-        case T_IDENTIFIER:
-            //checking if func is built-in
-            if (is_builtin_function(node->current->value.ID_name)) {
-                generate_builtin_function_call(node);
-            } else {
+        case T_FUNC:
                 generate_function_call_code(node);
-            }
             break;
         case T_IF:
             generate_if_statement_code(node->right);
@@ -270,14 +287,10 @@ void generate_statement_code(node_t* node) {
             generate_return_statement_code(node->right);
             break;
         default:
-            // Handle other statement types if necessary
             break;
     }
-
-    if (node->left != NULL) {
-        generate_expression_code(node->left);
-    }
 }
+
 
 
 void generateInt2Double() {
@@ -446,7 +459,7 @@ void generateWrite()
     printf(
 	"\n LABEL $write" \
 	"\n PUSHFRAME" \
-	"\n WRITE %%0" \
+	"\n WRITE LF@%0" \
 	"\n POPFRAME" \
 	"\n RETURN");
 }

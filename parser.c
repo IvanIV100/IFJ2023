@@ -28,14 +28,21 @@ xchoda00
     -add comment headers everywhere
 
 * - Implement
+    -built in functions check input and ret type
     -return fix
     -add semcheck in expressions
 
 * - Check
+    -if im supposed to work with interpret return codes
     -if and while expressions conditions - check if they are correct
 
 * - Fix
     - fix ?? in expressions
+    
+    }else{  skis this brace, goes for the write
+        write("NOK")
+    }
+
 
 
 */
@@ -229,13 +236,10 @@ node_t* handle_func_def(node_t* node){
     node = hadnle_func_retType(node);
     if (node->current->type == T_LEFT_BRACE) {
         node = get_next(node);
-        printf("start of f def\n");
         node = handle_statement_list(node);
-        printf("end of f body def\n");
     } else {
         ThrowError(2);
     }
-    printf("end of f def\n");
     if (node->current->type != T_RIGHT_BRACE) {
         ThrowError(2);
     }
@@ -304,7 +308,6 @@ node_t* expression_token_count(node_t* node, int* count){
         (*count)++;
         node = get_next(node);
     }
-    //printf ("in count: %d\n", *count);
     return node;
 }
 
@@ -330,12 +333,10 @@ node_t* handle_assign_ops(node_t* node){
             int count2;
             ExprType result2;
             node_t* start = node;
-            //printf("before'\n");
             node = expression_token_count(node, &count2);
             result2 = expression_parser(start, runInfo, count2);
             
              // add type assign 
-            //printf("after'\n");
         }
 
     return node;
@@ -354,7 +355,6 @@ node_t* handle_var_def_ops(node_t* node){
             node = handle_assign_ops(node);
 
             return node;
-        //printf("curent type: %d\n", node->current->type);
         } else {
             return node;
         }
@@ -365,7 +365,6 @@ node_t* handle_var_def_ops(node_t* node){
             node = handle_assign_ops(node);
 
             return node;
-        //printf("curent type: %d\n", node->current->type);
         } else {
             ThrowError(2);//check error type if syntax or semantic
         }
@@ -398,9 +397,6 @@ node_t* handle_funcall_ops(node_t* node){
         return  node;
     } else {
         return node;
-        // printf("261 token type %d\n", token->type);
-        // printf("261 Error: Expected assign or left paren\n");
-        // ThrowError(2);
     }
     return node;
 }
@@ -409,7 +405,6 @@ node_t* handle_cond_ops(node_t* node){
     //node = get_next(node);
     int count3;
     node_t* start = node;
-    printf("curentS type: %d\n", node->current->type);
     node = expression_token_count(node, &count3);
     if (node->current->type == T_LET){
         node = get_next(node);
@@ -429,20 +424,18 @@ node_t* handle_cond_ops(node_t* node){
 }
 
 node_t* handle_if(node_t* node){ //check if ( is passed
-    printf("Curent type: %d\n", node->current->type);
     node = handle_cond_ops(node);
     //node = get_next(node);
     if (node->current->type == T_LEFT_BRACE){
         node = get_next(node);
         node = handle_statement_list(node);
-        //node = get_next(node);
-        printf("Curent type: %d\n", node->current->type);
         if (node->current->type != T_RIGHT_BRACE){ 
-            printf("not right brace\n");
             ThrowError(2);
         }
+        
         node = get_next(node);
-        if (node->current->type != T_ELSE){     
+        
+        if (node->current->type != T_ELSE){ 
             ThrowError(2);
         }
         node = get_next(node);
@@ -455,63 +448,36 @@ node_t* handle_if(node_t* node){ //check if ( is passed
             if (node->current->type != T_RIGHT_BRACE){ 
                 ThrowError(2);
             }
+            node = get_next(node);
         }
         return node;
-    } else {
-        node = get_next(node);
-        node = handle_statement_list(node);
-        //node = get_next(node);
-        if (node->current->type != T_ELSE){     
-            ThrowError(2);
-        }
-        node = get_next(node);
-        if (node->current->type != T_LEFT_BRACE){
-            ThrowError(2);
-        } else {
-            node = get_next(node);
-            node = handle_statement_list(node);
-
-            if (node->current->type != T_RIGHT_BRACE){ 
-                ThrowError(2);
-            }
-        }
-        return node;    
     }
     
 }
 
 node_t* handle_while(node_t* node){
     node = handle_cond_ops(node);
-    node = get_next(node);
     if (node->current->type == T_LEFT_BRACE){
         node = get_next(node);
-        node = handle_statement_list(node); //check for nested conditions and issues
-    
-        node = get_next(node);
+        node = handle_statement_list(node); 
         if (node->current->type != T_RIGHT_BRACE){
             ThrowError(2);
         }
         return node;
     } else {
-        node = get_next(node);
-        node = handle_statement_list(node); //check for nested conditions and issues
-    
-        node = get_next(node);
-        if (node->current->type == T_RIGHT_BRACE){
-            ThrowError(2);
-        }
-        return node;
+        ThrowError(2);
     }
     
 }
 
 node_t* handle_statement_list(node_t* node){ //chceck func ret here
-    if (node->current->type == T_RIGHT_BRACE || node->current->type == T_FUNC || node->current->type == T_ELSE || node->current->type == T_EOF){
+    
+    node = handle_statement(node);
+    if (node->current->type == T_RIGHT_PAREN || node->current->type == T_RIGHT_BRACE || node->current->type == T_FUNC || 
+    node->current->type == T_ELSE || node->current->type == T_EOF){
+        
         return node;
     }
-    node = get_next(node);
-    node = handle_statement(node);
-    printf("curent D type: %d\n", node->current->type);
     node = handle_statement_list(node);
     return node;
 }
@@ -532,19 +498,23 @@ node_t* handle_statement(node_t* node){
         case T_VAR:
             node = get_next(node);
             node = handle_var_def(node);
+            return node;
             break;
 
         case T_IDENTIFIER:
             node = get_next(node);
             node = handle_funcall_ops(node);
+            return node;
             break;
         case T_IF:
             node = get_next(node);
             node = handle_if(node);
+            return node;
             break;
         case T_WHILE:
             node = get_next(node);
             node = handle_while(node);
+            return node;
             break;
         case T_RETURN : 
             node = handle_return(node);
@@ -681,13 +651,6 @@ void parser(){
     node->current = scan();
 
 
-
-    //node_t *start = node;
-    // int count = expression_token_count(node);
-    // printf("count: %d\n", count);
-    // ExprType result = expression_parser(start, runInfo, count);
-    // printf("result: %d\n", result);
-    //exit(0);
 
 
     while (true){

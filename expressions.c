@@ -15,30 +15,21 @@ int countDown = 0;
 ExprType returnTerm = E_UNKNOWN;
 
 void stack_init(stack stack){
-    stack->top = -1;
+    
     stack->size = 100;
     stack->items = malloc(sizeof(stackItem) * stack->size);
+    stack->top = -1;
 }
 
 void stack_dispose(stack stack){
     if (stack == NULL){
         return;
     }
-    for (int i = stack->top; i > 0; i--){
-        if (stack->items[i] != NULL){
-            free(stack->items[i]);
-            stack->items[i] = NULL;
-        }
-        
+    for (int i = stack->top; i >= 0; i--){
+        free(stack->items[i]);
     }
-    // if (stack->items != NULL){
-    //     free(stack->items);
-    //     stack->items = NULL;
-    // }
-    if (stack != NULL){
-        free(stack);
-        stack = NULL;
-    }
+    free(stack->items);
+    free(stack);
 }
 
 void stack_push(stack stack, stackItem item){
@@ -52,7 +43,7 @@ void stack_push(stack stack, stackItem item){
 
 stackItem stack_pop(stack stack){
     if (stack->top < 0){
-        return NULL;
+        ThrowError(99);
     }
     stackItem item = stack->items[stack->top];
     stack->top--;
@@ -66,13 +57,13 @@ TermType stack_top(stack stack){
             return token_to_term(stack->items[index]->term); // return type of current terminal;
         }
         index--;
-    }   
+    } 
     return T_$;
 }
 
 void stack_shift(stack stack, int index){
     stack_push(stack, NULL);
-    for (int i = stack->top-1; i > 0; i--){
+    for (int i = stack->top-1; i > index; i--){
         stack->items[i+1] = stack->items[i];
     }
     stackItem item = malloc(sizeof(struct StackItem));
@@ -110,27 +101,37 @@ void print_stack(stack stack){
 RelationType precedence_table(TermType stackTerm, TermType newTerm){
     switch (stackTerm){
         case T_ADDSUB:
-            if (newTerm == T_MULDIV || newTerm == T_LPAREN || newTerm == T_VARIABLE){
+            if (newTerm == T_MULDIV || newTerm == T_LPAREN || newTerm == T_VARIABLE || newTerm == T_LITERAL ){
                 return R_SHIFT;
             } else {
                 return R_REDUCE;
             }
         
         case T_MULDIV:
-            if (newTerm == T_LPAREN || newTerm == T_VARIABLE){
+            if (newTerm == T_LPAREN || newTerm == T_VARIABLE || newTerm == T_LITERAL){
                 return R_SHIFT;
             } else {
                 return R_REDUCE;
             }
         
-        case T_REL: //check if ltgt and eq arent the same
-            if (newTerm == T_REL){
+        case T_LTGT: 
+            if (newTerm == T_LTGT){
                 return R_ERROR;
-            } else if (newTerm == T_DQ || newTerm == T_RPAREN || newTerm == T_$){
+            } else if (newTerm == T_EQ || newTerm == T_DQ || newTerm == T_RPAREN || newTerm == T_$){
                 return R_REDUCE;
             } else {
                 return R_SHIFT;
             }
+
+        case T_EQ:
+            if(newTerm == T_EQ){
+                return R_ERROR;
+            } else if (newTerm == T_RPAREN || newTerm == T_$){
+                return R_REDUCE;
+            } else {
+                return R_SHIFT;
+            }
+            
         
         case T_DQ:
             if (newTerm == T_DQ || newTerm == T_RPAREN || newTerm == T_$){
@@ -149,14 +150,21 @@ RelationType precedence_table(TermType stackTerm, TermType newTerm){
             }
         
         case T_RPAREN:
-            if (newTerm == T_LPAREN || newTerm == T_VARIABLE){
+            if (newTerm == T_LPAREN || newTerm == T_VARIABLE || newTerm == T_LITERAL){
                 return R_ERROR;
             } else {
                 return R_REDUCE;
             }
         
         case T_VARIABLE:
-            if (newTerm == T_LPAREN || newTerm == T_VARIABLE){
+            if (newTerm == T_LPAREN || newTerm == T_VARIABLE || newTerm == T_LITERAL){
+                return R_ERROR;
+            } else {
+                return R_REDUCE;
+            }
+        
+        case T_LITERAL:
+            if (newTerm == T_LPAREN || newTerm == T_VARIABLE || newTerm == T_LITERAL){
                 return R_ERROR;
             } else {
                 return R_REDUCE;
@@ -194,9 +202,11 @@ TermType token_to_term(Token *token){
         case T_GREATER_EQUAL:
         case T_LESS_THAN:
         case T_LESS_EQUAL:
+            return T_LTGT;
+
         case T_EQUALS:
         case T_NOT_EQUALS:
-            return T_REL;
+            return T_EQ;
 
         case T_LEFT_PAREN:
             return T_LPAREN;
@@ -204,10 +214,14 @@ TermType token_to_term(Token *token){
         case T_RIGHT_PAREN:
             return T_RPAREN;
 
-        case T_IDENTIFIER:
+        
         case T_INT:
         case T_DOUBLE:
         case T_STRING:
+        case T_NIL:
+            return T_LITERAL;
+
+        case T_IDENTIFIER:
             return T_VARIABLE;
 
         case T_DOUBLE_QUESTION_MARK:
@@ -218,27 +232,53 @@ TermType token_to_term(Token *token){
 }
 
 ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
+
     countDown = length;
-    // SymTable *currentST = NULL;
-    // if (rti->currentLVL == NULL){
-    //     currentST = rti->globalFrame;
-    // } else {
-    //     currentST = rti->currentLVL->currentTab;
-    // }
 
     stack stack = malloc(sizeof(struct Stack));
     stack_init(stack);
 
-    //check if synced
-    //node_t* node = get_next(node);
     if(node->current->type >= 23 && node->current->type <= 33){
-        return E_BUILTIN;
+        ThrowError(2);
     }
-    TermType newTerm, stackTerm;
+    TermType newTerm, stackTerm = T_UNKNOWN;
     int index;
     int EQcount = 0;
 
+
+    if (length == 1){
+        if (node->current->type == T_IDENTIFIER){
+            if (GetSymbol(rti->currentLVL->currentTab, node->current->value.ID_name) == NULL){
+                ThrowError(5);
+            } else {
+                Symbol *checkType;
+                checkType = GetSymbol(rti->currentLVL->currentTab, node->current->value.ID_name);
+                if (checkType->variable.datatype == INT){
+                    returnTerm = E_INT;
+                } else if (checkType->variable.datatype == FLOAT){
+                    returnTerm = E_DOUBLE;
+                } else if (checkType->variable.datatype == STR){
+                    returnTerm = E_STRING;
+                } else if (checkType->variable.datatype == NIL){
+                    returnTerm = E_NIL;
+                }
+            }
+        } else if (node->current->type == T_INT){
+            returnTerm = E_INT;
+        } else if (node->current->type == T_DOUBLE){
+            returnTerm = E_DOUBLE;
+        } else if (node->current->type == T_STRING){
+            returnTerm = E_STRING;
+        } else if (node->current->type == T_NIL){
+            returnTerm = E_NIL;
+        } else {
+            ThrowError(2);
+        }
+        return returnTerm;
+    }
+
     while((newTerm != T_$ || stackTerm != T_$) && countDown > 0){
+
         stackTerm = stack_top(stack);
         newTerm = token_to_term(node->current);
         
@@ -247,7 +287,7 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
             ThrowError(99);
         }
 
-        if (newTerm == T_REL || newTerm == T_DQ){
+        if (newTerm == T_LTGT || newTerm == T_EQ || newTerm == T_DQ){
             EQcount++;
             if (EQcount > 2){
                 ThrowError(2);
@@ -263,8 +303,6 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
                 stack_push(stack, item);
                 node = node->right;
                 countDown--;
-                
-
                 break;
 
             case R_REDUCE:
@@ -281,7 +319,7 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
 
             case R_ERROR:
                 if ((newTerm == T_$ || newTerm == T_RPAREN) && stackTerm == T_$){
-                    if ((node->current->type == T_RIGHT_PAREN) && stack->top >= 0){
+                    if (node->current->type == T_RIGHT_PAREN && stack->top >= 0){
                         return stack_pop(stack)->exprType;
                     } else {
                         ThrowError(2);
@@ -290,10 +328,8 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
                     ThrowError(2);
                 }
                 break;
-                
-            default:
-                break;
         }
+    
 
     }
     stack_dispose(stack);
@@ -324,47 +360,57 @@ int expression_reduce(stack stack, runTimeInfo *rti){
             if (E1->type == NONTERMINAL){
                 if (E1->exprType == E2->exprType){
                     item->exprType = E1->exprType;
-                    returnTerm = item->exprType;
                 } else if (E1->exprType == E_INT && E2->exprType == E_DOUBLE){
-                    item->exprType = E2->exprType;
-                    returnTerm = item->exprType;
+                    item->exprType = E_DOUBLE;
                 } else if (E1->exprType == E_DOUBLE && E2->exprType == E_INT){
-                    item->exprType = E1->exprType; 
-                    returnTerm = item->exprType;
-                } else if (token_to_term(op->term) == T_REL){
+                    item->exprType = E_DOUBLE; 
+                } else if (E1->exprType == E_NIL && E2->exprType == E_INT){
+                    item->exprType = E_INT;
+                } else if (E1->exprType == E_INT && E2->exprType == E_NIL){
+                    item->exprType = E_INT;
+                } else if (E1->exprType == E_NIL && E2->exprType == E_DOUBLE){
+                    item->exprType = E_DOUBLE;
+                } else if (E1->exprType == E_DOUBLE && E2->exprType == E_NIL){
+                    item->exprType = E_DOUBLE;
+                } else if (E1->exprType == E_NIL && E2->exprType == E_BOOL){
                     item->exprType = E_BOOL;
-                    returnTerm = item->exprType;
+                } else if (E1->exprType == E_BOOL && E2->exprType == E_NIL){
+                    item->exprType = E_BOOL;
+                } else if (E1->exprType == E_NIL && E2->exprType == E_STRING){
+                    item->exprType = E_STRING;
+                } else if (E1->exprType == E_STRING && E2->exprType == E_NIL){
+                    item->exprType = E_STRING;
+                } else if (token_to_term(op->term) == T_EQ || token_to_term(op->term) == T_LTGT){
+                    item->exprType = E_BOOL;
                 } else {
-                    ThrowError(2);
+                    ThrowError(7);
                 }
             
-                
+                returnTerm = item->exprType;
+
                 item->type = NONTERMINAL;
                 item->term = NULL;
-                }
-            } else{
-                ThrowError(2);
             }
+        } else{
+            ThrowError(2);
+        }
     } else if (item->type == TERMINAL){
-        if (token_to_term(item->term) == T_VARIABLE){
+        if (token_to_term(item->term) == T_VARIABLE || token_to_term(item->term) == T_LITERAL){
             switch (item->term->type) {
 
                 case T_INT:
                     item->type = NONTERMINAL;
                     item->exprType = E_INT;
-                    returnTerm = item->exprType;
                     break;
                 
                 case T_DOUBLE:
                     item->type = NONTERMINAL;
                     item->exprType = E_DOUBLE;
-                    returnTerm = item->exprType;
                     break;
 
                 case T_STRING:
                     item->type = NONTERMINAL;
                     item->exprType = E_STRING;
-                    returnTerm = item->exprType;
                     break;
                 
                 case T_IDENTIFIER: 
@@ -376,16 +422,12 @@ int expression_reduce(stack stack, runTimeInfo *rti){
                     checkType = GetSymbol(currentST, item->term->value.ID_name);
                     if (checkType->variable.datatype == INT){
                         item->exprType = E_INT;
-                        returnTerm = item->exprType;
                     } else if (checkType->variable.datatype == FLOAT){
                         item->exprType = E_DOUBLE;
-                        returnTerm = item->exprType;
                     } else if (checkType->variable.datatype == STR){
                         item->exprType = E_STRING;
-                        returnTerm = item->exprType;
                     } else if (checkType->variable.datatype == NIL){
                         item->exprType = E_NIL;
-                        returnTerm = item->exprType;
                     }
                     
                     item->type = NONTERMINAL;
@@ -394,7 +436,6 @@ int expression_reduce(stack stack, runTimeInfo *rti){
                 case T_NIL:
                     item->type = NONTERMINAL;
                     item->exprType = E_NIL;
-                    returnTerm = item->exprType;
                     break;
                 
                 default:
@@ -407,7 +448,6 @@ int expression_reduce(stack stack, runTimeInfo *rti){
                 item = stack_pop(stack);
                 if (item->type == TERMINAL && token_to_term(item->term) == T_LPAREN){
                     item->exprType = E->exprType;
-                    returnTerm = item->exprType;
                     item->type = NONTERMINAL;
                 }
             } else { 
@@ -415,14 +455,12 @@ int expression_reduce(stack stack, runTimeInfo *rti){
             }
         } else {
             ThrowError(2);
-        
             }   
         }
 
     stackItem shift = stack_pop(stack);
     if (shift->type == SHIFT){
         free(shift);
-        stack->top--;
     } 
     stack_push(stack, item);
     return 1;

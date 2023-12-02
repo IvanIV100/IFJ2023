@@ -74,7 +74,7 @@ extern enum token_type {
     T_MULTILINE_STRING,     // 35 Multiline_line_string
     T_STRING,               // 36 String
     T_INT,                  // 37 Int
-    T_DOUBLE,               // 38 D ouble
+    T_DOUBLE,               // 38 Double
 
 
     T_EOF,                  // 39 EOF

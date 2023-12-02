@@ -28,27 +28,89 @@ xchoda00
     -add comment headers everywhere
 
 * - Implement
-    -handle built in funcs
     -return fix
-    -function in param fix
     -add semcheck in expressions
 
 * - Check
     -if and while expressions conditions - check if they are correct
-    -can there be just ID alone
-    -check let declarations
 
-* - Random
-    
-
-* - Code Gen
-    -
+* - Fix
+    - fix ?? in expressions
 
 
 */
 
 runTimeInfo *runInfo;
 
+void fill_builtin_symtab(SymTable *builtIn){ // fill in to check symtab and to global
+    InsertSymbol(builtIn, "write");
+    AddFunctionDetails(builtIn, "write",  0, true);
+
+    InsertSymbol(builtIn, "substring");
+    AddFunctionDetails(builtIn, "substring",  6, true);
+    InsertSymbol(builtIn, "length");
+    AddFunctionDetails(builtIn, "length",  3, true);
+
+    InsertSymbol(builtIn, "ord");
+    AddFunctionDetails(builtIn, "ord",  3, true);
+
+    InsertSymbol(builtIn, "chr");
+    AddFunctionDetails(builtIn, "chr",  5, true);
+
+    InsertSymbol(builtIn, "readDouble");
+    AddFunctionDetails(builtIn, "readDouble",  7, true);
+
+    InsertSymbol(builtIn, "readInt");
+    AddFunctionDetails(builtIn, "readInt",  4, true);
+
+    AddFunctionDetails(builtIn, "readString",  6, true);
+    InsertSymbol(builtIn, "readString");
+
+    InsertSymbol(builtIn, "Double2Int");
+    AddFunctionDetails(builtIn, "Double2Int",  3, true);
+
+    InsertSymbol(builtIn, "Int2Double");
+    AddFunctionDetails(builtIn, "Int2Double",  8, true);
+
+}
+
+void start_generator(node_t* node){
+    while (node->left != NULL){
+        node = node->left;
+    }
+    //start_code_generation(node);
+    //free_node_list(node);
+    exit(0);
+
+}
+
+void init_myInfo(){
+    runInfo = malloc(sizeof(struct runTimeInfo));
+    if (runInfo == NULL){
+        ThrowError(99);
+    }
+    
+    SymTable *globalFrame = NULL;
+    globalFrame = malloc(sizeof(SymTable));
+    if (globalFrame == NULL){
+        ThrowError(99);
+    }
+    SymTableInit(&globalFrame);
+
+    SymTable *builtInFunctions;
+    builtInFunctions = malloc(sizeof(SymTable));
+    if (builtInFunctions == NULL){
+        ThrowError(99);
+    }
+    SymTableInit(&builtInFunctions);
+    
+    fill_builtin_symtab(builtInFunctions);
+
+    runInfo->currentLVL = NULL;
+    runInfo->globalFrame = globalFrame;
+    runInfo->builtInFunctions = builtInFunctions;
+
+}
 
 node_t* handle_param(node_t* node){
     char* name;
@@ -71,7 +133,7 @@ node_t* handle_param(node_t* node){
         ThrowError(2);
     }
     node = get_next(node);
-    char type = handle_type(node);
+    int type = handle_type(node);
     AddParametr(runInfo->globalFrame, runInfo->ID, name, type);
     AddParametrID(runInfo->globalFrame, runInfo->ID, ID);
 
@@ -93,8 +155,10 @@ node_t* handle_param_list(node_t* node){
         }
         node = handle_param_list(node);
         return node;
-    } else {
+    } else if (node->current->type == T_RIGHT_PAREN){
         return node;
+    } else {
+        ThrowError(2);
     }
 }
 
@@ -160,17 +224,18 @@ node_t* handle_func_def(node_t* node){
     }
     node = get_next(node);
     node = handle_param_list(node);
-    if (node->current->type != T_RIGHT_PAREN){
-        ThrowError(2);
-    } 
+
     node = get_next(node);
     node = hadnle_func_retType(node);
     if (node->current->type == T_LEFT_BRACE) {
         node = get_next(node);
+        printf("start of f def\n");
         node = handle_statement_list(node);
+        printf("end of f body def\n");
     } else {
         ThrowError(2);
     }
+    printf("end of f def\n");
     if (node->current->type != T_RIGHT_BRACE) {
         ThrowError(2);
     }
@@ -183,24 +248,25 @@ node_t* handle_in_param(node_t* node){
         if (node->current->type == T_COLON){
             node = get_next(node);
             if (node->current->type == T_IDENTIFIER){
+                node = get_next(node);
                 return  node;
-
             } else if (node->current->type == T_INT || node->current->type == T_STRING || node->current->type == T_DOUBLE){
                 node = get_next(node);
                 return  node;
             } else {
                 ThrowError(2);
             }
-            ThrowError(2);
         } 
         return  node;
     } else {
-        node = get_next(node);
-        return node;
+        if(node->current->type == T_INT || node->current->type == T_STRING || node->current->type == T_DOUBLE){
+            node = get_next(node);
+            return  node;
+        } else {
+            ThrowError(2);
+        }
         
     }
-    ThrowError(2);
-    return  node;
 }
 
 node_t* handle_in_param_list(node_t* node){
@@ -226,7 +292,7 @@ node_t* handle_in_param_list(node_t* node){
 }
 
 node_t* expression_token_count(node_t* node, int* count){
-    *count = 0;
+    (*count) = 0;
     while ((6 <= node->current->type && node->current->type <= 16) || 
             (34 <= node->current->type && node->current->type <= 38) ||
             node->current->type == T_LEFT_PAREN || node->current->type == T_RIGHT_PAREN || node->current->type == T_DOUBLE_QUESTION_MARK){
@@ -249,9 +315,6 @@ node_t* handle_assign_ops(node_t* node){
         if(node->current->type == T_LEFT_PAREN){
             node = get_next(node);
             node = handle_in_param_list(node);
-            if (node->current->type != T_RIGHT_PAREN){
-                ThrowError(2);
-            }
             return node;
         } else {
             int count1;
@@ -267,9 +330,14 @@ node_t* handle_assign_ops(node_t* node){
             int count2;
             ExprType result2;
             node_t* start = node;
+            //printf("before'\n");
             node = expression_token_count(node, &count2);
-            result2 = expression_parser(start, runInfo, count2); // add type assign 
+            result2 = expression_parser(start, runInfo, count2);
+            
+             // add type assign 
+            //printf("after'\n");
         }
+
     return node;
 }
 
@@ -278,25 +346,38 @@ node_t* handle_var_def_ops(node_t* node){
         node = get_next(node);
     
         int type = handle_type(node);
-        //assign_varType_ST(node, type, node->current->value.nillable);
+        assign_varType_ST(node, type, node->current->value.nillable);
         node = get_next(node);
 
-    }
-    if (node->current->type == T_ASSIGN){
-        node = get_next(node);
-        node = handle_assign_ops(node);
-    }
+        if (node->current->type == T_ASSIGN){
+            node = get_next(node);
+            node = handle_assign_ops(node);
 
-    return node;
+            return node;
+        //printf("curent type: %d\n", node->current->type);
+        } else {
+            return node;
+        }
 
+    } else {
+        if (node->current->type == T_ASSIGN){
+            node = get_next(node);
+            node = handle_assign_ops(node);
+
+            return node;
+        //printf("curent type: %d\n", node->current->type);
+        } else {
+            ThrowError(2);//check error type if syntax or semantic
+        }
+    }
 }
 
 node_t* handle_var_def(node_t* node){
-    node = get_next(node);
+    
     if (node->current->type != T_IDENTIFIER) {
         ThrowError(2);
     }
-    //define_var_ST(node);
+    define_var_ST(node);
     node = get_next(node);
     node = handle_var_def_ops(node);
     return node;
@@ -328,12 +409,12 @@ node_t* handle_cond_ops(node_t* node){
     //node = get_next(node);
     int count3;
     node_t* start = node;
+    printf("curentS type: %d\n", node->current->type);
     node = expression_token_count(node, &count3);
     if (node->current->type == T_LET){
         node = get_next(node);
         if (node->current->type == T_IDENTIFIER){
             //write
-            node = get_next(node);
             node = get_next(node);
             return node;
         } else {
@@ -341,35 +422,26 @@ node_t* handle_cond_ops(node_t* node){
         }
     } 
 
-    expression_parser(start->right, runInfo, count3 - 2); // add type assign 
+    expression_parser(start, runInfo, count3); // add type assign 
 
     return node;
 
-
-    if (node->current->type == T_LET){
-        node = get_next(node);
-        if (node->current->type == T_IDENTIFIER){
-            //write
-            node = get_next(node);
-            node = get_next(node);
-            return node;
-        } else {
-            ThrowError(2);
-        }
-    } else {
-       
-    }
-    return node;
 }
 
 node_t* handle_if(node_t* node){ //check if ( is passed
+    printf("Curent type: %d\n", node->current->type);
     node = handle_cond_ops(node);
     //node = get_next(node);
     if (node->current->type == T_LEFT_BRACE){
         node = get_next(node);
         node = handle_statement_list(node);
         //node = get_next(node);
-       
+        printf("Curent type: %d\n", node->current->type);
+        if (node->current->type != T_RIGHT_BRACE){ 
+            printf("not right brace\n");
+            ThrowError(2);
+        }
+        node = get_next(node);
         if (node->current->type != T_ELSE){     
             ThrowError(2);
         }
@@ -384,33 +456,62 @@ node_t* handle_if(node_t* node){ //check if ( is passed
                 ThrowError(2);
             }
         }
+        return node;
     } else {
-        ThrowError(2);
+        node = get_next(node);
+        node = handle_statement_list(node);
+        //node = get_next(node);
+        if (node->current->type != T_ELSE){     
+            ThrowError(2);
+        }
+        node = get_next(node);
+        if (node->current->type != T_LEFT_BRACE){
+            ThrowError(2);
+        } else {
+            node = get_next(node);
+            node = handle_statement_list(node);
+
+            if (node->current->type != T_RIGHT_BRACE){ 
+                ThrowError(2);
+            }
+        }
+        return node;    
     }
-    return node;
+    
 }
 
 node_t* handle_while(node_t* node){
     node = handle_cond_ops(node);
     node = get_next(node);
-    if (node->current->type != T_LEFT_BRACE){
-        ThrowError(2);
-    }
-    node = get_next(node);
-    node = handle_statement_list(node); //check for nested conditions and issues
+    if (node->current->type == T_LEFT_BRACE){
+        node = get_next(node);
+        node = handle_statement_list(node); //check for nested conditions and issues
     
-    node = get_next(node);
-    if (node->current->type != T_RIGHT_BRACE){
-        ThrowError(2);
-    }
-    return node;
-}
-
-node_t* handle_statement_list(node_t* node){
-    if (node->current->type == T_RIGHT_BRACE || node->current->type == T_FUNC || node->current->type == T_ELSE ){
+        node = get_next(node);
+        if (node->current->type != T_RIGHT_BRACE){
+            ThrowError(2);
+        }
+        return node;
+    } else {
+        node = get_next(node);
+        node = handle_statement_list(node); //check for nested conditions and issues
+    
+        node = get_next(node);
+        if (node->current->type == T_RIGHT_BRACE){
+            ThrowError(2);
+        }
         return node;
     }
+    
+}
+
+node_t* handle_statement_list(node_t* node){ //chceck func ret here
+    if (node->current->type == T_RIGHT_BRACE || node->current->type == T_FUNC || node->current->type == T_ELSE || node->current->type == T_EOF){
+        return node;
+    }
+    node = get_next(node);
     node = handle_statement(node);
+    printf("curent D type: %d\n", node->current->type);
     node = handle_statement_list(node);
     return node;
 }
@@ -429,8 +530,8 @@ node_t* handle_statement(node_t* node){
     switch (node->current->type){
         case T_LET:
         case T_VAR:
-            node = handle_var_def(node);
             node = get_next(node);
+            node = handle_var_def(node);
             break;
 
         case T_IDENTIFIER:
@@ -448,15 +549,11 @@ node_t* handle_statement(node_t* node){
         case T_RETURN : 
             node = handle_return(node);
             return node;
-        case T_EOF:
-            start_generator(node);
-            break; // add clean up
         default: 
-            ThrowError(2);
-
+            break;
     }
-    //node = get_next(node);
     return node;
+    
 }
 
 
@@ -499,38 +596,7 @@ node_t* create_node(){
 
 
 
-void fill_builtin_symtab(SymTable *builtIn){ // fill in to check symtab and to global
-    InsertSymbol(builtIn, "write");
-    AddFunctionDetails(builtIn, "write",  0, true);
 
-    InsertSymbol(builtIn, "substring");
-    AddFunctionDetails(builtIn, "substring",  6, true);
-    InsertSymbol(builtIn, "length");
-    AddFunctionDetails(builtIn, "length",  3, true);
-
-    InsertSymbol(builtIn, "ord");
-    AddFunctionDetails(builtIn, "ord",  3, true);
-
-    InsertSymbol(builtIn, "chr");
-    AddFunctionDetails(builtIn, "chr",  5, true);
-
-    InsertSymbol(builtIn, "readDouble");
-    AddFunctionDetails(builtIn, "readDouble",  7, true);
-
-    InsertSymbol(builtIn, "readInt");
-    AddFunctionDetails(builtIn, "readInt",  4, true);
-
-    AddFunctionDetails(builtIn, "readString",  6, true);
-    InsertSymbol(builtIn, "readString");
-
-    InsertSymbol(builtIn, "Double2Int");
-    AddFunctionDetails(builtIn, "Double2Int",  3, true);
-
-    InsertSymbol(builtIn, "Int2Double");
-    AddFunctionDetails(builtIn, "Int2Double",  8, true);
-
- 
-}
 
 void create_level(){
     symTabLVL *current_level = malloc(sizeof(struct symTabLVL));
@@ -607,43 +673,7 @@ void assign_varType_ST(node_t* node, int type, int nillable){ // check if nillab
     
 // }
 
-void start_generator(node_t* node){
-    while (node->left != NULL){
-        node = node->left;
-    }
-    //start_code_generation(node);
-    //free_node_list(node);
-    exit(0);
 
-}
-
-void init_myInfo(){
-    runInfo = malloc(sizeof(struct runTimeInfo));
-    if (runInfo == NULL){
-        ThrowError(99);
-    }
-    
-    SymTable *globalFrame = NULL;
-    globalFrame = malloc(sizeof(SymTable));
-    if (globalFrame == NULL){
-        ThrowError(99);
-    }
-    SymTableInit(&globalFrame);
-
-    SymTable *builtInFunctions;
-    builtInFunctions = malloc(sizeof(SymTable));
-    if (builtInFunctions == NULL){
-        ThrowError(99);
-    }
-    SymTableInit(&builtInFunctions);
-    
-    fill_builtin_symtab(builtInFunctions);
-
-    runInfo->currentLVL = NULL;
-    runInfo->globalFrame = globalFrame;
-    runInfo->builtInFunctions = builtInFunctions;
-
-}
 
 void parser(){
     init_myInfo();
@@ -660,8 +690,7 @@ void parser(){
     //exit(0);
 
 
-    bool run = true;
-    while (run){
+    while (true){
         switch (node->current->type) {
             case T_FUNC:
                 node = get_next(node);
@@ -672,15 +701,12 @@ void parser(){
                 break;// add clean up
             default:
                 node = handle_statement_list(node);
-                if (node->current->type != T_FUNC){
+                if (node->current->type != T_FUNC){   //check func def
                     node = get_next(node);
                 }
-                
                 break;
         }
     }  
-
-    
-    return;
+    ThrowError(2);
 }
 

@@ -1,6 +1,5 @@
-<Prog> -> e
+<Prog> -> <funcDef> <prog>
 <Prog> -> <stmntList> <prog>
-<Prog> -> <funcDef> <prog> // global scope
 <Prog> -> EOF
 <stmntList> -> e
 <stmntList> -> <stmnt> <stmntList> 
@@ -16,9 +15,10 @@
 <param> -> id id : <Type>
 <param> -> _ id : <Type>
 <varDef> -> let/var id <varDefOptional>  
-<varDefOptional> -> : <type> <varDefAss>
-<varDefOptional> -> <varDefAss> //check if in func
-<varDefAss> -> e
+<varDefOptional> -> : <type> <varDefAssTyped>
+<varDefOptional> -> <varDefAss>
+<varDefAssTyped> -> e
+<varDefAssTyped> -> <varDefAss>
 <varDefAss> -> = <AssignOps>
 <funcDef> -> func id ( <paramListFirst> ) <funcRetType> { <stmntList> <return> }
 <funcRetType> -> -> <type>
@@ -36,11 +36,11 @@
 <loopExe> -> <stmnt> <loopExe> //check if not missing (break/cont)
 <loopExe> -> e
 <InParamListFirst> -> e
-<InParamListFirst> -> <inParam> <InParamList>
+<InParamListFirst> -> <InParam> <InParamList>
 <InParamList> -> , <InParam> <InParamList>
 <InParamList> -> e
 <InParam> -> id <opID>
-//<InParam> -> <expr> // can be expre?
+<InParam> -> literal
 <opID> -> : id
 <return> -> <expr>
-<expre> -> give away to handle 
+<expre> -> give away to expressions parser to handle 

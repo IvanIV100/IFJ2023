@@ -85,8 +85,8 @@ void start_generator(node_t* node){
     while (node->left != NULL){
         node = node->left;
     }
-    start_code_generation(node);
-    free_node_list(node);
+    // start_code_generation(node);
+    // free_node_list(node);
     exit(0);
 
 }
@@ -248,7 +248,7 @@ node_t* handle_func_def(node_t* node){
     return node;
 }
 
-node_t* handle_in_param(node_t* node){
+node_t* handle_in_param(node_t* node){ // *ADD SEMANTIC CHECK*
     if (node->current->type == T_IDENTIFIER){
         node = get_next(node);
         if (node->current->type == T_COLON){
@@ -264,7 +264,7 @@ node_t* handle_in_param(node_t* node){
             }
         } 
         return  node;
-    } else {
+    } else { // literal assign add semantics
         if(node->current->type == T_INT || node->current->type == T_STRING || node->current->type == T_DOUBLE){
             node = get_next(node);
             return  node;
@@ -320,6 +320,7 @@ node_t* handle_assign_ops(node_t* node){
         if(node->current->type == T_LEFT_PAREN){
             node = get_next(node);
             node = handle_in_param_list(node);
+            node = get_next(node);
             return node;
         } else {
             int count1;
@@ -395,7 +396,18 @@ void check_funcall_id(char* ID){
 }
 
 node_t* handle_funcall_ops(node_t* node){
+
     if (node->current->type == T_ASSIGN){
+        SymTable *current = NULL;
+        if (runInfo->currentLVL == NULL){
+            current = runInfo->globalFrame;
+        } else {
+            current = runInfo->currentLVL->currentTab;
+        }
+        Symbol *result = GetSymbol(current, node->left->current->value.ID_name);
+        if (result == NULL){
+            ThrowError(5);
+        }
         node = get_next(node);
         node = handle_assign_ops(node);
         return node;
@@ -493,16 +505,16 @@ node_t* handle_while(node_t* node){
 }
 
 node_t* handle_statement_list(node_t* node){ //chceck func ret here
-    
-    node = handle_statement(node);
-    if (node->current->type == T_RIGHT_PAREN || node->current->type == T_RIGHT_BRACE || node->current->type == T_FUNC || 
-    node->current->type == T_ELSE || node->current->type == T_EOF || node->current->type == T_INT
-    || node->current->type == T_STRING || node->current->type == T_DOUBLE){
-        
+
+    if(node->current->type == T_LET || node->current->type == T_VAR || 
+    node->current->type == T_IDENTIFIER || node->current->type == T_IF || 
+    node->current->type == T_WHILE || node->current->type == T_RETURN){
+        node = handle_statement(node);
+        node = handle_statement_list(node);
+    } else {
         return node;
     }
-    node = handle_statement_list(node);
-    return node;
+    
 }
 
 node_t* handle_return(node_t* node){
@@ -534,16 +546,7 @@ node_t* handle_statement(node_t* node){
             break;
 
         case T_IDENTIFIER:
-            SymTable *current = NULL;
-            if (runInfo->currentLVL == NULL){
-                current = runInfo->globalFrame;
-            } else {
-                current = runInfo->currentLVL->currentTab;
-            }
-            Symbol *result = GetSymbol(current, node->current->value.ID_name);
-            if (result == NULL){
-                ThrowError(3);
-            }
+
             node = get_next(node);
             node = handle_funcall_ops(node);
             return node;
@@ -691,16 +694,17 @@ void parser(){
             case T_EOF:
                 start_generator(node); 
                 break;// add clean up
-            default:
+            case T_LET:
+            case T_VAR:
+            case T_IF:
+            case T_WHILE:
+            case T_RETURN:
+            case T_IDENTIFIER:
                 node = handle_statement_list(node);
-                if (node->current->type == T_INT || node->current->type == T_STRING || node->current->type == T_DOUBLE
-                || node->current->type == T_KW_STRING || node->current->type == T_KW_INT || node->current->type == T_KW_DOUBLE){
-                    ThrowError(2);
-                }
-                if (node->current->type != T_FUNC){   //check func def
-                    node = get_next(node);
-                }
                 break;
+
+            default:
+                ThrowError(2);
         }
     }  
     

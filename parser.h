@@ -35,6 +35,8 @@ node_t* create_node();
 node_t* get_next(node_t* node);
 node_t* expression_token_count(node_t* node,int* count);
 
+void free_node_list(node_t* node);
+
 void start_generator(node_t* node);
 //void start_generating(node_t* node, runTimeInfo* runInfo);
 void fill_builtin_symtab(SymTable *builtIn);

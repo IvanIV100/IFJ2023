@@ -1,40 +1,36 @@
-<Prog> -> <funcDef> <prog>
+<Prog> -> func <funcDef> <prog>
 <Prog> -> <stmntList> <prog>
 <Prog> -> EOF
 <stmntList> -> e
 <stmntList> -> <stmnt> <stmntList> 
-<stmnt> -> <varDef>
+<stmnt> -> let/var <varDef>
 <stmnt> -> id <FuncCallOps>
-<stmnt> -> <Condition>
-<stmnt> -> <Loop>
-<stmnt> -> <Return> only in funcDef bool
+<stmnt> -> if <Condition>
+<stmnt> -> while <Loop>
+<stmnt> -> <return> //only if in correct scope
 <paramListFirst> -> e
 <paramListFirst> -> <param> <paramList>
 <paramList> -> e
 <paramList> -> , <param> <paramList>
 <param> -> id id : <Type>
 <param> -> _ id : <Type>
-<varDef> -> let/var id <varDefOptional>  
-<varDefOptional> -> : <type> <varDefAssTyped>
+<varDef> -> id <varDefOptional>  
+<varDefOptional> -> : <Type> <varDefAssTyped>
 <varDefOptional> -> <varDefAss>
 <varDefAssTyped> -> e
 <varDefAssTyped> -> <varDefAss>
 <varDefAss> -> = <AssignOps>
-<funcDef> -> func id ( <paramListFirst> ) <funcRetType> { <stmntList> <return> }
-<funcRetType> -> -> <type>
+<funcDef> -> id ( <paramListFirst> ) <funcRetType> { <stmntList> <return> }
+<funcRetType> -> -> <Type>
 <funcRetType> -> e
 <FuncCallOps> ->   = <AssignOps>
 <FuncCallOps> -> ( <InParamListFirst> )
 <AssignOps> ->  <expr>
-<AssignOps> ->  id ( <InParamListFirst> )
-<Condition> -> if <condOps> { <stmntList> } else { <stmntList> }
+<AssignOps> -> id ( <InParamListFirst> )
+<Condition> -> <condOps> { <stmntList> } else { <stmntList> }
 <condOps> -> <expr>
 <condOps> -> let id
-<Loop> -> for id in <range> { <loopExe> } //check if supported format for or extension
-<range> -> //fin after check
-<Loop> -> while <expr> { <loopExe> }
-<loopExe> -> <stmnt> <loopExe> //check if not missing (break/cont)
-<loopExe> -> e
+<Loop> -> <expr> { <stmntList>}
 <InParamListFirst> -> e
 <InParamListFirst> -> <InParam> <InParamList>
 <InParamList> -> , <InParam> <InParamList>
@@ -44,3 +40,6 @@
 <opID> -> : id
 <return> -> <expr>
 <expre> -> give away to expressions parser to handle 
+<Type> -> Int/Int?
+<Type> -> Double/Double?
+<Type> -> String/String?

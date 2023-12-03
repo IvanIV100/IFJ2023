@@ -145,7 +145,7 @@ Token* is_Id(char curr) {
 
     int keywordi = isKeyword(token->value.ID_name);
 
-    if (keywordi >= 0) {
+        if (keywordi >= 0) {
         token->type=keyword_types[keywordi];
         token->Category=TC_KEYWORDS;
         
@@ -155,10 +155,11 @@ Token* is_Id(char curr) {
 
             if (curr == '?' && token->Category == TC_TYPE) {
                 token->value.nillable = 1;
-            } else {
-                ungetc(curr, stdin);
-            }
+                free(token->value.ID_name);
+                return token;
+            } 
         }
+        ungetc(curr, stdin);
         free(token->value.ID_name);
         return token;
     } 
@@ -672,10 +673,10 @@ const char* token_names[] = {
     "T_FUNC",
     "T_IF",
     "T_LET",
+    "T_WHILE",
     "T_NIL",
     "T_RETURN",
     "T_VAR",
-    "T_WHILE",
     "T_KW_STRING",
     "T_KW_INT",
     "T_KW_DOUBLE",

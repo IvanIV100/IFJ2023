@@ -8,20 +8,16 @@
 #define SYMTABLE_SIZE 9973
 
 
-
+/*
 //data_types
 typedef enum{
-VOID,
 NIL,
-BOOL,
 INT,
-INTQ,
 STR,
-STRQ,
+BOOL,
 FLOAT,
-FLOATQ
-
-}DataType;
+VOID,
+}DataType;*/
 
 typedef enum{
 variable,    
@@ -36,13 +32,21 @@ let,
 
 typedef struct{
     DataType ReturnType; //enum od 1 do 5
-    //parametry
     bool defined; // byla definována
-    //navěstí, interní reprezentace idk
+    Parametr *parametr; // ukazatel na parametr
+    /*typedef struct parametr{ v parametrs.h
+        char *id; identifikator parametru
+        char *name; jmeno parametru
+        int length[2]; promenne na alokovani pameti
+        int alloc_size[2]; promenne na alokovani pameti
+        DataType type; datovy parametr
+        struct parametr *next; ukazatel na dalsi parametr
+} Parametr;*/
+    int parametr_count;
 } Function;
 
 typedef struct{
-DataType datatype; //od 0 do 8
+DataType datatype; //od 0 do 4
 bool init;
 VarOrLet VoL; 
 int intVal;       //hodnoty    
@@ -57,7 +61,6 @@ typedef struct{
     Type type;   // funkce/promenna
     Function function; // struktura s informacemi o funkci
     Variable variable; // struktura s informacemi o promenné
-    Parametr parametr; // udelat pres pointery
 }Symbol;
 
 typedef Symbol* SymTable[SYMTABLE_SIZE]; // tabulka symbolu
@@ -71,8 +74,7 @@ void SymTableFree(SymTable *table);
 
 int InsertSymbol(SymTable *table, char *key);
 
-int AddParametr(SymTable *table, char *key, char *name, char type);
-int AddParametrID(SymTable *table, char *key, char *id);
+int AddParametr(SymTable *table, char *key, char *name, char *id, DataType type);
 
 int AddFunctionDetails(SymTable *table, char *key, DataType returnType, bool defined);
 

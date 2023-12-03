@@ -4,19 +4,33 @@
 
 #define ALLOC_SIZE 8
 
+typedef enum{
+VOID,
+NIL,
+BOOL,
+INT,
+INTQ,
+STR,
+STRQ,
+FLOAT,
+FLOATQ
+
+}DataType;
 
 
-typedef struct{
+typedef struct parametr{
 char *id;
 char *name;
-int count[2]; //pocet pridanych prvku
-int length[2]; //kdyztak jako pole [2]
-int alloc_size[2]; //same
+int length[2];
+int alloc_size[2];
+DataType type;
+struct parametr *next;
 } Parametr;
+
 
 int parametr_init(Parametr *p);
 
-int add_parametr_name(Parametr *p, char *name, char c);
+int add_parametr_name(Parametr *p, char *name, DataType type);
 
 int add_parametr_id(Parametr *p, char *id);
 

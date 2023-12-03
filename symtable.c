@@ -35,8 +35,8 @@ int InsertSymbol(SymTable *table, char *key){
         
          if (!strcmp((*table)[hash]->id, "if")){ //"odstraneny" prvek
             free((*table)[hash]->id);
-            clear_parametr(&(*table)[hash]->parametr);
-            parametr_free(&(*table)[hash]->parametr);            
+            clear_parametr((*table)[hash]->function.parametr);
+            parametr_free((*table)[hash]->function.parametr);            
             free((*table)[hash]);
             (*table)[hash] = NULL;
             break;
@@ -53,9 +53,8 @@ int InsertSymbol(SymTable *table, char *key){
     temp->id = malloc(strlen(key) + 1);
     if (temp->id == NULL)
         return -1;
-    if (parametr_init(&temp->parametr) == -1)
-        return -1;
-
+    temp->function.parametr = NULL;
+    temp->function.parametr_count = 0;
     temp->type = 3; //zatim neni funkce ani var
     temp->variable.strVal = NULL;
 
@@ -177,21 +176,25 @@ int AddFunctionDetails(SymTable *table, char *key, DataType returnType, bool def
     return 1;
 }
 
-int AddParametr(SymTable *table, char *key, char *name, char type){
+int AddParametr(SymTable *table, char *key, char *name, char *id, DataType type){
     int hash = Searching(table, key);
     if(hash == -1)
         return -1; //nenašlo to
-    if (add_parametr_name(&(*table)[hash]->parametr, key, type) == -1)
+    Parametr *par = malloc(sizeof (Parametr));
+     if (parametr_init(par) == -1)
         return -1;
-    return 1;
-}
-
-int AddParametrID(SymTable *table, char *key, char *id){
-    int hash = Searching(table, key);
-    if(hash == -1)
-        return -1; //nenašlo to
-    if (add_parametr_id(&(*table)[hash]->parametr, id) == -1)
+    if (add_parametr_name(par, name, type) == -1)
         return -1;
+     if (add_parametr_id(par, id) == -1)
+        return -1;
+    while ((*table)[hash]->function.parametr != NULL){
+        Parametr *para = (*table)[hash]->function.parametr->next;
+        (*table)[hash]->function.parametr = para;
+        printf("Aho");
+    }
+    (*table)[hash]->function.parametr = par;
+    (*table)[hash]->function.parametr_count++;
+    (*table)[hash]->function.parametr->next = NULL;
     return 1;
 }
 
@@ -202,8 +205,15 @@ void SymTableFree(SymTable *table){
             free((*table)[i]->id);
         if((*table)[i]->variable.strVal != NULL)
             free((*table)[i]->variable.strVal);
-        clear_parametr(&(*table)[i]->parametr);
-        parametr_free(&(*table)[i]->parametr);
+        while((*table)[i]->function.parametr != NULL ){
+          Parametr *parametr = (*table)[i]->function.parametr;
+        (*table)[i]->function.parametr = parametr->next;  // Posun na další parametr
+
+        clear_parametr(parametr);  // Provedeš potřebné operace na uvolnění paměti uvnitř struktury Parametr
+        parametr_free(parametr);
+        free(parametr);
+        parametr = NULL;
+    }
         free((*table)[i]);
         }
      }
@@ -245,7 +255,7 @@ void copy_to_child(SymTable *parent, SymTable *current) { //jeste by to chtelo a
            (*current)[i]= temp;
         }
             }    }*/
-/*
+            /*
 int main(){
 SymTable *table= NULL;
 SymTable *table1 = NULL;
@@ -265,12 +275,9 @@ InsertSymbol(&(*table), "popal");
 if (AddFunctionDetails(&(*table), "popal", 2, 1) == -1)
     printf("Neexistuje \n");
 InsertSymbol(&(*table), "pollal");
-AddParametr(&(*table), "popal", "jmena", 'd');
-AddParametr(&(*table), "popal", "jmenaa" ,'i');
-AddParametr(&(*table), "popal", "x" ,'p');
-AddParametrID(&(*table), "popal", "id");
-AddParametrID(&(*table), "popal", "idadwdwadaw");
-AddParametrID(&(*table), "popal", "iddsadadwdwada");
+AddParametr(&(*table), "popal", "jmena", "id",1);
+AddParametr(&(*table), "popal", "jmenaa","id" ,1);
+//AddParametr(&(*table), "popal", "xd" ,"ps", 1);
 
 AddVarDetails(&(*table), "pollal", 0, 1, 0);
 insert_string_value(&(*table), "pollal", "ahoj");
@@ -280,8 +287,9 @@ if (symbol!=NULL){
     printf("string: %s\n", symbol->id);
     printf("init? %d\n", symbol->function.ReturnType);
     printf("datatype %d\n", symbol->function.defined);
-    printf("PArametr %s\n", symbol->parametr.name);
-    printf("PArametr %s\n", symbol->parametr.id);
+    printf("PArametr %s\n", symbol->function.parametr->name);
+    printf("PArametr %s\n", symbol->function.parametr->id);
+    printf("count %d\n", symbol->function.parametr_count);
 }
 printf("value: %s\n", symbol1->variable.strVal);
 printf("type: %d\n", symbol1->variable.datatype);

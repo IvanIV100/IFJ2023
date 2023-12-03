@@ -14,13 +14,11 @@ int parametr_init(Parametr *p){
     p->id[p->length[0]] = '\0';
     p->name[p->length[1]] = '\0';
     p->alloc_size[0] = ALLOC_SIZE;
-    p->count[0] = 0;
-    p->count[1] = 0;
     p->alloc_size[1] = ALLOC_SIZE;
     return 1;
 }
 
-int add_parametr_name(Parametr *p, char *name, char type){
+int add_parametr_name(Parametr *p, char *name, DataType type){
     if (p == NULL)
         return -1;
     if (name == NULL)
@@ -38,19 +36,9 @@ int add_parametr_name(Parametr *p, char *name, char type){
         p->name[p->length[1]++] = name[i];
         i++;
     }
+    p->name[p->length[1]] = '\0';
+    p->type = type;
 
-    if (p->length[1]+4 >= p->alloc_size[1]){
-            unsigned int newsize= p->alloc_size[1] + ALLOC_SIZE;
-            p->name = (char *) realloc(p->name, newsize);
-            if (!p->name)
-                return -1;
-            p->alloc_size[1] = newsize;
-        }
-    p->name[p->length[1]++] = ':';
-    p->name[p->length[1]++] = type;
-    p->name[p->length[1]++] = ' ';
-    p->name[p->length[1]] = '\0'; 
-    p->count[1]++;
     return 1;
 }
 
@@ -72,9 +60,7 @@ int add_parametr_id(Parametr *p, char *id){
         p->id[p->length[0]++] = id[i];
         i++;
     }
-    p->id[p->length[0]++] = ' ';
-    p->id[p->length[0]] = '\0'; 
-    p->count[0]++;
+    p->id[p->length[0]] = '\0';
     return 1;
 
 }
@@ -114,15 +100,16 @@ int parametr_free(Parametr *p){
 int main(){
     Parametr p;
     parametr_init(&p);
-    add_parametr_name(&p, "jmeno",'c');
-    add_parametr_name(&p, "int",'i');
+    add_parametr_name(&p, "jmeno",4);
+    //add_parametr_name(&p, "int",4);
     add_parametr_id(&p, "jmeno");
-    add_parametr_id(&p, "var");
+    //add_parametr_id(&p, "var");
 
     printf("alloc %d \n", p.alloc_size[1]);
     printf("length %d \n" ,p.length[1]);
     printf("string %s \n" ,p.name);
     printf("string %s \n" ,p.id);
+    printf("int %i \n" , p.type);
     clear_parametr(&p);
     parametr_free(&p);
     return 0;

@@ -85,8 +85,8 @@ void start_generator(node_t* node){
     while (node->left != NULL){
         node = node->left;
     }
-    //start_code_generation(node);
-    //free_node_list(node);
+    start_code_generation(node);
+    free_node_list(node);
     exit(0);
 
 }
@@ -514,8 +514,12 @@ node_t* handle_return(node_t* node){
     int count;
     node_t* start = node;
     node = expression_token_count(node, &count);
-    expression_parser(start, runInfo, count); // add type assign
+    ExprType retVal = expression_parser(start, runInfo, count); // add type assign
 
+    // Symbol *result = GetSymbol(runInfo->globalFrame, runInfo->ID);
+    // if (result->function.ReturnType != retVal){
+    //     ThrowError(6);
+    // }
 
     return node;
 }
@@ -530,6 +534,16 @@ node_t* handle_statement(node_t* node){
             break;
 
         case T_IDENTIFIER:
+            SymTable *current = NULL;
+            if (runInfo->currentLVL == NULL){
+                current = runInfo->globalFrame;
+            } else {
+                current = runInfo->currentLVL->currentTab;
+            }
+            Symbol *result = GetSymbol(current, node->current->value.ID_name);
+            if (result == NULL){
+                ThrowError(3);
+            }
             node = get_next(node);
             node = handle_funcall_ops(node);
             return node;

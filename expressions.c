@@ -232,7 +232,6 @@ TermType token_to_term(Token *token){
 }
 
 ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
-
     countDown = length;
 
     stack stack = malloc(sizeof(struct Stack));
@@ -245,14 +244,22 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
     int index;
     int EQcount = 0;
 
-
     if (length == 1){
         if (node->current->type == T_IDENTIFIER){
-            if (GetSymbol(rti->currentLVL->currentTab, node->current->value.ID_name) == NULL){
-                ThrowError(5);
+            Symbol *checkType;
+            if (rti->currentLVL != NULL){
+                if (GetSymbol(rti->currentLVL->currentTab, node->current->value.ID_name) == NULL){
+                    ThrowError(5);
+                    } else {
+                    checkType = GetSymbol(rti->currentLVL->currentTab, node->current->value.ID_name);
+                    }
             } else {
-                Symbol *checkType;
-                checkType = GetSymbol(rti->currentLVL->currentTab, node->current->value.ID_name);
+                if (GetSymbol(rti->globalFrame, node->current->value.ID_name) == NULL){
+                    ThrowError(5);
+                } else {
+                    checkType = GetSymbol(rti->globalFrame, node->current->value.ID_name);
+                }
+
                 if (checkType->variable.datatype == INT){
                     returnTerm = E_INT;
                 } else if (checkType->variable.datatype == FLOAT){
@@ -467,78 +474,3 @@ int expression_reduce(stack stack, runTimeInfo *rti){
     
 }
 
-// node_t* generate_expression(node_t* node, runTimeInfo *rti){
-//     stack stack = malloc(sizeof(struct Stack));
-//     stack_init(stack);
-
-//     node = get_next(node);
-
-//     if (node->current->type >= 23 && node->current->type <= 38){
-//         if (node->current->type != 34){
-//             return node->current;
-//         }
-//     }
-//     TermType newTerm, stackTerm; =T_UNKNOWN;
-//     int index;
-//     int EQcount = 0;
-
-//     while (newTerm != T_$ || stackTerm != T_$){
-//         stackTerm = stack_top(stack);
-//         newTerm = token_to_term(node->current);
-
-//         stackItem item = malloc(sizeof(struct StackItem));
-//         if (item == NULL){
-//             ThrowError(99);
-//         }
-
-//         if (newTerm == T_EQ || newTerm == T_LTGT){
-//             EQcount++;
-//             if (EQcount > 2){
-//                 ThrowError(2);
-//             }
-//         }
-
-//         switch(precedence_table(stackTerm, newTerm)){
-//             case R_SHIFT:
-//                 index = stack_get_index(stack, stackTerm);
-//                 stack_shift(stack, index);
-
-//                 item->type = TERMINAL;
-//                 item->term = node->current;
-//                 stack_push(stack, item);
-//                 node = get_next(node);
-//                 break;
-
-//             case R_REDUCE:
-//                 generate_expression_reduce(stack, rti);
-//                 break;
-
-//             case R_EQUAL:
-//                 item->type = TERMINAL;
-//                 item->term = node->current;
-//                 stack_push(stack, item);
-//                 node = get_next(node);
-//                 break;
-
-//             case R_ERROR
-//                 if ((newTerm == T_$ || newTerm == T_RPAREN) && stackTerm == T_$){
-//                     if ((node->current->type == T_RIGHT_PAREN) && stack->top >= 0){
-//                         printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
-//                         return node; 
-//                     } else {
-//                         ThrowError(2);
-//                     }
-//                 } else {
-//                     ThrowError(2);
-//                 }
-//                 break;
-//         }
-//     }
-//     stack_dispose(stack);
-//     return node;
-// }
-
-// int generate_expression_reduce(stack stack, runTimeInfo *rti){
-//     return 0;
-
-// }

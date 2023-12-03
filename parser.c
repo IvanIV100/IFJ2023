@@ -37,8 +37,8 @@ xchoda00
     -if and while expressions conditions - check if they are correct
 
 * - Fix
-    - fix ?? in expressions
-    
+    -fix ?? in expressions
+    -jsut rnadom hanging words
     }else{  skis this brace, goes for the write
         write("NOK")
     }
@@ -299,7 +299,6 @@ node_t* handle_in_param_list(node_t* node){
 
 node_t* expression_token_count(node_t* node, int* count){
     (*count) = 0;
-    printf("expr count %d \n", node->current->type);
     while ((6 <= node->current->type && node->current->type <= 16) || 
             (34 <= node->current->type && node->current->type <= 38) ||
             node->current->type == T_LEFT_PAREN || node->current->type == T_RIGHT_PAREN || node->current->type == T_DOUBLE_QUESTION_MARK){
@@ -437,7 +436,6 @@ node_t* handle_cond_ops(node_t* node){
 }
 
 node_t* handle_if(node_t* node){ //check if ( is passed
-    printf("if current type %d \n", node->current->type);
     node = handle_cond_ops(node);
     
     //node = get_next(node);
@@ -498,7 +496,8 @@ node_t* handle_statement_list(node_t* node){ //chceck func ret here
     
     node = handle_statement(node);
     if (node->current->type == T_RIGHT_PAREN || node->current->type == T_RIGHT_BRACE || node->current->type == T_FUNC || 
-    node->current->type == T_ELSE || node->current->type == T_EOF){
+    node->current->type == T_ELSE || node->current->type == T_EOF || node->current->type == T_INT
+    || node->current->type == T_STRING || node->current->type == T_DOUBLE){
         
         return node;
     }
@@ -680,12 +679,16 @@ void parser(){
                 break;// add clean up
             default:
                 node = handle_statement_list(node);
+                if (node->current->type == T_INT || node->current->type == T_STRING || node->current->type == T_DOUBLE
+                || node->current->type == T_KW_STRING || node->current->type == T_KW_INT || node->current->type == T_KW_DOUBLE){
+                    ThrowError(2);
+                }
                 if (node->current->type != T_FUNC){   //check func def
                     node = get_next(node);
                 }
                 break;
         }
     }  
-    ThrowError(2);
+    
 }
 

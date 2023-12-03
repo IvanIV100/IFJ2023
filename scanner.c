@@ -74,8 +74,7 @@ int SkipComment() {
 
 char *keywords[] = {"Double", "Int","String", "else", "func", "if",  "let", "nil", "return", "var", "while"};
 enum token_type keyword_types[] = {
-    T_KW_DOUBLE, T_KW_INT, T_KW_STRING, T_ELSE, T_FUNC, T_IF, T_LET, T_NIL, T_RETURN, T_VAR, T_WHILE
-};
+    T_KW_DOUBLE, T_KW_INT, T_KW_STRING, T_ELSE, T_FUNC, T_IF, T_LET, T_NIL, T_RETURN, T_VAR, T_WHILE};
 
 // vytvoreni tokenu
 Token* createToken(enum token_type type, enum token_Category category) {
@@ -145,7 +144,7 @@ Token* is_Id(char curr) {
 
     int keywordi = isKeyword(token->value.ID_name);
 
-        if (keywordi >= 0) {
+    if (keywordi >= 0) {
         token->type=keyword_types[keywordi];
         token->Category=TC_KEYWORDS;
         
@@ -207,12 +206,15 @@ int unicode(int i, Token *token) {          // over returny kdyz indikejtnou err
         return 0;
     }
 
-    // heximablabla cislo (fucking hate that word dont know how to even type that)
+    // heximablabla cislo 
     unsigned int unicodeValue = 0;
     for (int j = 0; j < 2; j++) {
         char next = getchar();
         if ((next >= '0' && next <= '9') || (next >= 'A' && next <= 'F') || (next >= 'a' && next <= 'f')) {
             unicodeValue = unicodeValue * 16 + strtol(&next, NULL, 16);
+            if (unicodeValue >= 128) {
+                return 0;
+            }
         } 
         else {
             return 0;
@@ -232,22 +234,21 @@ int escape_Char(Token *token,int i){
     char next;
     next=getchar();
     int alright = 0;
-    
     switch (next) {
 		case '\"':                          // tohle "  
 			addChar('\"',i,token);
 			return 1;
 		case 'n':                           // dalsi radek
 			addChar('\n',i,token);
-			return 1;
+            return 1;
 		case 'r':                           // Neco sposunutim ukazatele na zacatek radku muze to pak prepisovat veci na tom radku ale to co neprepise zustane
 			addChar('\r',i,token);
-			return 1;
+            return 1;
 		case 't' :                          // tabulator
-			addChar('\t',i,token);
+            addChar('\t',i,token);
 			return 1;
 		case '\\' :                       
-			addChar('\\',i,token);
+            addChar('\\',i,token);
 			return 1;
         case 'u':                           // unixocy cod
             alright = unicode(i,token);
@@ -302,7 +303,15 @@ Token* isString(char curr) {     // je to string jeste multi
                 token->value.integer=1;
                 return token;
             }
+            
         }
+        else if (curr == EOF){                 
+            free(token->value.stringVal);
+            token->Category=TC_ERR;
+            token->type=T_ERORR;
+            token->value.integer=1;
+            return token; }
+
         else{                                   // pokud to neni escape tak jen pridej do stringval
             addChar(curr,i,token);
         }
@@ -355,17 +364,13 @@ Token* isMultiLineString() {
             }
             i++;  
         } 
-        else {
-            addChar(curr, i, token);
-            i++;  
-        }
 
-        if (curr == '\"') {                 // musi to byt tri za sebou """
+        else if (curr == '\"') {                 // musi to byt tri za sebou """
             char next = getchar();
             if (next == '\"') {
                 next = getchar();
                 if (next == '\"') {
-                    token->value.stringVal[i - 3] = '\0';  
+                    token->value.stringVal[i-1] = '\0';  
                     return token;
                 } 
                 else {
@@ -377,6 +382,11 @@ Token* isMultiLineString() {
                 addChar(curr, i, token);  
                 ungetc(next, stdin);  
             }
+        }
+
+        else {
+            addChar(curr, i, token);
+            i++;  
         }
         curr = getchar();  
     }
@@ -699,11 +709,12 @@ const char* token_names[] = {
  int main() {                                    // best debuging ever cant change my mind
      Token* xd;
      xd=scan();
+     printf("--%s\n", token_names[xd->type]);
      while(xd->Category!=TC_ERR){
          free_token_Values(xd);
          xd=scan();
          printf("--%s\n", token_names[xd->type]);
-
+        
          if(xd->type==T_STRING){
             printf("xx %s xx\n",xd->value.stringVal);
         }

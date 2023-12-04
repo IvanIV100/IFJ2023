@@ -8,6 +8,8 @@
 
 #include "code_generator.h"
 
+//TODO
+
 // Function to check if an identifier corresponds to a built-in function
 bool is_builtin_function(const char* identifier) {
     for (int i = 0; built_in_functions[i] != NULL; ++i) {
@@ -21,7 +23,6 @@ bool is_builtin_function(const char* identifier) {
 void start_code_generation(node_t* parse_tree) {
     if (parse_tree != NULL && parse_tree->current != NULL) {
         generate_statement_list_code(parse_tree);
-    } else {
     }
 }
 
@@ -45,10 +46,9 @@ void generate_builtin_function_call(node_t* node) {
     } else if (strcmp(node->current->value.ID_name, "chr") == 0) {
         generatechr();
     } else if (strcmp(node->current->value.ID_name, "write") == 0) {
-        generateWrite();
+        generateWrite(node);
     }
 }
-
 
 void generate_expression_code(node_t* node) {
     switch (node->current->type) {
@@ -57,7 +57,7 @@ void generate_expression_code(node_t* node) {
         case T_MUL:
         case T_DIV:
             // Binary arithmetic operations
-            generate_binary_arithmetic_code(node->current);
+            generate_binary_arithmetic_code(node);
             break;
         case T_STRING:
             // Generate code for a string literal
@@ -73,20 +73,25 @@ void generate_expression_code(node_t* node) {
             // Variable reference
             printf("MOVE LF@%s TF@%s\n", node->current->value.ID_name, node->current->value.ID_name);
             break;
-
         case T_INT:
+        case T_KW_INT:
             // Integer literal
-            printf("MOVE LF@t%s int@%d\n", get_temp_variable(), node->current->value.integer);
+            if(node->left->left->current->type == T_KW_INT){
+            printf("MOVE LF@%s int@%d\n", node->left->left->left->left->current->value.ID_name, node->current->value.integer);
+            }else{
+            printf("MOVE LF@%s int@%d\n", node->left->left->current->value.ID_name, node->current->value.integer);
+            }
             break;
-
         case T_DOUBLE:
+        case T_KW_DOUBLE:
             // Double literal
-            printf("MOVE LF@t%s float@%f\n", get_temp_variable(), node->current->value.decimal);           
+            if(node->left->left->current->type == T_KW_DOUBLE){
+            printf("MOVE LF@%s int@%f\n", node->left->left->left->left->current->value.ID_name, node->current->value.decimal);
+            }else{
+            printf("MOVE LF@%s int@%f\n", node->left->left->current->value.ID_name, node->current->value.decimal);
+            }
             break;
-        
-
         default:
-            // Handle other expression types if needed
             break;
     }
 }
@@ -95,31 +100,35 @@ void generate_binary_arithmetic_code(node_t* node) {
     if (node->left->current == NULL || node->right->current == NULL) {
         return;
     }
-    //node has a left and right child representing operands
-    generate_expression_code(node->left->current);
-    generate_expression_code(node->right->current);
-
-    if (node->left->current->type == T_INT) {
-        printf("INT2FLOAT LF@%d LF@%f\n", node->left->current->value.integer, node->left->current->value.decimal);
-    }
-
-    if (node->right->current->type == T_INT) {
-        printf("INT2FLOAT LF@%d LF@%f\n", node->right->current->value.integer, node->right->current->value.decimal);
-    }
-
     // Generate code for the binary operation
     switch (node->current->type) {
         case T_PLUS:
-            printf("ADD LF@%sLF@%f LF@%f\n", get_temp_variable(), node->left->current->value.decimal, node->right->current->value.decimal);
+            if(node->left->left->left->current->type == T_KW_INT){
+            printf("ADD LF@%s LF@%d LF@%d\n", node->left->left->left->left->left->current->value.ID_name, node->left->current->value.integer, node->right->current->value.integer);
+            }else{
+                printf("ADD LF@%s LF@%d LF@%d\n", node->left->left->left->current->value.ID_name, node->left->current->value.integer, node->right->current->value.integer);
+            }
             break;
         case T_MINUS:
-            printf("SUB LF@%sLF@%f LF@%f\n", get_temp_variable(), node->left->current->value.decimal, node->right->current->value.decimal);
+            if(node->left->left->left->current->type == T_KW_INT){
+            printf("SUB LF@%s LF@%d LF@%d\n", node->left->left->left->left->left->current->value.ID_name, node->left->current->value.integer, node->right->current->value.integer);
+            }else{
+            printf("SUB LF@%s LF@%d LF@%d\n", node->left->left->left->current->value.ID_name, node->left->current->value.integer, node->right->current->value.integer);
+            }
             break;
         case T_MUL:
-            printf("MUL LF@%sLF@%f LF@%f\n", get_temp_variable(), node->left->current->value.decimal, node->right->current->value.decimal);
+            if(node->left->left->left->current->type == T_KW_INT){
+            printf("MUL LF@%s LF@%d LF@%d\n", node->left->left->left->left->left->current->value.ID_name, node->left->current->value.integer, node->right->current->value.integer);
+            }else{
+            printf("MUL LF@%s LF@%d LF@%d\n", node->left->left->left->current->value.ID_name, node->left->current->value.integer, node->right->current->value.integer);
+            }
             break;
         case T_DIV:
-            printf("DIV LF@%s LF@%f LF@%f\n", get_temp_variable(), node->left->current->value.decimal, node->right->current->value.decimal);
+            if(node->left->left->left->current->type == T_KW_INT){
+            printf("DIV LF@%s LF@%d LF@%d\n", node->left->left->left->left->left->current->value.ID_name, node->left->current->value.integer, node->right->current->value.integer);
+            }else{
+            printf("DIV LF@%s LF@%d LF@%d\n", node->left->left->left->current->value.ID_name, node->left->current->value.integer, node->right->current->value.integer);
+            }
             break;
         default:
             // Handle other cases if needed
@@ -127,57 +136,47 @@ void generate_binary_arithmetic_code(node_t* node) {
     }
 }
 
-// Helper function to get a temporary variable name
-char* get_temp_variable() {
-    static int temp_variable_count = 0;
-    char* temp_variable_name = malloc(10);
-    sprintf(temp_variable_name, "temp%d", temp_variable_count++);
-    return temp_variable_name;
-}
-
-void free_temp_variable(char * temp_variable_name){
-    free(temp_variable_name);
-}
-
 void generate_assignment_code(node_t* node) {
     // Generate code for the expression on the right-hand side
-    generate_expression_code(node->right->current);
-
+    if(node->right->right->current->type == T_PLUS || node->right->right->current->type == T_MINUS || node->right->right->current->type == T_DIV || node->right->right->current->type == T_MUL)
+    {
+        generate_expression_code(node->right->right);
+    }else{
+    generate_expression_code(node->right);
+    }
     // Print the left side of the assignment
-    if (node->left->current->type == T_IDENTIFIER) {
+    if(node->left->current->Category == TC_TYPE){
+        printf("PUSHS LF@%s\n", node->left->left->left->current->value.ID_name);
+        printf("POPS LF@%s\n", node->left->left->left->current->value.ID_name);
+    }
+    else{
         printf("PUSHS LF@%s\n", node->left->current->value.ID_name);
         printf("POPS LF@%s\n", node->left->current->value.ID_name);
-    }
+        
+        }
 }
-
-
 void generate_variable_definition_code(node_t* node) {
-    if (node->right != NULL) {
-        generate_assignment_code(node->right);
+    if (node->right->right->right->current->type == T_ASSIGN){
+        generate_assignment_code(node->right->right->right);
     }
-    if (node->left->current != NULL && node->left->current->type == T_IDENTIFIER) {
+    if(node->right->right->current->type == T_ASSIGN){
+        generate_assignment_code(node->right->right);
+    }
+    if (node->left != NULL && node->left->current->type == T_IDENTIFIER) {
         printf("DECLARE VAR, %s\n", node->left->current->value.ID_name);
     }
 }
 
 void generate_function_call_code(node_t* node) {
     // generates all params
-    if (node->right != NULL) {
+    if (node->right != NULL && node->right->current->type != 3) {
         generate_in_param_list_code(node->right);
-    }
-    if (is_builtin_function(node->current->value.ID_name)) {
-        generate_builtin_function_call(node);
-    } else {
-        printf("CALL %s\n", node->right->current->value.ID_name);
     }
 }
 
-
-
-
 void generate_in_param_list_code(node_t* node) {
     // Generate code for each parameter in the list
-    while (node != NULL && node->current->type != 1) {
+    while (node->right != NULL && node->current->type != 1) {
         generate_in_param_code(node);
         node = node->right;
     }
@@ -247,35 +246,38 @@ void generate_return_statement_code(node_t* node) {
 }
 
 void generate_statement_list_code(node_t* node) {
-    while (node != NULL && node->current != NULL) {
-        if (node != NULL) {
-            if (node->current->type != T_UNKNOWN) {
-            } else {
-            }
-            generate_statement_code(node);
-        } else {
+    while (node != NULL) {
+        generate_statement_code(node);
+        if (node->right != NULL) {
+        node = node->right;
+        }else {
+             break;  // Break out of the loop if node->right or node->right->current is NULL
         }
-        if (node->right->current != NULL) {
+        if(node->left->current->type == 24){
+            while(node->current->type != 2){
             node = node->right;
-        } else {
-            break;  // Break out of the loop if node->right or node->right->current is NULL
+            }
+        }
+        if(node->current->type == 0 || node->current->type == 1){
+            node = node->right;
         }
     }
 }
 
-
-
-
 void generate_statement_code(node_t* node) {
     switch (node->current->type) {
         case T_IDENTIFIER:
+            if (is_builtin_function(node->current->value.ID_name)) {
+                generate_builtin_function_call(node);
+            }else{
             generate_expression_code(node);
+            }
         case T_LET:
         case T_VAR:
             generate_variable_definition_code(node);
             break;
         case T_FUNC:
-                generate_function_call_code(node);
+            generate_function_call_code(node);
             break;
         case T_IF:
             generate_if_statement_code(node->right);
@@ -295,83 +297,83 @@ void generate_statement_code(node_t* node) {
 
 void generateInt2Double() {
     printf(
-        "\n LABEL $Int2Double" \
+        " LABEL $Int2Double" \
         "\n PUSHFRAME" \
         "\n DEFVAR LF@%retval" \
-        "\n INT2FLOAT LF@%retval LF@%0" \
+        "\n INT2FLOAT LF@%retval LF@%%0" \
         "\n MOVE LF@%retval float@0.0" \ 
-        "\n ADD LF@%retval LF@%retval LF@%0" \ 
+        "\n ADD LF@%retval LF@%retval LF@%%0" \ 
         "\n POPFRAME" \
-        "\n RETURN");
+        "\n RETURN \n");
 }
 
 
 void generateDouble2Int()
 {
     printf(
-    "\n LABEL $Double2Int" \
+    " LABEL $Double2Int" \
 	"\n PUSHFRAME" \
 	"\n DEFVAR LF@%retval" \
-	"\n FLOAT2INT LF@%retval LF@%0" \
+	"\n FLOAT2INT LF@%retval LF@%%0" \
     "\n MOVE LF @%retval int@0"\
-    "\n ADD LF@%retval LF@%retval LF@%0"
+    "\n ADD LF@%retval LF@%retval LF@%%0"
 	"\n POPFRAME" \
-	"\n RETURN");
+	"\n RETURN \n");
 }
 
 void generatereadString()
 {
     printf(
-    "\n LABEL $readString" \
+    " LABEL $readString" \
 	"\n PUSHFRAME" \
     "\n DEFVAR LF @%retval"\
 	"\n READ LF@%retval string" \
 	"\n POPFRAME" \
-	"\n RETURN");
+	"\n RETURN \n");
 }
 
 void generatereadInt()
 {
     printf(
-	"\n LABEL $readInt" \
+	" LABEL $readInt" \
 	"\n PUSHFRAME" \
     "\n DEFVAR LF@%retval" \
 	"\n READ LF@%retval int" \
 	"\n POPFRAME" \
-	"\n RETURN");
+	"\n RETURN \n");
 }
 
 void generatereadDouble() {
     printf(
-        "\n LABEL $readDouble" \
+        " LABEL $readDouble" \
         "\n PUSHFRAME" \
         "\n DEFVAR LF@%retval" \
         "\n READ LF@%retval double" \
         "\n POPFRAME" \
-        "\n RETURN");
+        "\n RETURN \n");
 }
 
 void generateLength()
 {
     printf(
-	"\n LABEL $length" \
+	" LABEL $length" \
 	"\n PUSHFRAME" \
 	"\n DEFVAR LF@%retval" \
-	"\n STRLEN LF@%retval LF@%0" \
+	"\n STRLEN LF@%retval LF@%%0" \
 	"\n POPFRAME" \
-	"\n RETURN");
+	"\n RETURN \n");
 }
 
 void generateSubstring() {
     printf(
-        "\n LABEL $substring" \
+        " LABEL $substring" \
         "\n PUSHFRAME" \
         "\n DEFVAR LF@%retval" \
         "\n MOVE LF@%retval string@" \
         "\n DEFVAR LF@length_str" \
         "\n CREATEFRAME" \
-        "\n DEFVAR TF@%0" \
-        "\n MOVE TF@%0 LF@%0" \
+        "\n DEFVAR TF@%%0" \
+        "\n MOVE TF@%%0 LF@%%0" \
         "\n CALL $length" \
         "\n MOVE LF@length_str TF@%retval" \
         "\n DEFVAR LF@ret_cond" \
@@ -379,29 +381,29 @@ void generateSubstring() {
         "\n JUMPIFEQ $substr$return LF@ret_cond bool@true" \
         "\n EQ LF@ret_cond LF@length_str int@0"	\
         "\n JUMPIFEQ $substr$return LF@ret_cond bool@true" \
-        "\n LT LF@ret_cond LF@%1 int@0"	\
+        "\n LT LF@ret_cond LF@%%1 int@0"	\
         "\n JUMPIFEQ $substr$return LF@ret_cond bool@true" \
-        "\n EQ LF@ret_cond LF@%1 int@0"	\
+        "\n EQ LF@ret_cond LF@%%1 int@0"	\
         "\n JUMPIFEQ $substr$return LF@ret_cond bool@true" \
-        "\n GT LF@ret_cond LF@%1 LF@length_str"	\
+        "\n GT LF@ret_cond LF@%%1 LF@length_str"	\
         "\n JUMPIFEQ $substr$return LF@ret_cond bool@true" \
-        "\n EQ LF@ret_cond LF@%2 int@0" \
+        "\n EQ LF@ret_cond LF@%%2 int@0" \
         "\n JUMPIFEQ $substr$return LF@ret_cond bool@true" \
         "\n DEFVAR LF@max_n" \
         "\n MOVE LF@max_n LF@length_str" \
-        "\n SUB LF@max_n LF@max_n LF@%1" \
+        "\n SUB LF@max_n LF@max_n LF@%%1" \
         "\n ADD LF@max_n LF@max_n int@1" \
         "\n DEFVAR LF@edit_n_cond" \
-        "\n LT LF@edit_n_cond LF@%2 int@0" \
+        "\n LT LF@edit_n_cond LF@%%2 int@0" \
         "\n JUMPIFEQ $substr$edit_n LF@edit_n_cond bool@true" \
-        "\n GT LF@edit_n_cond LF@%2 LF@max_n" \
+        "\n GT LF@edit_n_cond LF@%%2 LF@max_n" \
         "\n JUMPIFEQ $substr$edit_n LF@edit_n_cond bool@true" \
         "\n JUMP $substr$process" \
         "\n LABEL $substr$edit_n" \
-        "\n MOVE LF@%2 LF@max_n" \
+        "\n MOVE LF@%%2 LF@max_n" \
         "\n LABEL $substr$process" \
         "\n DEFVAR LF@index" \
-        "\n MOVE LF@index LF@%1" \
+        "\n MOVE LF@index LF@%%1" \
         "\n SUB LF@index LF@index int@1" \
         "\n DEFVAR LF@char"	\
         "\n DEFVAR LF@process_loop_cond" \
@@ -409,57 +411,63 @@ void generateSubstring() {
         "\n GETCHAR LF@char LF@%0 LF@index"	\
         "\n CONCAT LF@%retval LF@%retval LF@char" \
         "\n ADD LF@index LF@index int@1" \
-        "\n SUB LF@%2 LF@%2 int@1" \
-        "\n GT LF@process_loop_cond LF@%2 int@0" \
+        "\n SUB LF@%%2 LF@%%2 int@1" \
+        "\n GT LF@process_loop_cond LF@%%2 int@0" \
         "\n JUMPIFEQ $substr$process_loop LF@process_loop_cond bool@true" \
         "\n LABEL $substr$return" \
         "\n POPFRAME" \
-        "\n RETURN");
+        "\n RETURN \n");
 }
 
 
 void generateord() {
     printf(
-        "\n LABEL $ord" \
+        " LABEL $ord" \
         "\n PUSHFRAME" \
         "\n DEFVAR LF@%retval" \
         "\n MOVE LF@%retval int@0" \
         "\n DEFVAR LF@cond_range" \
-        "\n LT LF@cond_range LF@%0 int@0" \
+        "\n LT LF@cond_range LF@%%0 int@0" \
         "\n JUMPIFEQ $ord$return LF@cond_range bool@true" \
-        "\n GT LF@cond_range LF@%0 int@255" \
+        "\n GT LF@cond_range LF@%%0 int@255" \
         "\n JUMPIFEQ $ord$return LF@cond_range bool@true" \
-        "\n STR2INT LF@%retval LF@%0" \
+        "\n STR2INT LF@%retval LF@%%0" \
         "\n LABEL $ord$return" \
         "\n POPFRAME" \
-        "\n RETURN");
+        "\n RETURN \n");
 }
 
 
 void generatechr()
 {
     printf(
-	"\n LABEL $chr"	\
+	" LABEL $chr"	\
 	"\n PUSHFRAME"	\
 	"\n DEFVAR LF@%retval" \
 	"\n MOVE LF@%retval string@" \
 	"\n DEFVAR LF@cond_range" \
-	"\n LT LF@cond_range LF@%0 int@0" \
+	"\n LT LF@cond_range LF@%%0 int@0" \
 	"\n JUMPIFEQ $chr$return LF@cond_range bool@true" \
-	"\n GT LF@cond_range LF@%0 int@255" \
+	"\n GT LF@cond_range LF@%%0 int@255" \
 	"\n JUMPIFEQ $chr$return LF@cond_range bool@true" \
-	"\n INT2CHAR LF@%retval LF@%0" \
+	"\n INT2CHAR LF@%retval LF@%%0" \
 	"\n LABEL $chr$return" \
 	"\n POPFRAME" \
-	"\n RETURN");
+	"\n RETURN \n");
 }
 
-void generateWrite()
+void generateWrite(node_t* node)
 {
+    if(node->right->current->type == T_LEFT_PAREN){
+        node->right = node->right->right;
+        if(node->right->current->type == T_RIGHT_PAREN){
+            
+        }
+    }
     printf(
-	"\n LABEL $write" \
+	" LABEL write" \
 	"\n PUSHFRAME" \
-	"\n WRITE LF@%0" \
+	"\n WRITE LF@%%0 %s" \
 	"\n POPFRAME" \
-	"\n RETURN");
+	"\n RETURN \n", node->right->current->value.ID_name);
 }

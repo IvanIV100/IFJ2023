@@ -54,7 +54,8 @@ typedef struct{
 typedef struct{
 DataType datatype; //od 0 do 4
 bool init;
-VarOrLet VoL; 
+VarOrLet VoL;
+bool parametr; 
 int intVal;       //hodnoty    
 double doubleVal; //
 char* strVal;     //

@@ -187,15 +187,21 @@ int AddParametr(SymTable *table, char *key, char *name, char *id, DataType type)
         return -1;
      if (add_parametr_id(par, id) == -1)
         return -1;
-    while ((*table)[hash]->function.parametr != NULL){
-        Parametr *para = (*table)[hash]->function.parametr->next;
-        (*table)[hash]->function.parametr = para;
-        printf("Aho");
+    par->next = NULL;  // Set the next pointer of the new parameter to NULL
+    Parametr *current = (*table)[hash]->function.parametr;
+
+    if (current == NULL) {
+        (*table)[hash]->function.parametr = par;
     }
-    (*table)[hash]->function.parametr = par;
+    else {
+        while (current->next != NULL) {
+            current = current->next;
+        }
+    current->next = par;
+    }
     (*table)[hash]->function.parametr_count++;
-    (*table)[hash]->function.parametr->next = NULL;
-    return 1;
+
+return 1;
 }
 
 void SymTableFree(SymTable *table){
@@ -206,14 +212,13 @@ void SymTableFree(SymTable *table){
         if((*table)[i]->variable.strVal != NULL)
             free((*table)[i]->variable.strVal);
         while((*table)[i]->function.parametr != NULL ){
-          Parametr *parametr = (*table)[i]->function.parametr;
-        (*table)[i]->function.parametr = parametr->next;  // Posun na další parametr
-
-        clear_parametr(parametr);  // Provedeš potřebné operace na uvolnění paměti uvnitř struktury Parametr
-        parametr_free(parametr);
-        free(parametr);
-        parametr = NULL;
-    }
+            Parametr *parametr = (*table)[i]->function.parametr;
+            (*table)[i]->function.parametr = parametr->next;  // Posun na další parametr
+            clear_parametr(parametr);  // Provedeš potřebné operace na uvolnění paměti uvnitř struktury Parametr
+            parametr_free(parametr);
+            free(parametr);
+            parametr = NULL;
+        }
         free((*table)[i]);
         }
      }
@@ -255,7 +260,7 @@ void copy_to_child(SymTable *parent, SymTable *current) { //jeste by to chtelo a
            (*current)[i]= temp;
         }
             }    }*/
-            /*
+ /*
 int main(){
 SymTable *table= NULL;
 SymTable *table1 = NULL;
@@ -277,7 +282,7 @@ if (AddFunctionDetails(&(*table), "popal", 2, 1) == -1)
 InsertSymbol(&(*table), "pollal");
 AddParametr(&(*table), "popal", "jmena", "id",1);
 AddParametr(&(*table), "popal", "jmenaa","id" ,1);
-//AddParametr(&(*table), "popal", "xd" ,"ps", 1);
+AddParametr(&(*table), "popal", "xd" ,"ps", 1);
 
 AddVarDetails(&(*table), "pollal", 0, 1, 0);
 insert_string_value(&(*table), "pollal", "ahoj");

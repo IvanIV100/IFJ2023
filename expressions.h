@@ -21,7 +21,7 @@ typedef struct runTimeInfo {
     SymTable* builtInFunctions;
     struct symTabLVL *currentLVL;
 
-    char *ID;
+    char *FID;
 
 } runTimeInfo;
 

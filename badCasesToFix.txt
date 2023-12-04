@@ -1,0 +1,501 @@
+----lexer----
+
+this works:
+let a = /*hehe*/ 1
+let /*mehe*/ b = 2
+let c = a /*huhu*/ + b
+----
+this doesnt:
+le/*hgisdnf*/t a= 4
+----
+let a = 1.1E
+let a= 1.1e
+let a= 1.
+
+/* hello, there
+
+general Kenobi !!!
+
+
+// Ukazka prace s retezci a vestavenymi funkcemi 
+
+write("Ahoj\n\"Sve'te \\\u{0022}", "\n")  // 042 oktalove = 34 decimalne = 22 hexadecimalne = znak uvozovek
+
+var s1 : String? = 
+  """
+   Toto 
+   je 
+
+   nejaky 
+   text
+"""  // ukoncujici uvozovky ovlivnuji implicitni odsazeni vnitrnich radku retezce
+var s2:String = (s1!) + ", ktery jeste trochu obohatime"
+write(s1, "\u{000020}", s2, "\u{0A}")
+
+var s1String = s1!
+var s1len = length(s1String)
+var s1_20ty_znak = s1len
+s1len = 4
+let s1_16ty_znak : Int = s1_20ty_znak - s1len
+let s11 = substring(of: s2, startingAt: s1_16ty_znak, endingBefore: s1_20ty_znak)
+write(s1len, " znaky od ", 16, ". znaku (index ", s1_16ty_znak, ") v \"", s2, "\":", s11, "\n")
+
+let ss = substring(of:s2,startingAt:15,endingBefore:19)
+s1String = ss ?? 
+"""
+viceradkovy
+"retezec"
+misto nil vysledku
+""" // vysledny retezec v s1 bude mit 4 znaky
+let s1len4 = length(s1String)
+write(s1len4, " znaky od ", 16, ". znaku v \"", s2, "\":", s1, "\n")
+
+let a = """ Ahoj
+nieco 
+sem 
+treba
+dat
+"""
+
+let a = "\u{41} \t \u{48} \u{4f} \u{4a} \"  "
+write(a)
+
+
+let a = "\n"
+let b = "\\"
+write(a,b)4
+
+
+----is 0 should be 2----
+let a=4+
+let a = (4*5+(5-3.0)/2.0)*3.0)
+
+
+
+let a = ("Hello" + "World"
+
+if{
+    write("hello")
+}
+else{
+    write("world")
+}
+
+if (1 == 1 {
+    write("hello")
+}
+else{
+    write("world")
+}
+
+----is 0  should be 5-----
+write(foo)
+
+let y = x
+
+----is 0 should be 7---
+let a : Int = 100
+let b = a! +5
+let a = 10/2.5
+
+----is 2 should be 0----
+
+
+
+
+
+
+
+
+
+
+
+
+
+let         a       =       5
+
+
+let       b       =     5    +    a
+
+
+
+
+write(                     b)
+
+
+let a = ("Hello" + "World")
+write(a)
+let b= ("Hello") + ("World")
+write(b)
+let c = "Hello" + "World"
+write(c)
+
+let a = 1.7976931348623157E+308
+let b = 1.7976931348623157e-308
+
+write(a)
+write(b)
+
+
+let a = 2E+4
+write( a )
+
+let a = readString()
+
+
+func hello(_ a: String) -> String{
+    write("Dear", a, "\n")
+    write("Welcome to the Hell")
+}
+
+hello(a!)
+
+
+func boo(){
+    write("hi :)")
+}
+func hovno
+() -> Int
+{
+    return 1 * 5
+}
+
+func foo() {
+    boo()
+}
+
+foo()
+
+func boo() {
+    // hello
+    // wathca doin'?
+}
+
+
+-VISIBILITY TEST-
+
+// Hello World example in IFJ23
+// run it on Merlin by: swift <(cat hello.swift ifj23.swift)
+
+func hlavni_program(year y : Int)  {
+  write("Hello from IFJ", y, "\n")
+}
+
+hlavni_program(year:23)
+hlavni_program(year: 24) // pozdrav z budoucnosti
+
+
+/* Program 3: Prace s retezci a vestavenymi funkcemi */
+var str1 = "Toto je nejaky text v programu jazyka IFJ23"
+let str2 = str1 + ", ktery jeste trochu obohatime"
+write(str1, "\n", str2, "\n")
+let i = length(str1)
+write("Pozice retezce \"text\" v str2: ", i, "\n")
+write("Zadejte serazenou posloupnost vsech malych pismen a-h, ")
+
+let newInput = readString()
+if let newInput {
+	str1 = newInput
+	while (str1 != "abcdefgh") {
+		write("Spatne zadana posloupnost, zkuste znovu:\n")
+		let tmp = readString()
+		str1 = tmp ?? ""
+	}
+} else {}
+
+let d = readDouble()
+if let d  // d is not nil, reading was successful, d inside is not Double? but Double 
+{
+  let double : Double = d
+  write("hexadecimalne: ", double)
+}
+else      // d is nil
+{
+  let dbl : Double = d ?? 0.0
+  write("nula hexadecimalne: ", dbl)
+}
+
+
+
+let a = "\n"
+let b = "\\"
+write(a,b)
+
+
+let a = "\u{41} \t \u{48} \u{4f} \u{4a} \"  "
+write(a)
+---maybe lexer err
+
+let a : Int? = 100
+let b = a! +5
+write(b)
+
+let a : Int? = nil
+let b = a ?? 5+10
+write(b)
+
+
+func foo(_ par : String) -> String {
+let ret = "4"
+return ret
+}
+write(foo("hey"))
+
+
+func foo(_ par : String) -> String {
+let ret = "4"
+return ret
+}
+let x = foo("hey")
+write(x)
+
+
+func f() -> Int? {
+    return nil
+}
+
+let result = f()
+
+
+var optionalValue: Int? = nil
+
+if optionalValue == nil{
+    write("yes")
+} else {
+    write("no")
+}
+
+let false = nil
+
+if false {
+    write("BAD")
+} else {
+    write("GOOD")
+}
+
+
+func foo(with param : String) ->String {
+    write(param)
+}
+foo(with: "1")
+---maybe missing return?
+
+
+if 1 != 4 {
+    if "a" != "b" {
+        if 3.14 != 8.0 {
+            write("ok")
+
+        }
+    }
+}
+
+if 1 <= 2 {
+    if 0 <= 0 {
+        write("ok")
+    }
+}
+
+let x=4
+let y= "ahoj"
+write("cau:",x,y)
+
+
+let x: Int? = nil
+let y = x! + 10
+write("Vysledok: ", y, "\n")
+
+
+if 2 >= 1 {
+    if 3 >= 1 {
+        write("ok")
+    }
+}
+
+
+if 1 < 2 {
+    if 0 - 1 < 0 {
+        write("ok")
+    }
+}
+
+if 1 < 2 {
+    if 0-1 < 0 {
+        write("ok")
+    }
+}
+
+----is 2 should be 3---
+
+func foo(){
+    return 1
+}
+
+func foo(){
+    return 2
+}
+
+foo()
+// ak nebudeme robit rozsirenie err3, inak OVERLOAD
+
+var x = 1
+WHILE (x<10){
+    print("he")
+    x=x+1
+}
+
+----is 2 should be 4----
+
+func foo(_ par : String) -> Int {
+let ret = "4"
+return ret
+}
+print(foo("hey"))
+
+
+func f() -> Int {
+    return nil
+}
+
+let result = f()
+
+
+func foo(_ par : String) -> String {
+    let ret = "4"
+}
+print(foo("hey"))
+
+
+func foo(with param : String) ->String {
+    write(param)
+}
+foo(with: 1)
+
+
+----is 2 should be 5 or 9---
+var a = 4
+a(0)
+//function called but it is variable
+
+
+----is 2 should be 7----
+
+let h = nil + ""
+
+if 1 < "a" {
+    if 0-1 < 0 {
+        write("ok")
+    }
+}
+
+
+if 2 >= 1 {
+    if 3 >= "a" {
+        write("ok")
+    }
+}
+
+----is 3 should be 0----
+
+while "" != "" {
+    print("BAD")
+}
+
+print("GOOD")
+
+
+let true = "0"
+if true {
+    print("BAD")
+} else {
+    print("GOOD")
+}
+
+----is 3 should be 2---
+var x = 1
+while (x<10){
+    print("he")
+    x=x+1
+
+
+----is 3 should be  7----
+
+if 1 != "4" {
+    if "a" != "b"{
+        if 3.14 != 8.0{
+            print("ok")
+
+        }
+    }
+}
+
+if 1 == "1" {
+        print("ok")
+} else {}
+
+
+---- is 5 should be 0---
+// Program 1: Vypocet faktorialu (iterativne)
+/* Hlavni telo programu */
+write("Zadejte cislo pro vypocet faktorialu\n")
+let a : Int? = readInt()
+if let a {
+	if (a < 0) {write("Faktorial nelze spocitat\n")
+	} else {
+		var a = Int2Double(a)
+		var vysl : Double = 1
+		while (a > 0) {
+			vysl = vysl * a
+			a = a - 1
+		}
+		write("Vysledek je: ", vysl, "\n")
+	}
+} else {
+	write("Chyba pri nacitani celeho cisla!\n")
+}
+
+var x = 1
+while x<10{
+    write("he")
+    x=x+1
+}
+
+var x=1
+while x < 4 {
+    write("good")
+    x=x+1
+}
+write("dog")
+
+----is 5 should be 4----
+func boo(_ x : String, with y:String) -> String{
+    return x+" "+y
+}
+let a="ahoj"
+let ct=boo(a)
+write(ct)   
+
+
+func boo(_ x : String, with y:String) -> String{
+    return x+" "+y
+}
+let a="ahoj"
+let ct=boo(a, "ahojs",with: "svete" )
+write(ct)
+
+
+
+----is 99 should be 0---
+let a = 4
+let b = 3.14e6
+let c = 0-8
+let d = a*b*c
+
+
+let a = 0-8.0
+let b = 5.7
+let c = 0-3e2
+
+let d = a+b*c-a/b
+
+write(d)

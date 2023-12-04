@@ -233,11 +233,12 @@ TermType token_to_term(Token *token){
 
 ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
     countDown = length;
-
+    printf("length: %d\n", length);
     stack stack = malloc(sizeof(struct Stack));
     stack_init(stack);
 
     if(node->current->type >= 23 && node->current->type <= 33){
+        printf("error7\n");
         ThrowError(2);
     }
     TermType newTerm, stackTerm = T_UNKNOWN;
@@ -279,6 +280,7 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
         } else if (node->current->type == T_NIL){
             returnTerm = E_NIL;
         } else {
+            printf("error8\n");
             ThrowError(2);
         }
         return returnTerm;
@@ -293,10 +295,11 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
         if (item == NULL){
             ThrowError(99);
         }
-
-        if (newTerm == T_LTGT || newTerm == T_EQ || newTerm == T_DQ){
+        printf("newTerm: %d, stackTerm: %d\n", newTerm, stackTerm);
+        if (newTerm == T_LTGT || newTerm == T_DQ){
             EQcount++;
             if (EQcount > 2){
+                printf("error99\n");
                 ThrowError(2);
             }
         }
@@ -325,13 +328,16 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
                 break;
 
             case R_ERROR:
+                printf("331 newTerm: %d, stackTerm: %d\n", newTerm, stackTerm);
                 if ((newTerm == T_$ || newTerm == T_RPAREN) && stackTerm == T_$){
                     if (node->current->type == T_RIGHT_PAREN && stack->top >= 0){
                         return stack_pop(stack)->exprType;
                     } else {
+                        printf("error1\n");
                         ThrowError(2);
                     }
                 } else {
+                    printf("error\n");
                     ThrowError(2);
                 }
                 break;
@@ -399,6 +405,7 @@ int expression_reduce(stack stack, runTimeInfo *rti){
                 item->term = NULL;
             }
         } else{
+            printf("error3\n");
             ThrowError(2);
         }
     } else if (item->type == TERMINAL){
@@ -446,6 +453,7 @@ int expression_reduce(stack stack, runTimeInfo *rti){
                     break;
                 
                 default:
+                    printf("error4\n");
                     ThrowError(2);
             }    
         } else if (token_to_term(item->term) == T_RPAREN){
@@ -458,9 +466,11 @@ int expression_reduce(stack stack, runTimeInfo *rti){
                     item->type = NONTERMINAL;
                 }
             } else { 
+                printf("error5\n");
                 ThrowError(2);
             }
         } else {
+            printf("error6\n");
             ThrowError(2);
             }   
         }

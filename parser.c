@@ -37,11 +37,8 @@ xchoda00
     -if and while expressions conditions - check if they are correct
 
 * - Fix
+    -fix type check in expressions
     -fix ?? in expressions
-    -jsut rnadom hanging words
-    }else{  skis this brace, goes for the write
-        write("NOK")
-    }
 
 
 
@@ -119,7 +116,7 @@ void init_myInfo(){
 
 }
 
-node_t* handle_param(node_t* node){
+node_t* handle_function_param(node_t* node){
     char* name;
     if (node->current->type == T_UNDERSCORE){
         name = "_";
@@ -141,8 +138,8 @@ node_t* handle_param(node_t* node){
     }
     node = get_next(node);
     int type = handle_type(node);
-    AddParametr(runInfo->globalFrame, runInfo->ID, name, type);
-    AddParametrID(runInfo->globalFrame, runInfo->ID, ID);
+    // AddParametr(runInfo->globalFrame, runInfo->FID, name, type);
+    // AddParametrID(runInfo->globalFrame, runInfo->FID, ID);
 
     return  node;
 }
@@ -152,7 +149,7 @@ node_t* handle_param_list(node_t* node){
     if (node->current->type == T_RIGHT_PAREN){
         return node;
     } else {
-        node = handle_param(node);
+        node = handle_function_param(node);
     }
     node = get_next(node);
     if (node->current->type == T_COMMA){    
@@ -200,10 +197,10 @@ node_t* hadnle_func_retType(node_t* node){
     if (node->current->type == T_ARROW){
         node = get_next(node);
         int type = handle_type(node);
-        AddFunctionDetails(runInfo->globalFrame, runInfo->ID, type , true);
+        AddFunctionDetails(runInfo->globalFrame, runInfo->FID, type , true);
         node = get_next(node);
     } else {
-        AddFunctionDetails(runInfo->globalFrame, runInfo->ID, 0, true);
+        AddFunctionDetails(runInfo->globalFrame, runInfo->FID, 0, true);
     }
     return node;
 
@@ -214,14 +211,14 @@ node_t* handle_func_def(node_t* node){
         ThrowError(2);
     }
 
-    runInfo->ID=node->current->value.ID_name;
-    if (GetSymbol(runInfo->builtInFunctions, runInfo->ID) != NULL ){
+    runInfo->FID=node->current->value.ID_name;
+    if (GetSymbol(runInfo->builtInFunctions, runInfo->FID) != NULL ){
         //clean all
         ThrowError(3);
-    } else if (GetSymbol(runInfo->globalFrame, runInfo->ID) != NULL ){
+    } else if (GetSymbol(runInfo->globalFrame, runInfo->FID) != NULL ){
         ThrowError(3);
     } else {
-        InsertSymbol(runInfo->globalFrame, runInfo->ID);
+        InsertSymbol(runInfo->globalFrame, runInfo->FID);
         
     }   
     
@@ -234,17 +231,18 @@ node_t* handle_func_def(node_t* node){
 
     node = get_next(node);
     node = hadnle_func_retType(node);
-    if (node->current->type == T_LEFT_BRACE) {
+    if (node->current->type == T_LEFT_BRACE) {  
         create_level();
         node = get_next(node);
-        node = handle_statement_list(node);
+        node = handle_statement_list(node);   // *somhow check return type if missing*
     } else {
         ThrowError(2);
     }
-    if (node->current->type != T_RIGHT_BRACE) {
+    if (node->current->type != T_RIGHT_BRACE) {     
         ThrowError(2);
     }
     pop_level();
+    node = get_next(node);
     return node;
 }
 
@@ -302,11 +300,12 @@ node_t* expression_token_count(node_t* node, int* count){
     while ((6 <= node->current->type && node->current->type <= 16) || 
             (34 <= node->current->type && node->current->type <= 38) ||
             node->current->type == T_LEFT_PAREN || node->current->type == T_RIGHT_PAREN || node->current->type == T_DOUBLE_QUESTION_MARK){
-                // if (node->current->type == T_IDENTIFIER){
-                //     if(node->left->current->type != 0  && 6 >= node->left->current->type && node->left->current->type <= 16){
-                //         break;
-                //     } 
-                // }
+                if (node->current->type == T_IDENTIFIER){
+                    node = get_next(node);
+                    if(node->current->type == 0){
+                        break;
+                    } 
+                }
         (*count)++;
         node = get_next(node);
     }
@@ -327,6 +326,7 @@ node_t* handle_assign_ops(node_t* node){
             ExprType result1;
             node_t* start = node;
             node = expression_token_count(node, &count1);
+            
             result1 = expression_parser(start, runInfo, count1);
 
         //call expression handle
@@ -337,6 +337,7 @@ node_t* handle_assign_ops(node_t* node){
             ExprType result2;
             node_t* start = node;
             node = expression_token_count(node, &count2);
+            printf("Current 2 node: %d\n", node->current->type);
             result2 = expression_parser(start, runInfo, count2);
             
              // add type assign 
@@ -356,7 +357,6 @@ node_t* handle_var_def_ops(node_t* node){
         if (node->current->type == T_ASSIGN){
             node = get_next(node);
             node = handle_assign_ops(node);
-
             return node;
         } else {
             return node;
@@ -366,7 +366,8 @@ node_t* handle_var_def_ops(node_t* node){
         if (node->current->type == T_ASSIGN){
             node = get_next(node);
             node = handle_assign_ops(node);
-
+            
+            printf("cu %d\n", node->current->type);
             return node;
         } else {
             ThrowError(2);//check error type if syntax or semantic
@@ -412,7 +413,7 @@ node_t* handle_funcall_ops(node_t* node){
         node = handle_assign_ops(node);
         return node;
     } else if (node->current->type == T_LEFT_PAREN){
-        check_funcall_id(node->left->current->value.ID_name);
+        check_funcall_id(node->left->current->value.ID_name); // *checking if valid funcall*
         node = get_next(node);
         node = handle_in_param_list(node);
         if (node->current->type != T_RIGHT_PAREN){
@@ -428,42 +429,42 @@ node_t* handle_funcall_ops(node_t* node){
 
 node_t* handle_cond_ops(node_t* node){
     //node = get_next(node);
-    if (node->current->type == T_LET){
+    if (node->current->type == T_LET){  
         node = get_next(node);
-        if (node->current->type == T_IDENTIFIER){
-            //write
+        if (node->current->type == T_IDENTIFIER){  // *add variable to next symtabLVL* maybe create lvl here
             node = get_next(node);
             return node;
         } else {
             ThrowError(2);
         }
-    } 
+    } else {
+        int count3;
+        node_t* start = node; 
+        node = expression_token_count(node, &count3);  // *fix expressions* add check type for bool
+        printf("count: %d\n", count3);
+        expression_parser(start, runInfo, count3); // *add type assign* 
+        printf("cond ops\n");
+        return node; // check if the node is {
+    }
 
-    int count3;
-    node_t* start = node;
-    node = expression_token_count(node, &count3);
-    expression_parser(start, runInfo, count3); // add type assign 
-    return node;
+    
 
 }
 
 node_t* handle_if(node_t* node){ //check if ( is passed
     node = handle_cond_ops(node);
-    
     //node = get_next(node);
     if (node->current->type == T_LEFT_BRACE){
         create_level();
         node = get_next(node);
         node = handle_statement_list(node);
         if (node->current->type != T_RIGHT_BRACE){ 
-            
             ThrowError(2);
         }
         pop_level();
+
         node = get_next(node);
-        
-        if (node->current->type != T_ELSE){ 
-            
+        if (node->current->type != T_ELSE){  // *add the let var to else as well?*
             ThrowError(2);
         }
         node = get_next(node);
@@ -475,14 +476,14 @@ node_t* handle_if(node_t* node){ //check if ( is passed
             node = handle_statement_list(node);
 
             if (node->current->type != T_RIGHT_BRACE){ 
-                
-                
                 ThrowError(2);
             }
             pop_level();
             node = get_next(node);
         }
         return node;
+    } else {
+        ThrowError(2);
     }
     
 }
@@ -494,9 +495,11 @@ node_t* handle_while(node_t* node){
         node = get_next(node);
         node = handle_statement_list(node); 
         if (node->current->type != T_RIGHT_BRACE){
+
             ThrowError(2);
         }
         pop_level();
+        node = get_next(node);
         return node;
     } else {
         ThrowError(2);
@@ -508,7 +511,7 @@ node_t* handle_statement_list(node_t* node){ //chceck func ret here
 
     if(node->current->type == T_LET || node->current->type == T_VAR || 
     node->current->type == T_IDENTIFIER || node->current->type == T_IF || 
-    node->current->type == T_WHILE || node->current->type == T_RETURN){
+    node->current->type == T_WHILE || node->current->type == T_RETURN ){
         node = handle_statement(node);
         node = handle_statement_list(node);
     } else {
@@ -518,7 +521,7 @@ node_t* handle_statement_list(node_t* node){ //chceck func ret here
 }
 
 node_t* handle_return(node_t* node){
-    if (runInfo->currentLVL == NULL){
+    if (runInfo->FID == NULL){
         ThrowError(2);
     }
 
@@ -527,12 +530,10 @@ node_t* handle_return(node_t* node){
     node_t* start = node;
     node = expression_token_count(node, &count);
     ExprType retVal = expression_parser(start, runInfo, count); // add type assign
-
-    // Symbol *result = GetSymbol(runInfo->globalFrame, runInfo->ID);
+    // Symbol *result = GetSymbol(runInfo->globalFrame, runInfo->FID);
     // if (result->function.ReturnType != retVal){
     //     ThrowError(6);
     // }
-
     return node;
 }
 
@@ -542,12 +543,18 @@ node_t* handle_statement(node_t* node){
         case T_VAR:
             node = get_next(node);
             node = handle_var_def(node);
+            if(node->current->type == T_LEFT_PAREN){
+                node = node->left;
+            } 
             return node;
             break;
 
         case T_IDENTIFIER:
-
-            node = get_next(node);
+            if(node->right != NULL){
+                node = node->right;
+            } else {
+                node = get_next(node);
+            }
             node = handle_funcall_ops(node);
             return node;
             break;
@@ -595,6 +602,7 @@ node_t* get_next(node_t* current){
     }
     current->right = node;
     node->left = current;
+    printf("current token: %d\n", node->current->type);
     return node;
 }
 

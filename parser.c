@@ -29,18 +29,14 @@ xchoda00
 
 * - Implement
     -built in functions check input and ret type
-    -return fix
     -add semcheck in expressions
 
 * - Check
     -if im supposed to work with interpret return codes
-    -if and while expressions conditions - check if they are correct
 
 * - Fix
     -fix type check in expressions
     -fix ?? in expressions
-
-
 
 */
 
@@ -298,6 +294,7 @@ node_t* handle_in_param_list(node_t* node){
 node_t* expression_token_count(node_t* node, int* count){
     (*count) = 0;
     int parenCount = 0;
+    printf("entry %d\n", node->current->type);
     while ((6 <= node->current->type && node->current->type <= 16) || 
             (34 <= node->current->type && node->current->type <= 38) ||
             node->current->type == T_LEFT_PAREN || node->current->type == T_RIGHT_PAREN || 
@@ -307,7 +304,6 @@ node_t* expression_token_count(node_t* node, int* count){
             if ((node->left->current->type > 16 || node->left->current->type < 6) && 
             node->left->current->type != T_LEFT_PAREN && 
             node->left->current->type != T_DOUBLE_QUESTION_MARK){
-                //(*count)--;
                 if (node->left->current->type == T_IF || node->left->current->type == T_WHILE || 
                 node->left->current->type == T_RETURN || node->left->current->type == T_ASSIGN){
                 } else {
@@ -321,7 +317,10 @@ node_t* expression_token_count(node_t* node, int* count){
         } else if (node->current->type == T_RIGHT_PAREN){
             parenCount--;
         }
+
         (*count)++;
+        printf("count: %d\n", *count);
+        printf("current: %d\n", node->current->type);
         node = get_next(node);
     }
     if(parenCount != 0){
@@ -346,10 +345,10 @@ node_t* handle_assign_ops(node_t* node){
         } else {
             int count1;
             ExprType result1;
-            node_t* start = node;
+            node_t* start = node->left;
             node = expression_token_count(node, &count1);
             
-            result1 = expression_parser(start, runInfo, count1);
+            result1 = expression_parser(start, runInfo, count1+1);
 
         //call expression handle
         //if failed err.         
@@ -467,7 +466,6 @@ node_t* handle_cond_ops(node_t* node){
             ThrowError(2);
         }
         expression_parser(start, runInfo, count3); // *add type assign* 
-        printf("cond ops\n");
         return node; // check if the node is {
     }
 

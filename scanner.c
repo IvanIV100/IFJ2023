@@ -61,7 +61,7 @@ int SkipComment() {
             } 
 
             else if (curr == EOF) {
-                return T_EOF; 
+                return -1; 
             }
         }
     } 
@@ -212,9 +212,6 @@ int unicode(int i, Token *token) {          // over returny kdyz indikejtnou err
         char next = getchar();
         if ((next >= '0' && next <= '9') || (next >= 'A' && next <= 'F') || (next >= 'a' && next <= 'f')) {
             unicodeValue = unicodeValue * 16 + strtol(&next, NULL, 16);
-            if (unicodeValue >= 128) {
-                return 0;
-            }
         } 
         else {
             return 0;
@@ -508,14 +505,21 @@ void free_token_Values(Token *token){       // funkce ktera uvolni pamet kterou 
 Token* scan() {                             // proste GetToken da ti dasli Token asi prejmenuji whatever
     char curr = getNotWhiteChar();         // next slouzi jako takovy idiot ktery se diva do predu
     char next = curr;
+    int is_comm_ok;
     Token* token;
 
     printf("%c",curr);
     
     switch (curr) {
         case '/':
-            if (SkipComment() == 1) {      
+            is_comm_ok = SkipComment();
+            if (is_comm_ok == 1) {      
                 return createToken(T_DIV,TC_OPERATORS);
+            }
+            else if (is_comm_ok == -1) {
+                token = createToken(T_ERORR, TC_ERR);
+                token->value.integer=1;
+                return token;
             } 
             else {
                 return scan(); // Recursively call scan() to get the next token

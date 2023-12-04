@@ -274,7 +274,7 @@ void copy_to_child(SymTable *parent, SymTable *current) { //jeste by to chtelo a
            (*current)[i]= temp;
         }
             }    }*/
- 
+ /*
 int main(){
 SymTable *table= NULL;
 SymTable *table1 = NULL;
@@ -318,4 +318,4 @@ SymTableFree(&(*table));
 SymTableFree(&(*table1));
 SymTableFree(&(*table2));
 return 0;
-}
+}*/

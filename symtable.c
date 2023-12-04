@@ -34,9 +34,7 @@ int InsertSymbol(SymTable *table, char *key){
             return -1; // symbol uz je v symtable
         
          if (!strcmp((*table)[hash]->id, "if")){ //"odstraneny" prvek
-            free((*table)[hash]->id);
-            clear_parametr((*table)[hash]->function.parametr);
-            parametr_free((*table)[hash]->function.parametr);            
+            free((*table)[hash]->id);          
             free((*table)[hash]);
             (*table)[hash] = NULL;
             break;
@@ -53,8 +51,6 @@ int InsertSymbol(SymTable *table, char *key){
     temp->id = malloc(strlen(key) + 1);
     if (temp->id == NULL)
         return -1;
-    temp->function.parametr = NULL;
-    temp->function.parametr_count = 0;
     temp->type = 3; //zatim neni funkce ani var
     temp->variable.strVal = NULL;
 
@@ -79,6 +75,16 @@ int RemoveSymbol(SymTable *table, char *key){
             strcpy((*table)[hash]->id, "if"); // if nemuze byt identifikator, oznacuje odstraneny prvek
         }
     }
+    if ((*table)[hash]->type == 1){ //je funkce u volni parametry
+            while((*table)[hash]->function.parametr != NULL ){
+                Parametr *parametr = (*table)[hash]->function.parametr;
+                (*table)[hash]->function.parametr = parametr->next;  // Posun na další parametr
+                clear_parametr(parametr);  // Provedeš potřebné operace na uvolnění paměti uvnitř struktury Parametr
+                parametr_free(parametr);
+                free(parametr);
+                parametr = NULL;
+            }
+        }
     (*table)[hash]->type = 2;//ani func ani var
     return 1;
 }
@@ -169,7 +175,9 @@ int AddFunctionDetails(SymTable *table, char *key, DataType returnType, bool def
     int hash = Searching(table, key);
     if(hash == -1)
         return -1; //nenašlo to
-
+    
+    (*table)[hash]->function.parametr = NULL;
+    (*table)[hash]->function.parametr_count = 0;
     (*table)[hash]->type = 1;
     (*table)[hash]->function.defined = defined;
     (*table)[hash]->function.ReturnType = returnType;
@@ -180,24 +188,27 @@ int AddParametr(SymTable *table, char *key, char *name, char *id, DataType type)
     int hash = Searching(table, key);
     if(hash == -1)
         return -1; //nenašlo to
-    Parametr *par = malloc(sizeof (Parametr));
-     if (parametr_init(par) == -1)
+    
+    if ((*table)[hash]->type != 1)
+        return -1; //není to funkce
+    Parametr *new = malloc(sizeof (Parametr));
+    if (parametr_init(new) == -1)
         return -1;
-    if (add_parametr_name(par, name, type) == -1)
+    if (add_parametr_name(new, name, type) == -1)
         return -1;
-     if (add_parametr_id(par, id) == -1)
+    if (add_parametr_id(new, id) == -1)
         return -1;
-    par->next = NULL;  // Set the next pointer of the new parameter to NULL
+    new->next = NULL;  // Set the next pointer of the new parameter to NULL
     Parametr *current = (*table)[hash]->function.parametr;
 
     if (current == NULL) {
-        (*table)[hash]->function.parametr = par;
+        (*table)[hash]->function.parametr = new;
     }
     else {
         while (current->next != NULL) {
             current = current->next;
         }
-    current->next = par;
+    current->next = new;
     }
     (*table)[hash]->function.parametr_count++;
 
@@ -211,13 +222,16 @@ void SymTableFree(SymTable *table){
             free((*table)[i]->id);
         if((*table)[i]->variable.strVal != NULL)
             free((*table)[i]->variable.strVal);
-        while((*table)[i]->function.parametr != NULL ){
-            Parametr *parametr = (*table)[i]->function.parametr;
-            (*table)[i]->function.parametr = parametr->next;  // Posun na další parametr
-            clear_parametr(parametr);  // Provedeš potřebné operace na uvolnění paměti uvnitř struktury Parametr
-            parametr_free(parametr);
-            free(parametr);
-            parametr = NULL;
+        if ((*table)[i]->type == 1){ //je to funkce uvolni parametry
+            while((*table)[i]->function.parametr != NULL ){
+                Parametr *parametr = (*table)[i]->function.parametr;
+                (*table)[i]->function.parametr = parametr->next;
+                clear_parametr(parametr); 
+                parametr_free(parametr);
+                free(parametr);
+                parametr = NULL;
+                (*table)[i]->function.parametr_count = 0;
+            }
         }
         free((*table)[i]);
         }
@@ -260,7 +274,7 @@ void copy_to_child(SymTable *parent, SymTable *current) { //jeste by to chtelo a
            (*current)[i]= temp;
         }
             }    }*/
- /*
+ 
 int main(){
 SymTable *table= NULL;
 SymTable *table1 = NULL;
@@ -292,14 +306,16 @@ if (symbol!=NULL){
     printf("string: %s\n", symbol->id);
     printf("init? %d\n", symbol->function.ReturnType);
     printf("datatype %d\n", symbol->function.defined);
-    printf("PArametr %s\n", symbol->function.parametr->name);
-    printf("PArametr %s\n", symbol->function.parametr->id);
+    printf("PArametr %s\n", symbol->function.parametr->next->next->name);
+    printf("PArametrId %s\n", symbol->function.parametr->id);
     printf("count %d\n", symbol->function.parametr_count);
 }
 printf("value: %s\n", symbol1->variable.strVal);
 printf("type: %d\n", symbol1->variable.datatype);
+RemoveSymbol(&(*table), "popal");
+InsertSymbol(&(*table), "popal");
 SymTableFree(&(*table));
 SymTableFree(&(*table1));
 SymTableFree(&(*table2));
 return 0;
-}*/
+}

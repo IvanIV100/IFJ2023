@@ -1,0 +1,6 @@
+let a = 0-8
+let b = a * 3
+
+let c = 9 *5
+
+let d = (0-8)*3

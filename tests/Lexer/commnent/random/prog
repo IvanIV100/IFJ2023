@@ -1,0 +1,3 @@
+let a = /*hehe*/ 1
+let /*mehe*/ b = 2
+let c = a /*huhu*/ + b

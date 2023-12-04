@@ -1,0 +1,3 @@
+let x= 33
+var a = length(x)
+write(a)

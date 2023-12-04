@@ -1,0 +1,4 @@
+func foo(_ par : String) -> String {
+    let ret = "4"
+}
+print(foo("hey"))

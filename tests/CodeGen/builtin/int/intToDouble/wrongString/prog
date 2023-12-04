@@ -1,0 +1,3 @@
+let varValue= "hehe"
+let i = Int2Double(varValue)
+write(i)

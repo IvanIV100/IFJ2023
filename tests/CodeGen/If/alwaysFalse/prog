@@ -1,0 +1,6 @@
+if 4==1{
+    write("ok")
+}
+else {
+    write("bad")
+}

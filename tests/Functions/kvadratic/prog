@@ -1,0 +1,36 @@
+
+func discriminant(_ a: Double, _ b: Double, _ c: Double) -> Double {
+    return (b * b) - (4 * a * c)
+}
+
+func squareRoot(_ a: Double, _ b: Double, _ c: Double) -> Double {
+    let num = discriminant(a, b, c)
+    var x: Double = 1.0
+    
+    var i = 0
+    while i < 99 {
+        x = (x + num / x) / 2.0
+        i = i + 1
+    }
+    
+    return x
+}
+
+func result(_ a: Double, _ b: Double, _ c: Double) -> Double {
+    let d = squareRoot(a, b, c)
+    var answer1: Double = 0.0
+    var answer2: Double = 0.0
+    
+    if d <= 0 {
+        write("We don't like imaginary numbers, sorry :( ")
+        return 0.0
+    } else {
+        answer1 = (0 - b - d) / (2 * a)
+        answer2 = (0 - b + d) / (2 * a)
+        write(answer1)
+        return answer2
+    }
+}
+
+let resultValue = result(4.0, 4.0, 0.0-1.0)
+write(resultValue)

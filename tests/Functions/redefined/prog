@@ -1,0 +1,10 @@
+func foo(){
+    return 1
+}
+
+func foo(){
+    return 2
+}
+
+foo()
+// ak nebudeme robit rozsirenie err3, inak OVERLOAD

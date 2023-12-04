@@ -1,0 +1,3 @@
+let varValue= 3.9
+let i = Double2Int(varValue)
+write(i)

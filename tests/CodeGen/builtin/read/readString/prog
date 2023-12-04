@@ -1,0 +1,6 @@
+let varValue = readString()
+if varValue! == "Hello" {
+    write("String are equal")
+} else {
+    write("Not equal")
+}

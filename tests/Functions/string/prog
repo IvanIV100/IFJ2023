@@ -1,0 +1,8 @@
+let a = readString()
+
+func hello(_ a: String) -> String{
+    write("Dear", a, "\n")
+    write("Welcome to the Hell")
+}
+
+hello(a!)

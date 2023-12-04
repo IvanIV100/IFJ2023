@@ -1,0 +1,6 @@
+let varValue = readDouble()
+if varValue! == 3.14 {
+    write("ok")
+} else {
+    write("Not ok")
+}

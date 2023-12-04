@@ -1,0 +1,6 @@
+func foo(_ par : String) -> String {
+let ret = "4"
+return ret
+}
+var a = foo("hey")
+write(a)

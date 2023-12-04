@@ -1,0 +1,3 @@
+let a = readInt()
+write("good bye cruel world", a)
+write("number ",8, " is alive")

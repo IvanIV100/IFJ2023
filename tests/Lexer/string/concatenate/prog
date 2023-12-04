@@ -1,0 +1,6 @@
+let a = ("Hello" + "World")
+write(a)
+let b= ("Hello") + ("World")
+write(b)
+let c = "Hello" + "World"
+write(c)

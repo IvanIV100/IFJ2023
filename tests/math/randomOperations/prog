@@ -1,0 +1,7 @@
+let a = 0-8.0
+let b = 5.7
+let c = 0-3e2
+
+let d = a+b*c-a/b
+
+write(d)

@@ -1,0 +1,7 @@
+let false = nil
+
+if false {
+    write("BAD")
+} else {
+    write("GOOD")
+}

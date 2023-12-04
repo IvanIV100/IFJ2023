@@ -1,0 +1,6 @@
+let varValue = readInt()
+if varValue! == 42 {
+    write("ok")
+} else {
+    write("Not ok")
+}

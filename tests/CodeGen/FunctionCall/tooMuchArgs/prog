@@ -1,0 +1,6 @@
+func boo(_ x : String, with y:String) -> String{
+    return x+" "+y
+}
+let a="ahoj"
+let ct=boo(a, "ahojs",with: "svete" )
+write(ct)

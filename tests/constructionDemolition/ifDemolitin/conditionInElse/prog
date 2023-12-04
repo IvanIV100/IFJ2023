@@ -1,0 +1,6 @@
+if(1==1){
+    write("hello")
+}
+else (2==2){
+    write("world")
+}

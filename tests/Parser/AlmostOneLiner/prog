@@ -1,0 +1,2 @@
+if (2-1==2-1){write("ok")}
+else{write("not ok")}

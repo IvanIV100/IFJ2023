@@ -1,0 +1,8 @@
+var a = 2
+var b = 0
+
+func boo(_ n: Int) {
+    // Your implementation for boo
+}
+
+boo(a,b)

@@ -1,0 +1,10 @@
+func foo( _ a : Int) -> Int {
+    if a < 0 {
+        return 0
+    }
+    return a
+}
+let a = foo (0-5)
+write(a)
+let b= foo(5)
+write(b)

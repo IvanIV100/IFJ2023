@@ -1,0 +1,3 @@
+let varValue=""
+var a = ord(varValue)
+write(a)

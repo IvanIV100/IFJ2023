@@ -1,0 +1,2 @@
+
+func foo(_ a: Int, _ b: Int) {if a < b {write("a")}if a > b {write("b")}if a == b {write("a a b su rovne.")}}foo(4, 5)

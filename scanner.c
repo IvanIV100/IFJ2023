@@ -416,6 +416,14 @@ Token* scanNumber(char curr) {
         numbers[i] = curr;
         i++;
         curr = getchar();
+
+        if(!isdigit(curr) && curr!='e' && curr!='E'){
+            ungetc(curr, stdin);
+            Token* token = createToken(T_ERORR, TC_ERR);
+            token->value.integer=1;
+            return token;
+        } 
+
         while (isdigit(curr)) {
             numbers[i] = curr;
             i++;
@@ -435,12 +443,29 @@ Token* scanNumber(char curr) {
             curr = getchar();
         }
 
-        while (isdigit(curr)) {
-            numbers[i] = curr;
-            i++;
-            curr = getchar();
+        if(isdigit(curr)){
+            while (isdigit(curr)) {
+                numbers[i] = curr;
+                i++;
+                curr = getchar();
             }
         }
+        else{
+            ungetc(curr, stdin);
+            Token* token = createToken(T_ERORR, TC_ERR);
+            token->value.integer=1;
+            return token;
+        }
+
+        if (curr == '.') {
+            ungetc(curr, stdin);
+            Token* token = createToken(T_ERORR, TC_ERR);
+            token->value.integer=1;
+            return token;
+        }
+
+
+    }
     
 
     numbers[i] = '\0';                      // Pridani konce seznamu
@@ -485,7 +510,7 @@ Token* scan() {                             // proste GetToken da ti dasli Token
     char next = curr;
     Token* token;
 
-    //printf("%c",curr);
+    printf("%c",curr);
     
     switch (curr) {
         case '/':
@@ -654,7 +679,7 @@ Token* scan() {                             // proste GetToken da ti dasli Token
 
 
 
-/*
+
 const char* token_names[] = {
     "T_LEFT_PAREN",
     "T_RIGHT_PAREN",
@@ -715,11 +740,15 @@ const char* token_names[] = {
          xd=scan();
          printf("--%s\n", token_names[xd->type]);
         
-         if(xd->type==T_STRING){
+        if(xd->type==T_STRING){
             printf("xx %s xx\n",xd->value.stringVal);
         }
         else if(xd->type==T_IDENTIFIER){
             printf("xx %s xx \n",xd->value.ID_name);}
+        else if(xd->type==T_DOUBLE){
+            printf("xx %lf xx \n",xd->value.decimal);}
+        else if(xd->type==T_INT){
+            printf("xx %d xx \n",xd->value.integer);}
         else if(xd->type==T_ERORR){
             printf("xx %d xx \n",xd->value.integer);
             }
@@ -727,4 +756,3 @@ const char* token_names[] = {
      free_token_Values(xd);
  }
  
-*/

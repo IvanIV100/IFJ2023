@@ -201,17 +201,22 @@ int addChar(char curr,int i, Token *token){
 
 // Dostali jsme \{ coz znamena Unixovy kod !! nemam presne moc tuseni jak
 int unicode(int i, Token *token) {          // over returny kdyz indikejtnou errory
-    // ocekavany format \u{XX}
+    int len = 0;
     if (getchar() != '{') {
         return 0;
     }
 
     // heximablabla cislo 
     unsigned int unicodeValue = 0;
-    for (int j = 0; j < 2; j++) {
+    for (int j = 0; j < 8; j++) {
+        len++;
         char next = getchar();
         if ((next >= '0' && next <= '9') || (next >= 'A' && next <= 'F') || (next >= 'a' && next <= 'f')) {
             unicodeValue = unicodeValue * 16 + strtol(&next, NULL, 16);
+        }
+        else if(next == '}' && len > 1){
+            token->value.stringVal[i] = (char) unicodeValue;
+            return 1;
         } 
         else {
             return 0;
@@ -333,7 +338,6 @@ Token* isMultiLineString() {
     int alright = 1;          
     int length = 100;
     int i = 0;
-
     char curr = getchar();
     if (curr != '\n'){                // chyba spatne zapsany Multine line string """ musi byt na samostatnem radku
         token->Category = TC_ERR;
@@ -343,7 +347,6 @@ Token* isMultiLineString() {
         return token;
     }
     curr = getchar();                   // prvni \n co nasleduje za """ ma byt ignorovan
-
     while (curr != EOF) {
         if (i >= length - 8) {  
             if (!expand_String(token, &length)) {
@@ -612,7 +615,7 @@ Token* scan() {                             // proste GetToken da ti dasli Token
         case '?':
             next = getchar();
             if (next == '?') {
-                return createToken(T_DOUBLE_QUESTION_MARK, TC_Punctation);
+                return createToken(T_DOUBLE_QUESTION_MARK, TC_OPERATORS);
             } 
             else {
                 ungetc(next, stdin);
@@ -664,7 +667,6 @@ Token* scan() {                             // proste GetToken da ti dasli Token
         case '0': case '1': case '2': case '3': case '4':case '5': case '6': case '7': case '8': case '9':                  // budd Double nebo Inter
             return (scanNumber(curr));
 
-        // EOF je broken
         case EOF:                           
             return createToken(T_EOF, TC_ERR);
 

@@ -1,0 +1,7 @@
+let varValue= "33"
+let ch = chr(varValue)
+if ch == "!" {
+    write("OK")
+}else{
+    write("NOK")
+}

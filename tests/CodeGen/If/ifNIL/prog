@@ -1,0 +1,7 @@
+var optionalValue: Int? = nil
+
+if optionalValue == nil{
+    write("yes")
+} else {
+    write("no")
+}

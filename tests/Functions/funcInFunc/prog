@@ -1,0 +1,14 @@
+func boo(){
+    write("hi :)")
+}
+func hovno
+() -> Int
+{
+    return 1 * 5
+}
+
+func foo() {
+    boo()
+}
+
+foo()

@@ -1,0 +1,5 @@
+var x = 1
+WHILE (x<10){
+    print("he")
+    x=x+1
+}

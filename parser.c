@@ -602,6 +602,7 @@ void free_node_list(node_t* node){
     }
     while (node->right != NULL){
         free_token_Values(node->current);
+        node->current = NULL;
         node = node->right;
         free(node->left);
         node->left = NULL;
@@ -705,9 +706,11 @@ void assign_varType_ST(node_t* node, int type, int nillable){ // check if nillab
 
 
 void parser(){
+    
+
     init_myInfo();
     node_t *node = create_node();
-    node->current = scan();
+    node = get_next(node);
 
     while (true){
         switch (node->current->type) {

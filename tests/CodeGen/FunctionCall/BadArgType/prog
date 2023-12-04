@@ -1,0 +1,4 @@
+func foo(with param : String) ->String {
+    write(param)
+}
+foo(with: 1)

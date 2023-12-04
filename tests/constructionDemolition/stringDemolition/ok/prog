@@ -1,0 +1,3 @@
+let a = "\n"
+let b = "\\"
+write(a,b)

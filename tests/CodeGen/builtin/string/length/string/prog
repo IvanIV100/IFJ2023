@@ -1,0 +1,3 @@
+let x= "a\nhoj"
+var a = lenght(x)
+write(a)

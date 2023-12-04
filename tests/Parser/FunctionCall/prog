@@ -1,0 +1,4 @@
+func ahoj()->String {
+    return "ahoj"
+}
+let a = ahoj()

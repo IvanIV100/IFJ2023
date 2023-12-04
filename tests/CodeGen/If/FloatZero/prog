@@ -1,0 +1,5 @@
+if 0.0 {
+    write("yes")
+} else {
+    write("no")
+}

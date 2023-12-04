@@ -1,0 +1,3 @@
+let varValue= 3.0
+let i = Int2Double(varValue)
+write(i)

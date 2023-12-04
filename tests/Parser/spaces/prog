@@ -1,0 +1,6 @@
+func    hey     ()  ->  String  {
+    return           "hey"
+}
+
+let a=          hey            ()
+write(a)

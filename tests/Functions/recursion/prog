@@ -1,0 +1,10 @@
+
+func fun(_ i: Int) -> Int {
+    if i <= 0 {
+        write("0")
+        return 0
+    }
+    write(i)
+    return fun(i - 1)
+}
+fun(10)

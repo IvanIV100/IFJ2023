@@ -1,0 +1,22 @@
+func fib(_ x: Int) -> Int {
+    if x == 0 {
+        return 0
+    } else {
+        if x == 1 {
+            return 1
+        } else {
+            let x1 = x - 1
+            let x2 = x - 2
+            let x3 = fib(x1)
+            let x4 = fib(x2)
+            return x3 + x4
+        }
+    }
+}
+
+var n = 1
+while n <= 10 {
+    let a = fib(n)
+    write(a)
+    n = n + 1
+}

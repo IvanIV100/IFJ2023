@@ -1,0 +1,6 @@
+let id = "0"
+if id {
+    write("BAD")
+} else {
+    write("GOOD")
+}

@@ -1,0 +1,3 @@
+let varValue= "abracadabrahocuspocus"
+var a = substring(of: varValue, startingAt: 11, endingBefore: 15)
+write(a)

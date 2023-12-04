@@ -1,0 +1,9 @@
+// fungiruje? treba skontrolovat
+// v zadani int2char je ale my nemame char iba string tak neviem ci je toto validne ak to nepojde tak Int2Chars
+let varValue = readInt()
+let ch = chr(varValue!)
+if ch == "8" {
+    write("String is 8")
+} else {
+    write("Not 8")
+}

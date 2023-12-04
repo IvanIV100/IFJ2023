@@ -1,0 +1,6 @@
+
+while nil != nil {
+    write("BAD")
+}
+
+write("GOOD")

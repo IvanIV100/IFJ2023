@@ -1,0 +1,6 @@
+let true = "0"
+if true {
+    print("BAD")
+} else {
+    print("GOOD")
+}

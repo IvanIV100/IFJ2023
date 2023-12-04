@@ -1,0 +1,6 @@
+
+while "" != "" {
+    print("BAD")
+}
+
+print("GOOD")

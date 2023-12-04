@@ -1,0 +1,52 @@
+if 2 {
+    var x = 10
+
+    if 1 {
+        x = 5
+        if 1 {
+            x = 7
+        }
+        var x = 10
+        if 1 {
+            x = 9
+        }
+        write(x)
+    }
+}
+
+// DEFVAR LF@x
+// MOVE LF@x int@10
+
+// CREATEFRAME
+// DEFVAR TF@1%%x
+// MOVE TF@1%%x LF@x
+// PUSHFRAME
+
+// MOVE LF@1%%x int@5
+
+// CREATEFRAME
+// DEFVAR TF@2%%x
+// MOVE TF@2%%x LF@1%%x
+// PUSHFRAME
+
+// MOVE LF@2%%x int@7
+
+// POPFRAME
+// MOVE LF@1%%x TF@2%%x
+
+// DEFVAR LF@x
+// MOVE LF@x int@10
+
+// CREATEFRAME
+// DEFVAR TF@2%%x
+// MOVE TF@2%%x LF@x
+// PUSHFRAME
+
+// MOVE LF@2%%x int@9
+
+// POPFRAME
+// MOVE LF@x TF@2%%x
+
+// .
+// .
+// .

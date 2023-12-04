@@ -297,6 +297,7 @@ node_t* handle_in_param_list(node_t* node){
 
 node_t* expression_token_count(node_t* node, int* count){
     (*count) = 0;
+    int parenCount = 0;
     while ((6 <= node->current->type && node->current->type <= 16) || 
             (34 <= node->current->type && node->current->type <= 38) ||
             node->current->type == T_LEFT_PAREN || node->current->type == T_RIGHT_PAREN || 
@@ -315,8 +316,20 @@ node_t* expression_token_count(node_t* node, int* count){
                 
             }
         }
+        if(node->current->type == T_LEFT_PAREN){
+            parenCount++;
+        } else if (node->current->type == T_RIGHT_PAREN){
+            parenCount--;
+        }
         (*count)++;
         node = get_next(node);
+    }
+    if(parenCount != 0){
+        ThrowError(2);
+    }
+    printf("curent: %d\n", node->current->type);
+    if (node->left->current->type >= 6 && node->left->current->type <= 16){
+        ThrowError(2);
     }
     return node;
 }

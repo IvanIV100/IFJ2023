@@ -300,12 +300,13 @@ node_t* expression_token_count(node_t* node, int* count){
     while ((6 <= node->current->type && node->current->type <= 16) || 
             (34 <= node->current->type && node->current->type <= 38) ||
             node->current->type == T_LEFT_PAREN || node->current->type == T_RIGHT_PAREN || node->current->type == T_DOUBLE_QUESTION_MARK){
-                if (node->current->type == T_IDENTIFIER){
-                    node = get_next(node);
-                    if(node->current->type == 0){
-                        break;
-                    } 
-                }
+        
+        if (node->current->type == T_IDENTIFIER){
+            if ((node->left->current->type > 16 || node->left->current->type < 6) && node->left->current->type != T_LEFT_PAREN && node->left->current->type != T_DOUBLE_QUESTION_MARK){
+                //(*count)--;
+                break;
+            }
+        }
         (*count)++;
         node = get_next(node);
     }
@@ -543,18 +544,12 @@ node_t* handle_statement(node_t* node){
         case T_VAR:
             node = get_next(node);
             node = handle_var_def(node);
-            if(node->current->type == T_LEFT_PAREN){
-                node = node->left;
-            } 
             return node;
             break;
 
         case T_IDENTIFIER:
-            if(node->right != NULL){
-                node = node->right;
-            } else {
-                node = get_next(node);
-            }
+
+            node = get_next(node);
             node = handle_funcall_ops(node);
             return node;
             break;
@@ -602,7 +597,7 @@ node_t* get_next(node_t* current){
     }
     current->right = node;
     node->left = current;
-    printf("current token: %d\n", node->current->type);
+    printf(" current token: %d \n", node->current->type);
     return node;
 }
 

@@ -238,8 +238,10 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
     stack_init(stack);
 
     if(node->current->type >= 23 && node->current->type <= 33){
-        printf("error7\n");
-        ThrowError(2);
+        if (node->current->type != T_NIL){
+            printf("error7\n");
+            ThrowError(2);
+        }
     }
     TermType newTerm, stackTerm = T_UNKNOWN;
     int index;

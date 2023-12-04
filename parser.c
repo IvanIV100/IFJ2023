@@ -299,12 +299,20 @@ node_t* expression_token_count(node_t* node, int* count){
     (*count) = 0;
     while ((6 <= node->current->type && node->current->type <= 16) || 
             (34 <= node->current->type && node->current->type <= 38) ||
-            node->current->type == T_LEFT_PAREN || node->current->type == T_RIGHT_PAREN || node->current->type == T_DOUBLE_QUESTION_MARK){
+            node->current->type == T_LEFT_PAREN || node->current->type == T_RIGHT_PAREN || 
+            node->current->type == T_DOUBLE_QUESTION_MARK || node->current->type == T_NIL){
         
         if (node->current->type == T_IDENTIFIER){
-            if ((node->left->current->type > 16 || node->left->current->type < 6) && node->left->current->type != T_LEFT_PAREN && node->left->current->type != T_DOUBLE_QUESTION_MARK){
+            if ((node->left->current->type > 16 || node->left->current->type < 6) && 
+            node->left->current->type != T_LEFT_PAREN && 
+            node->left->current->type != T_DOUBLE_QUESTION_MARK){
                 //(*count)--;
-                break;
+                if (node->left->current->type == T_IF || node->left->current->type == T_WHILE || 
+                node->left->current->type == T_RETURN || node->left->current->type == T_ASSIGN){
+                } else {
+                    break;
+                }
+                
             }
         }
         (*count)++;

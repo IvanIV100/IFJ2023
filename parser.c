@@ -463,7 +463,9 @@ node_t* handle_cond_ops(node_t* node){
         int count3;
         node_t* start = node; 
         node = expression_token_count(node, &count3);  // *fix expressions* add check type for bool
-        printf("count: %d\n", count3);
+        if(count3 == 0){
+            ThrowError(2);
+        }
         expression_parser(start, runInfo, count3); // *add type assign* 
         printf("cond ops\n");
         return node; // check if the node is {

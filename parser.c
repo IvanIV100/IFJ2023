@@ -121,13 +121,7 @@ void fill_builtin_symtab(SymTable *builtIn){ // fill in to check symtab and to g
 }
 
 void start_generator(node_t* node){
-    while (node->left != NULL){
-        node = node->left;
-        printf("current: %d\n", node->current->type);
-    }
-    printf("fn\n");
-    printf("first node: %d\n", node->current->type);
-    start_code_generation(node);
+    start_code_generation(runInfo->firstNode);
     // free_node_list(node);
     exit(0);
 

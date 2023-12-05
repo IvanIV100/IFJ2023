@@ -86,7 +86,7 @@ typedef struct tokenValue_t{
     char* stringVal;
     int integer;
     double decimal;
-    int nillable;           // 0- neni specifikovana 1- je nullable    2- zakazano
+    int nillable;           // 0- not specified 1- is nullable    2- not allowed
 } tokenValue_t;
 
 
@@ -98,125 +98,122 @@ typedef struct Token {
 
 
 /**
- * Funkce, která zjišťuje, zda je další znak bílý znak nebo ne.
- * @param input - Znak, který se má zkontrolovat.
- * @return 1, pokud je znak bílý, 0 jinak.
+ * Function that determines whether the next character is a white space or not.
+ * @param input - Character to be checked.
+ * @return 1 if the character is white space, 0 otherwise.
  */
 int isWhiteChar(char input);
 
 
 /**
- * Získá znak, který není bílý znak.
- * @return Znak, který není bílý znak.
+ * Gets a character that is not a white space.
+ * @return Character that is not a white space.
  */
 char getNotWhiteChar();
 
 
 /**
- * Funkce pro přeskočení komentáře.
- * @return 0, pokud byl komentář úspěšně přeskočen, 1 jinak.
+ * Function to skip a comment.
+ * @return 0 if the comment was successfully skipped, 1 otherwise.
  */
 int SkipComment();
 
 
 /**
- * Funkce pro vytvoření tokenu.
- * @param type - Typ tokenu.
- * @param category - Kategorie tokenu.
- * @return Nový token.
+ * Function to create a token.
+ * @param type - Token type.
+ * @param category - Token category.
+ * @return New token.
  */
 Token* createToken(enum token_type type, enum token_Category category);
 
 
 /**
- * Zjistí, zda je řetězec klíčovým slovem.
- * @param str - Řetězec k ověření.
- * @return Index klíčového slova, pokud je to klíčové slovo, -1 jinak.
+ * Checks if the string is a keyword.
+ * @param str - String to be checked.
+ * @return Index of the keyword if it is a keyword, -1 otherwise.
  */
 int isKeyword(char *str);
 
 
 /**
- *
- * Zjistí, zda je vstupní znak identifikátorem nebo klíčovým slovem.
- * @param curr - Aktuální znak.
- * @return Token identifikátoru nebo klíčového slova.
+ * Checks whether the input character is an identifier or a keyword.
+ * @param curr - Current character.
+ * @return Token of the identifier or keyword.
  */
 Token* is_Id(char curr);
 
 
 /**
- * Expanze dynamické paměti pro řetězec.
- * @param token - Token obsahující řetězec.
- * @param length - Aktuální délka řetězce.
- * @return 1 při úspěšné expanzi paměti, 0 jinak.
+ * Expands dynamic memory for a string.
+ * @param token - Token containing the string.
+ * @param length - Current length of the string.
+ * @return 1 upon successful memory expansion, 0 otherwise.
  */
 int expand_String(Token *token, int *length);
 
 
 /**
- * Přidá znak do řetězce v tokenu.
- * @param curr - Aktuální znak.
- * @param i - Index pro přidání znaku.
- * @param token - Token obsahující řetězec.
- * @return 1, pokud byl znak úspěšně přidán, 0 jinak.
+ * Adds a character to the string in the token.
+ * @param curr - Current character.
+ * @param i - Index for adding the character.
+ * @param token - Token containing the string.
+ * @return 1 if the character was successfully added, 0 otherwise.
  */
 int addChar(char curr, int i, Token *token);
 
 
 /**
- * Zpracuje Unicode escape sekvenci v řetězci.
- * @param i - Index pro přidání znaku.
- * @param token - Token obsahující řetězec.
- * @return 1, pokud byla escape sekvence úspěšně zpracována, 0 jinak.
+ * Processes Unicode escape sequence in the string.
+ * @param i - Index for adding the character.
+ * @param token - Token containing the string.
+ * @return 1 if the escape sequence was successfully processed, 0 otherwise.
  */
 int unicode(int i, Token *token);
 
 
 /**
- * Zpracuje escape znaky v řetězci.
- * @param token - Token obsahující řetězec.
- * @param i - Index pro přidání znaku.
- * @return 1, pokud byl escape znak úspěšně zpracován, 0 jinak.
+ * Processes escape characters in the string.
+ * @param token - Token containing the string.
+ * @param i - Index for adding the character.
+ * @return 1 if the escape character was successfully processed, 0 otherwise.
  */
 int escape_Char(Token *token, int i);
 
 
 /**
- * Skenuje řetězec a vytváří odpovídající token.
- * @param curr - Aktuální znak.
- * @return Token reprezentující řetězec.
+ * Scans the string and creates the corresponding token.
+ * @param curr - Current character.
+ * @return Token representing the string.
  */
 Token* isString(char curr);
 
 
 /**
- * Skenuje víceřádkový řetězec a vytváří odpovídající token.
- * @return Token reprezentující víceřádkový řetězec.
+ * Scans a multiline string and creates the corresponding token.
+ * @return Token representing the multiline string.
  */
 Token* isMultiLineString();
 
 
 /**
- * Skenuje číslo a vytváří odpovídající token.
- * @param curr - Aktuální znak.
- * @return Token reprezentující číslo.
+ * Scans a number and creates the corresponding token.
+ * @param curr - Current character.
+ * @return Token representing the number.
  */
 Token* scanNumber(char curr);
 
 
 /**
- * Funkce, která uvolňuje paměť alokovanou pro hodnoty tokenu.
- * @param token - Token k uvolnění paměti.
+ * Function that frees the memory allocated for token values.
+ * @param token - Token for memory release.
  */
 void free_token_Values(Token *token);
 
 
-
-
 /**
- * Skenuje vstup a vytváří odpovídající token.
- * @return Token reprezentující část kódu.
+ * Scans the input and creates the corresponding token.
+ * @return Token representing a code segment.
  */
 Token* scan();
 #endif

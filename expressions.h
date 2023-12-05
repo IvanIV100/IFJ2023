@@ -20,6 +20,7 @@ typedef struct runTimeInfo {
     SymTable* globalFrame;
     SymTable* builtInFunctions;
     struct symTabLVL *currentLVL;
+    node_t* firstNode;
 
     char *FID;
     char *CurID;

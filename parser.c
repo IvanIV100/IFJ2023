@@ -122,9 +122,11 @@ void fill_builtin_symtab(SymTable *builtIn){ // fill in to check symtab and to g
 
 void start_generator(node_t* node){
     while (node->left != NULL){
-        printf("h\n");
         node = node->left;
+        printf("current: %d\n", node->current->type);
     }
+    printf("fn\n");
+    printf("first node: %d\n", node->current->type);
     start_code_generation(node);
     // free_node_list(node);
     exit(0);
@@ -160,8 +162,10 @@ void init_runInfo(){
     runInfo->FID = NULL;
     runInfo->CurID = NULL;
     runInfo->vol = NULL;
+    runInfo->firstNode = NULL;
     char** funcalls = NULL;
     int count = 0;
+
 
 
 }
@@ -314,8 +318,8 @@ node_t* handle_func_def(node_t* node){
     return node;
 }
 
-handle_in_param_type_ST(char * ID){
-    
+void handle_in_param_type_ST(char* ID){
+    return ;
 }
 
 node_t* handle_in_param(node_t* node){ // *ADD SEMANTIC CHECK*
@@ -818,32 +822,20 @@ void define_var_ST(node_t* node){
 
 void delete_FID_list(char* FID) {
     int index = -1;
-
-    // Find the index of the string
     for (int i = 0; i < runInfo->count; i++) {
         if (strcmp(runInfo->funcalls[i], FID) == 0) {
             index = i;
             break;
         }
     }
-
-    // If the string was not found, return
     if (index == -1) {
         return;
     }
-
-    // Free the memory for the string
     free(runInfo->funcalls[index]);
-
-    // Move all elements after the index one position to the left
     for (int i = index; i < runInfo->count - 1; i++) {
         runInfo->funcalls[i] = runInfo->funcalls[i + 1];
     }
-
-    // Decrease the count
     runInfo->count--;
-
-    // Reallocate the memory for the array
     runInfo->funcalls = realloc(runInfo->funcalls, runInfo->count * sizeof(char*));
 }
 
@@ -883,7 +875,8 @@ void parser(){
 
     init_runInfo();
     node_t *node = create_node();
-    node = get_next(node);
+    node->current = scan();
+    runInfo->firstNode = node;
 
     while (true){
         switch (node->current->type) {

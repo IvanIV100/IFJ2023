@@ -20,9 +20,15 @@ bool is_builtin_function(const char* identifier) {
     return false;
 }
 
-void start_code_generation(node_t* parse_tree) {
-    if (parse_tree != NULL && parse_tree->current != NULL) {
-        generate_statement_list_code(parse_tree);
+void start_code_generation(node_t* node) {
+    if(node->current->type == T_EOF)
+    {
+        while(node->left != NULL){
+            node = node->left;
+        }
+    }
+    if (node != NULL) {
+        generate_statement_list_code(node);
     }
 }
 
@@ -272,6 +278,7 @@ void generate_statement_code(node_t* node) {
             }else{
             generate_expression_code(node);
             }
+            break;
         case T_LET:
         case T_VAR:
             generate_variable_definition_code(node);
@@ -460,14 +467,15 @@ void generateWrite(node_t* node)
 {
     if(node->right->current->type == T_LEFT_PAREN){
         node->right = node->right->right;
-        if(node->right->current->type == T_RIGHT_PAREN){
-            
-        }
     }
     printf(
 	" LABEL write" \
-	"\n PUSHFRAME" \
-	"\n WRITE LF@%%0 %s" \
-	"\n POPFRAME" \
-	"\n RETURN \n", node->right->current->value.ID_name);
+	"\n PUSHFRAME");
+
+    while(node->right->current->type != T_RIGHT_PAREN){
+    printf("\n WRITE LF@%%0 %s", node->right->current->value.ID_name);
+    node = node->right->right;
+    }
+    printf(	"\n POPFRAME" \
+	"\n RETURN \n");
 }

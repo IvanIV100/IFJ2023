@@ -360,7 +360,11 @@ Token* isMultiLineString() {
         if (curr == '\\') {
             alright = escape_Char(token,i);
             if (alright == 0){
-                addChar(curr,i,token);
+                token->Category = TC_ERR;
+                token->type = T_ERORR;
+                token->value.integer=1;
+                free(token->value.stringVal);
+                return token;
             }
             i++;  
         } 

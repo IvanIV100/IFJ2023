@@ -22,6 +22,11 @@ typedef struct runTimeInfo {
     struct symTabLVL *currentLVL;
 
     char *FID;
+    char *CurID;
+    int vol;
+
+    char** funcalls;
+    int count;
 
 } runTimeInfo;
 
@@ -101,7 +106,7 @@ int stack_get_index(stack stack, TermType type);
 void print_stack(stack stack);
 RelationType precedence_table(TermType stackTerm, TermType newTerm);
 TermType token_to_term(Token *token);
-ExprType expression_parser(node_t* node, runTimeInfo *rti, int countDown);
+DataType expression_parser(node_t* node, runTimeInfo *rti, int countDown);
 int expression_reduce(stack stack, runTimeInfo *rti);
 //node_t *expression_generate(stack stack, runTimeInfo *rti);
 //int generate_expression_reduce(stack stack, runTimeInfo *rti);

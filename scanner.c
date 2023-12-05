@@ -737,28 +737,28 @@ const char* token_names[] = {
 
 
 
- int main() {                                    // best debuging ever cant change my mind
-     Token* xd;
-     xd=scan();
-     printf("--%s\n", token_names[xd->type]);
-     while(xd->Category!=TC_ERR){
-         free_token_Values(xd);
-         xd=scan();
-         printf("--%s\n", token_names[xd->type]);
+//  int main() {                                    // best debuging ever cant change my mind
+//      Token* xd;
+//      xd=scan();
+//      printf("--%s\n", token_names[xd->type]);
+//      while(xd->Category!=TC_ERR){
+//          free_token_Values(xd);
+//          xd=scan();
+//          printf("--%s\n", token_names[xd->type]);
         
-        if(xd->type==T_STRING){
-            printf("xx %s xx\n",xd->value.stringVal);
-        }
-        else if(xd->type==T_IDENTIFIER){
-            printf("xx %s xx \n",xd->value.ID_name);}
-        else if(xd->type==T_DOUBLE){
-            printf("xx %lf xx \n",xd->value.decimal);}
-        else if(xd->type==T_INT){
-            printf("xx %d xx \n",xd->value.integer);}
-        else if(xd->type==T_ERORR){
-            printf("xx %d xx \n",xd->value.integer);
-            }
-     }
-     free_token_Values(xd);
- }
+//         if(xd->type==T_STRING){
+//             printf("xx %s xx\n",xd->value.stringVal);
+//         }
+//         else if(xd->type==T_IDENTIFIER){
+//             printf("xx %s xx \n",xd->value.ID_name);}
+//         else if(xd->type==T_DOUBLE){
+//             printf("xx %lf xx \n",xd->value.decimal);}
+//         else if(xd->type==T_INT){
+//             printf("xx %d xx \n",xd->value.integer);}
+//         else if(xd->type==T_ERORR){
+//             printf("xx %d xx \n",xd->value.integer);
+//             }
+//      }
+//      free_token_Values(xd);
+//  }
  

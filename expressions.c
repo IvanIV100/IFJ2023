@@ -8,11 +8,11 @@
 #include "expressions.h"
 
 
-
+DataType overrideType = VOID;
 //#include "codegen.h"
 
 int countDown = 0;
-ExprType returnTerm = E_UNKNOWN;
+DataType returnTerm = VOID;
 
 void stack_init(stack stack){
     
@@ -202,10 +202,12 @@ TermType token_to_term(Token *token){
         case T_GREATER_EQUAL:
         case T_LESS_THAN:
         case T_LESS_EQUAL:
+            overrideType = BOOL;
             return T_LTGT;
 
         case T_EQUALS:
         case T_NOT_EQUALS:
+            overrideType = BOOL;
             return T_EQ;
 
         case T_LEFT_PAREN:
@@ -231,7 +233,7 @@ TermType token_to_term(Token *token){
     }
 }
 
-ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
+DataType expression_parser(node_t *node, runTimeInfo *rti, int length){
     countDown = length;
     printf("length: %d\n", length);
     stack stack = malloc(sizeof(struct Stack));
@@ -247,7 +249,7 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
     int index;
     int EQcount = 0;
 
-    if (length == 1){
+    if (length == 1){ //*add nillable options*
         if (node->current->type == T_IDENTIFIER){
             Symbol *checkType;
             if (rti->currentLVL != NULL){
@@ -264,26 +266,30 @@ ExprType expression_parser(node_t *node, runTimeInfo *rti, int length){
                 }
 
                 if (checkType->variable.datatype == INT){
-                    returnTerm = E_INT;
+                    returnTerm = INT;
                 } else if (checkType->variable.datatype == FLOAT){
-                    returnTerm = E_DOUBLE;
+                    returnTerm = FLOAT;
                 } else if (checkType->variable.datatype == STR){
-                    returnTerm = E_STRING;
+                    returnTerm = STR;
                 } else if (checkType->variable.datatype == NIL){
-                    returnTerm = E_NIL;
+                    returnTerm = NIL;
                 }
             }
         } else if (node->current->type == T_INT){
-            returnTerm = E_INT;
+            returnTerm = INT;
         } else if (node->current->type == T_DOUBLE){
-            returnTerm = E_DOUBLE;
+            returnTerm = FLOAT;
         } else if (node->current->type == T_STRING){
-            returnTerm = E_STRING;
+            returnTerm = STR;
         } else if (node->current->type == T_NIL){
-            returnTerm = E_NIL;
+            returnTerm = NIL;
         } else {
             printf("error8\n");
             ThrowError(2);
+        }
+        printf("overrideType: %d\n", overrideType);
+        if (overrideType != VOID){
+            returnTerm = overrideType;
         }
         return returnTerm;
     }
@@ -375,29 +381,30 @@ int expression_reduce(stack stack, runTimeInfo *rti){
             if (E1->type == NONTERMINAL){
                 if (E1->exprType == E2->exprType){
                     item->exprType = E1->exprType;
-                } else if (E1->exprType == E_INT && E2->exprType == E_DOUBLE){
-                    item->exprType = E_DOUBLE;
-                } else if (E1->exprType == E_DOUBLE && E2->exprType == E_INT){
-                    item->exprType = E_DOUBLE; 
-                } else if (E1->exprType == E_NIL && E2->exprType == E_INT){
-                    item->exprType = E_INT;
-                } else if (E1->exprType == E_INT && E2->exprType == E_NIL){
-                    item->exprType = E_INT;
-                } else if (E1->exprType == E_NIL && E2->exprType == E_DOUBLE){
-                    item->exprType = E_DOUBLE;
-                } else if (E1->exprType == E_DOUBLE && E2->exprType == E_NIL){
-                    item->exprType = E_DOUBLE;
-                } else if (E1->exprType == E_NIL && E2->exprType == E_BOOL){
-                    item->exprType = E_BOOL;
-                } else if (E1->exprType == E_BOOL && E2->exprType == E_NIL){
-                    item->exprType = E_BOOL;
-                } else if (E1->exprType == E_NIL && E2->exprType == E_STRING){
-                    item->exprType = E_STRING;
-                } else if (E1->exprType == E_STRING && E2->exprType == E_NIL){
-                    item->exprType = E_STRING;
+                } else if (E1->exprType == INT && E2->exprType == FLOAT){
+                    item->exprType = FLOAT;
+                } else if (E1->exprType == FLOAT && E2->exprType == INT){
+                    item->exprType = FLOAT; 
+                } else if (E1->exprType == NIL && E2->exprType == INT){
+                    item->exprType = INT;
+                } else if (E1->exprType == INT && E2->exprType == NIL){
+                    item->exprType = INT;
+                } else if (E1->exprType == NIL && E2->exprType == FLOAT){
+                    item->exprType = FLOAT;
+                } else if (E1->exprType == FLOAT && E2->exprType == NIL){
+                    item->exprType = FLOAT;
+                } else if (E1->exprType == NIL && E2->exprType == BOOL){
+                    item->exprType = BOOL;
+                } else if (E1->exprType == BOOL && E2->exprType == NIL){
+                    item->exprType = BOOL;
+                } else if (E1->exprType == NIL && E2->exprType == STR){
+                    item->exprType = STR;
+                } else if (E1->exprType == STR && E2->exprType == NIL){
+                    item->exprType = STR;
                 } else if (token_to_term(op->term) == T_EQ || token_to_term(op->term) == T_LTGT){
-                    item->exprType = E_BOOL;
+                    item->exprType = BOOL;
                 } else {
+                    printf("error2\n");
                     ThrowError(7);
                 }
             
@@ -416,17 +423,17 @@ int expression_reduce(stack stack, runTimeInfo *rti){
 
                 case T_INT:
                     item->type = NONTERMINAL;
-                    item->exprType = E_INT;
+                    item->exprType = INT;
                     break;
                 
                 case T_DOUBLE:
                     item->type = NONTERMINAL;
-                    item->exprType = E_DOUBLE;
+                    item->exprType = FLOAT;
                     break;
 
                 case T_STRING:
                     item->type = NONTERMINAL;
-                    item->exprType = E_STRING;
+                    item->exprType = STR;
                     break;
                 
                 case T_IDENTIFIER: 
@@ -437,13 +444,13 @@ int expression_reduce(stack stack, runTimeInfo *rti){
                     Symbol *checkType;
                     checkType = GetSymbol(currentST, item->term->value.ID_name);
                     if (checkType->variable.datatype == INT){
-                        item->exprType = E_INT;
+                        item->exprType = INT;
                     } else if (checkType->variable.datatype == FLOAT){
-                        item->exprType = E_DOUBLE;
+                        item->exprType = FLOAT;
                     } else if (checkType->variable.datatype == STR){
-                        item->exprType = E_STRING;
+                        item->exprType = STR;
                     } else if (checkType->variable.datatype == NIL){
-                        item->exprType = E_NIL;
+                        item->exprType = NIL;
                     }
                     
                     item->type = NONTERMINAL;
@@ -451,7 +458,7 @@ int expression_reduce(stack stack, runTimeInfo *rti){
                 
                 case T_NIL:
                     item->type = NONTERMINAL;
-                    item->exprType = E_NIL;
+                    item->exprType = NIL;
                     break;
                 
                 default:

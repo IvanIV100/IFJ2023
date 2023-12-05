@@ -18,7 +18,7 @@ enum token_Category {
     TC_ID,
     TC_VALUE,
     TC_ERR
-};
+}token_Category;
 
 extern enum token_type {
     //Bracket

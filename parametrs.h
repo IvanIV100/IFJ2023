@@ -4,10 +4,10 @@
 
 #define ALLOC_SIZE 8
 
-typedef enum{
+typedef enum datatype{
 VOID,
-NIL,
 BOOL,
+NIL,
 INT,
 INTQ,
 STR,

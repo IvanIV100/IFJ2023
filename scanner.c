@@ -10,12 +10,11 @@
 /*
 Things to do:
 
-rewrite stavovy automam (dat pryc multiline_string)
 
 */
 
 
-// funkce ktera zjisti jestli dalsi character je whiteSpace or nah
+// Function that determines whether the next character is white space or not
 int isWhiteChar(char input){
     if (input == ' ' || input == '\t' || input == '\n' || (input >= 11 && input <= 13))
         return 1;
@@ -23,7 +22,7 @@ int isWhiteChar(char input){
         return 0;
 }
 
-// Ziska char ktery neni Whitespace
+// Gets a character that is not a white space.
 char getNotWhiteChar() {
     char temp = getchar();
     if (isWhiteChar(temp)) {
@@ -72,11 +71,12 @@ int SkipComment() {
     return 0; 
 }
 
+// lists to determine if it is a keyword or not
 char *keywords[] = {"Double", "Int","String", "else", "func", "if",  "let", "nil", "return", "var", "while"};
 enum token_type keyword_types[] = {
     T_KW_DOUBLE, T_KW_INT, T_KW_STRING, T_ELSE, T_FUNC, T_IF, T_LET, T_NIL, T_RETURN, T_VAR, T_WHILE};
 
-// vytvoreni tokenu
+// Token creation
 Token* createToken(enum token_type type, enum token_Category category) {
     Token* token = malloc(sizeof(Token)); 
     if (token == NULL) {
@@ -91,7 +91,7 @@ Token* createToken(enum token_type type, enum token_Category category) {
     return token;
 }
 
-// zjistime ci je to KeyWord nebo token
+// Check if it is a keyword
 int isKeyword(char *str) {
     for(int i = 0; i < 11; i++) {
         if(strcmp(keywords[i], str) == 0) {
@@ -101,7 +101,7 @@ int isKeyword(char *str) {
     return -1;
 }
 
-// Divame jestli je to ID
+// Check if it is an identifier
 Token* is_Id(char curr) {
     Token* token = createToken(T_IDENTIFIER, TC_ID);
     int Id_Length=50;
@@ -178,7 +178,7 @@ Token* is_Id(char curr) {
 
 
 
-// Funkce ktera nam rozsiri dynamickou pamet Stringu dvakrat tolik
+// Expand the string value
 int expand_String(Token *token, int *length) {
     int newLength = (*length) * 2;  // Double the length
 
@@ -192,27 +192,27 @@ int expand_String(Token *token, int *length) {
     return 1; // Reallocation successful
 }
 
-// Prida character do retezce                                                   !! jeste overit jestli ok
+// Add a character to the string value                                           
 int addChar(char curr,int i, Token *token){
     token->value.stringVal[i]=curr;
     return 1;
     }
 
 
-// Dostali jsme \{ coz znamena Unixovy kod !! nemam presne moc tuseni jak
-int unicode(int i, Token *token) {          // over returny kdyz indikejtnou errory
+// We need to convert the unicode to a character
+int unicode(int i, Token *token) {          
     int len = 0;
     if (getchar() != '{') {
         return 0;
     }
 
-    // heximablabla cislo 
+    // Hexadecimal number
     unsigned int unicodeValue = 0;
     for (int j = 0; j < 8; j++) {
         len++;
         char next = getchar();
         if ((next >= '0' && next <= '9') || (next >= 'A' && next <= 'F') || (next >= 'a' && next <= 'f')) {
-            unicodeValue = unicodeValue * 16 + strtol(&next, NULL, 16);
+            unicodeValue = unicodeValue * 16 + strtol(&next, NULL, 16); // Convert the hex to decimal
         }
         else if(next == '}' && len > 1){
             token->value.stringVal[i] = (char) unicodeValue;
@@ -223,7 +223,7 @@ int unicode(int i, Token *token) {          // over returny kdyz indikejtnou err
         }
     }
 
-    if (getchar() != '}') {     // pokud to neni ukoncene timhle err
+    if (getchar() != '}') {     // if not } then error
         return 0;
     }
     
@@ -231,28 +231,28 @@ int unicode(int i, Token *token) {          // over returny kdyz indikejtnou err
     return 1;
 }
 
-// Charactery ktere zacinaji \ v zadani jsou jen tyhle dany jako moznosti podivat jestli nejsou dalsi
+// Escape characters
 int escape_Char(Token *token,int i){
     char next;
     next=getchar();
     int alright = 0;
     switch (next) {
-		case '\"':                          // tohle "  
+		case '\"':                          // this "  
 			addChar('\"',i,token);
 			return 1;
-		case 'n':                           // dalsi radek
+		case 'n':                           // new line
 			addChar('\n',i,token);
             return 1;
-		case 'r':                           // Neco sposunutim ukazatele na zacatek radku muze to pak prepisovat veci na tom radku ale to co neprepise zustane
+		case 'r':                           // dont know what is this
 			addChar('\r',i,token);
             return 1;
-		case 't' :                          // tabulator
+		case 't' :                          // tab
             addChar('\t',i,token);
 			return 1;
 		case '\\' :                       
             addChar('\\',i,token);
 			return 1;
-        case 'u':                           // unixocy cod
+        case 'u':                           // unix code
             alright = unicode(i,token);
             if (alright == 0){
                 return 0; 
@@ -260,13 +260,13 @@ int escape_Char(Token *token,int i){
             return 1;
             break; 
             
-        default:                        // Yoo zadal jsi neco co neni escape char escapni zivot 
+        default:                        
         ungetc(next,stdin);
         return 0; 
     }
 }
 
-Token* isString(char curr) {     // je to string jeste multi 
+Token* isString(char curr) {     
     Token* token = createToken(T_STRING, TC_VALUE);
     token->value.stringVal = malloc(30);
 
@@ -286,7 +286,7 @@ Token* isString(char curr) {     // je to string jeste multi
     i++;
 
     curr = getchar();
-    while (curr!='"') {                                     // pokud neni konec stringu
+    while (curr!='"') {                                     // not end of string
         if (i >= length - 8) {                      // reallocate memory 
             if (!expand_String(token, &length)) {
                 free(token->value.stringVal);
@@ -314,14 +314,14 @@ Token* isString(char curr) {     // je to string jeste multi
             token->value.integer=1;
             return token; }
 
-        else{                                   // pokud to neni escape tak jen pridej do stringval
+        else{                                   // If it's not an escape, simply add it to the string value.
             addChar(curr,i,token);
         }
         i++;
         curr = getchar();
     }
 
-    token->value.stringVal[i] = '\0'; // Neco ze musim ukoncit konec stringu idk rekl kamos kdyz mi pomahal s pameti
+    token->value.stringVal[i] = '\0'; // Null-terminate the string
     return token;
 }
 
@@ -339,14 +339,14 @@ Token* isMultiLineString() {
     int length = 100;
     int i = 0;
     char curr = getchar();
-    if (curr != '\n'){                // chyba spatne zapsany Multine line string """ musi byt na samostatnem radku
+    if (curr != '\n'){                // Incorrectly written multiline string """ must be on a separate line.
         token->Category = TC_ERR;
         token->type = T_ERORR;
         token->value.integer=1;
         free(token->value.stringVal);
         return token;
     }
-    curr = getchar();                   // prvni \n co nasleduje za """ ma byt ignorovan
+    curr = getchar();                   // The first \n following """ should be ignored.
     while (curr != EOF) {
         if (i >= length - 8) {  
             if (!expand_String(token, &length)) {
@@ -369,7 +369,7 @@ Token* isMultiLineString() {
             i++;  
         } 
 
-        else if (curr == '\"') {                 // musi to byt tri za sebou """
+        else if (curr == '\"') {                 // It must be three in a row """.
             char next = getchar();
             if (next == '\"') {
                 next = getchar();
@@ -404,7 +404,7 @@ Token* isMultiLineString() {
 
 // nacte cislo
 Token* scanNumber(char curr) {
-    char numbers[256];              // Max 256 dlouhy cislo ?
+    char numbers[256];              
     int i = 0;
     numbers[i] = curr;
     i++;
@@ -416,7 +416,7 @@ Token* scanNumber(char curr) {
         curr = getchar();
     }
 
-    if (curr == '.') {                  // Desetinna cast
+    if (curr == '.') {                  // Decimal part 
         numbers[i] = curr;
         i++;
         curr = getchar();
@@ -436,7 +436,7 @@ Token* scanNumber(char curr) {
     }
 
     
-    if (curr == 'e' || curr == 'E') {   // Exponentni cast Muze to byt jen kdyz je to exponent 
+    if (curr == 'e' || curr == 'E') {   // Exponentn part
         numbers[i] = curr;
         i++;
         curr = getchar();
@@ -472,7 +472,7 @@ Token* scanNumber(char curr) {
     }
     
 
-    numbers[i] = '\0';                      // Pridani konce seznamu
+    numbers[i] = '\0';                     // Adding the end of the list.
 
     Token* token = createToken(T_DOUBLE, TC_TYPE);
 
@@ -495,7 +495,7 @@ Token* scanNumber(char curr) {
 
 
 
-void free_token_Values(Token *token){       // funkce ktera uvolni pamet kterou jsem mallocoval 
+void free_token_Values(Token *token){       // Function that frees the memory allocated using malloc.
     if (token->type==T_IDENTIFIER){
         free(token->value.ID_name);
         token->value.ID_name = NULL;
@@ -509,13 +509,13 @@ void free_token_Values(Token *token){       // funkce ktera uvolni pamet kterou 
     token = NULL;
 }
 
-Token* scan() {                             // proste GetToken da ti dasli Token asi prejmenuji whatever
-    char curr = getNotWhiteChar();         // next slouzi jako takovy idiot ktery se diva do predu
+Token* scan() {                             
+    char curr = getNotWhiteChar();         // 'next' serves as a buffer that looks ahead.
     char next = curr;
     int is_comm_ok;
     Token* token;
 
-    printf("%c",curr);
+    //printf("%c",curr);
     
     switch (curr) {
         case '/':
@@ -554,10 +554,10 @@ Token* scan() {                             // proste GetToken da ti dasli Token
 
         case '=':
             next = getchar();
-            if (next == '=') {                                          // podivam se na dalsi char jestli to nahodou neni == (equal)
+            if (next == '=') {                                         // I'll look at the next character to see if it might be == (equal).
                 return createToken(T_EQUALS, TC_OPERATORS);
             } 
-            else {                                                         // byla tam nejaka mrdka takze no equal
+            else {                                                       
                 ungetc(next, stdin);
                 return createToken(T_ASSIGN, TC_OPERATORS);
             }
@@ -565,7 +565,7 @@ Token* scan() {                             // proste GetToken da ti dasli Token
         case '+':
             return createToken(T_PLUS, TC_OPERATORS);
 
-        case '-':                                                   // princip znas
+        case '-':                                                  
             next = getchar();
             if (next == '>') {
                 return createToken(T_ARROW, TC_Punctation);
@@ -578,7 +578,7 @@ Token* scan() {                             // proste GetToken da ti dasli Token
         case '*':
             return createToken(T_MUL, TC_OPERATORS);
 
-        case '!':                                                   // princip znasd
+        case '!':                                                   
             next = getchar();
             if (next == '=') {
                 return createToken(T_NOT_EQUALS, TC_LOGICAL);
@@ -630,11 +630,11 @@ Token* scan() {                             // proste GetToken da ti dasli Token
 
 
 
-        case '_':                                       // muze to byt bud ID a nebo to muze stat samo o sobe a neco delat uz jsem zapomnel teehee :3
+        case '_':                                       // Id or _
             next = getchar();
             if (isalnum(next) || next=='_') {
                 ungetc(next, stdin);
-                return(is_Id(curr));                    // tady to muze byt jen Id ale posilam to do funkce ktera rozhoduje mezi ID a KW mala ztrata casu but whatecer
+                return(is_Id(curr));                   
             }
 
             else {
@@ -646,24 +646,23 @@ Token* scan() {                             // proste GetToken da ti dasli Token
         case 'p': case 'q': case 'r': case 's': case 't':case 'u': case 'v': case 'w': case 'x': case 'y':case 'z':
         case 'A': case 'B': case 'C': case 'D': case 'E':case 'F': case 'G': case 'H': case 'I': case 'J':case 'K': case 'L': case 'M': case 'N': case 'O':
         case 'P': case 'Q': case 'R': case 'S': case 'T':case 'U': case 'V': case 'W': case 'X': case 'Y':case 'Z':
-            return(is_Id(curr));               // Identifikator nebo keyword
-        
+            return(is_Id(curr));              // Id or keyword
 
 
-        case '"':                           // hate this String
+        case '"':                          
             next = getchar();
-            if (next == '"'){               // pokud dalsi tak to bude ""
+            if (next == '"'){
                 next = getchar();
-                if(next =='"'){             // pokud dalsi tak to bude """ ci multi string to funkci dodelam
+                if(next =='"'){               // if next is " then it is multi string            
                     return isMultiLineString();
                 }
-                else{                       // je to jen "" takze prazdny retezec 
+                else{                       // It's just "", so it's an empty string.
                     ungetc(next,stdin);
-                    return createToken(T_STRING,TC_VALUE);                  // vloz tam prazdny string
-                }                                                // takze kdyz se do ni bude chtit podivat tak error asi nejak jinak udelat
+                    return createToken(T_STRING,TC_VALUE);                 
+                }                                               
                 
             }
-            else{                           // je to normal string
+            else{                           // normal string
                 ungetc(next,stdin);
                 return isString(curr);
             }
@@ -674,8 +673,7 @@ Token* scan() {                             // proste GetToken da ti dasli Token
         case EOF:                           
             return createToken(T_EOF, TC_ERR);
 
-        default:                            // neco co tam nema byt mozna errorum prirad Value at vis jaky presne ERROORORRO
-            //printf("2.%c",curr);
+        default:                                    // something that should not be there           
             token = createToken(T_ERORR, TC_ERR);
             token->value.integer=1;
             return token;
@@ -687,7 +685,7 @@ Token* scan() {                             // proste GetToken da ti dasli Token
 
 
 
-
+/*
 
 
 const char* token_names[] = {
@@ -766,3 +764,4 @@ const char* token_names[] = {
 //      free_token_Values(xd);
 //  }
  
+*/

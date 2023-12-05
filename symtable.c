@@ -53,6 +53,8 @@ int InsertSymbol(SymTable *table, char *key){
         return -1;
     temp->type = 3; //zatim neni funkce ani var
     temp->variable.strVal = NULL;
+    temp->function.parametr = NULL;
+    temp->function.parametr_count = 0;
 
     strcpy(temp->id, key);
     (*table)[hash] = temp;
@@ -175,9 +177,6 @@ int AddFunctionDetails(SymTable *table, char *key, DataType returnType, bool def
     int hash = Searching(table, key);
     if(hash == -1)
         return -1; //nenašlo to
-    
-    (*table)[hash]->function.parametr = NULL;
-    (*table)[hash]->function.parametr_count = 0;
     (*table)[hash]->type = 1;
     (*table)[hash]->function.defined = defined;
     (*table)[hash]->function.ReturnType = returnType;
@@ -297,6 +296,7 @@ InsertSymbol(&(*table), "pollal");
 AddParametr(&(*table), "popal", "jmena", "id",1);
 AddParametr(&(*table), "popal", "jmenaa","id" ,1);
 AddParametr(&(*table), "popal", "xd" ,"ps", 1);
+AddFunctionDetails(&(*table), "popal", 2, 1);
 
 AddVarDetails(&(*table), "pollal", 0, 1, 0);
 insert_string_value(&(*table), "pollal", "ahoj");

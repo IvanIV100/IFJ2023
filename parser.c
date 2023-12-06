@@ -312,7 +312,7 @@ node_t* handle_func_def(node_t* node){
             printf( " retType: %d\n", result->function.ReturnType);
             ThrowError(4);
         } else {
-            printf("else\n");   
+            printf("is void\n");   
             runInfo->FID = NULL;
         }
     }
@@ -405,33 +405,37 @@ node_t* handle_in_param(node_t* node){ // *ADD SEMANTIC CHECK*
             ThrowError(5);
         }
         printf("var datatype: %d\n", var->variable.datatype);
-        if (var == NULL){
-            ThrowError(3);
+        Symbol *func;
+        if(runInfo->rightID == NULL){
+            func = GetSymbol(runInfo->globalFrame, runInfo->leftID);
+            
+        }else {
+            func= GetSymbol(runInfo->globalFrame, runInfo->rightID);
+        }
+        if (func->function.parametr_count == -1){
+            
         } else {
-            Symbol *func;
-            if(runInfo->rightID == NULL){
-                func = GetSymbol(runInfo->globalFrame, runInfo->leftID);
+            Parametr *param = func->function.parametr;
+            printf("inParamCount: %d\n", inParamCount);
+            for (int i = 0; i < inParamCount-1; i++){
                 
-            }else {
-                func= GetSymbol(runInfo->globalFrame, runInfo->rightID);
-            }
-            if (func->function.parametr_count == -1){
-                return node;
-            } else {
-                Parametr *param = func->function.parametr;
-                printf("param type: %d\n", param->type);
-                for (int i = 0; i < inParamCount-1; i++){
-                    param = param->next;
+                param = param->next;
+                if(param == NULL){
+                    printf("here 50d\n");
+                    ThrowError(4);
                 }
-                printf("var name %s\n", var->id);
-                printf("var type: %d\n", var->variable.datatype);
-                if (param->type != var->variable.datatype && param->type + 1 != var->variable.datatype && param->type != var->variable.datatype + 1){
-                        printf("bb type\n");
-                        ThrowError(4);
-                }
-                    
                 
             }
+            printf("param type: %d\n", param->type);
+            printf("var name %s\n", var->id);
+            printf("var type: %d\n", var->variable.datatype);
+            if (param->type != var->variable.datatype && param->type + 1 != var->variable.datatype && param->type != var->variable.datatype + 1){
+                    printf("bb type\n");
+                    ThrowError(4);
+            }
+                
+                
+            
             
             
         }

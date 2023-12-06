@@ -7,22 +7,6 @@
 
 #define SYMTABLE_SIZE 9973
 
-
-/*
-//data_types ted v parametrs.h
-typedef enum{
-VOID,
-NIL,
-BOOL,
-INT,
-INTQ,
-STR,
-STRQ,
-FLOAT,
-FLOATQ
-
-}DataType;*/
-
 typedef enum{
 variable,    
 function,
@@ -35,84 +19,139 @@ let,
 }VarOrLet;
 
 typedef struct{
-    DataType ReturnType;    //enum od 1 do 5
-    bool defined;           // byla definována
-    Parametr *parametr;     // ukazatel na parametr
-
-    /*typedef struct parametr{      //v parametrs.h
-        char *id;                   //identifikator parametru
-        char *name;                 //jmeno parametru
-        int length[2];              //promenne na alokovani pameti
-        int alloc_size[2];          //promenne na alokovani pameti
-        DataType type;              //datovy typ parametru
-        struct parametr *next;      //ukazatel na dalsi parametr
-    }Parametr;*/
-
-    int parametr_count;             //pocet parametru
+    DataType ReturnType;
+    bool defined;      
+    Parametr *parametr;
+    int parametr_count;
 } Function;
 
 typedef struct{
-DataType datatype; //od 0 do 4
+DataType datatype;
 bool init;
-VarOrLet VoL;
-bool parametr; 
-int intVal;       //hodnoty    
-double doubleVal; //
-char* strVal;     //
-bool boolVal;     //
+VarOrLet VoL; 
+int intVal;        
+double doubleVal; 
+char* strVal;     
+bool boolVal;     
 int nillable;
 } Variable;
 
 typedef struct{
-    char *id;            // nazev
-    Type type;           // funkce/promenna
-    Function function;   // struktura s informacemi o funkci
-    Variable variable;   // struktura s informacemi o promenné
+    char *id;           
+    Type type;         
+    Function function;  
+    Variable variable; 
 }Symbol;
 
-typedef Symbol* SymTable[SYMTABLE_SIZE]; // tabulka symbolu
+typedef Symbol* SymTable[SYMTABLE_SIZE];
 
+/**
+ * Function which initializes SymTable.
+ * @param table - SymTable.
+*/
 void SymTableInit(SymTable **table);
-//inicializace tabulky
-/*      Symtable *table = NULL; //pouiziti
-        SymTableInit(&table);*/
 
+/**
+ * Function which frees SymTable.
+ * @param table - SymTable. 
+*/
 void SymTableFree(SymTable *table);
-//uvolneni tabulky z pameti
-//SymTableFree(&(*table));
 
+/**
+ * Function to insert a symbol to the SymTable.
+ * @param table - SymTable.
+ * @param key - key of the symbol.
+ * @return 1 if it is succesfull, otherwise returns -1.
+*/
 int InsertSymbol(SymTable *table, char *key);
-//vkladani symbolu do tabulky
 
+/**
+ * Function to add parameter to a function.
+ * @param table - SymTable.
+ * @param key - key of the symbol.
+ * @param name - name of the parameter.
+ * @param id - id of the parameter.
+ * @return 1 on success, otherwise returns -1.
+*/
 int AddParametr(SymTable *table, char *key, char *name, char *id, DataType type);
-//pridavani parametru do funkce
 
+
+/**
+ * Function to add attributes to a function.
+ * @param table - SymTable.
+ * @param key - key of the symbol.
+ * @param returnType - return type of the function.
+ * @param defined - bool to chech if the function is defined.
+ * @return 1 on success, otherwise returns -1.
+ */
 int AddFunctionDetails(SymTable *table, char *key, DataType returnType, bool defined);
-//co je to za funkci
 
+/**
+ * Function to add attributes to a function.
+ * @param table - SymTable.
+ * @param key - key of the symbol.
+ * @param type - type of hte variable.
+ * @param init - bool to chech if the variable is initialized.
+ * @param vol - 0 it is var, 1 it is let.
+ * @return 1 on success, otherwise returns -1.
+ */
 int AddVarDetails(SymTable *table, char *key, DataType type, bool init, VarOrLet vol);
-//co je to za proměnnou
 
+ /** Function which returns pointer to the symbol
+ * @param table - SymTable.
+ * @param key - key of the symbol.
+ * @return Pointer to the symbol.
+ */
 Symbol *GetSymbol(SymTable *table, char *key);
-//vraci symbol
 
+/** Function which returns index of the symbol.
+ * @param table - SymTable.
+ * @param key - key of the symbol.
+ * @return index of the symbol, if symbol does not exist returns -1.
+ */
 int Searching(SymTable *table, char *key);
-// vrací hash hledaneho klíče
 
+/** Function which removes a symbol from the table.
+ * @param table - SymTable.
+ * @param key - key of the symbol.
+ * @return 1 on success, otherwise returns -1.
+ */
 int RemoveSymbol(SymTable *table, char *key);
-//odstraneni symbolu z tabulky
 
+/** Function to create a hash to a key.
+ * @param key - key of the symbol.
+ * @return hash.
+ */
 unsigned long HashFunction(char *key);
-//vrací hash hodnotu
 
+/** Function to add int value to variable.
+ * @param table - SymTable.
+ * @param key - key of the symbol.
+ * @param value - value to be inserted
+ * @return 1 on success, otherwise returns -1.
+ */
 int insert_int_value(SymTable *table, char *key, int value);
-//vkládání hodnoty int
 
+/** Function to add double value to variable.
+ * @param table - SymTable.
+ * @param key - key of the symbol.
+ * @param value - value to be inserted
+ * @return 1 on success, otherwise returns -1.
+ */
 int insert_double_value(SymTable *table, char *key, double value);
-//hodnota double
 
+/** Function to add string value to variable.
+ * @param table - SymTable.
+ * @param key - key of the symbol.
+ * @param value - value to be inserted
+ * @return 1 on success, otherwise returns -1.
+ */
 int insert_string_value(SymTable *table, char *key, char *value);
-//hodnota string
 
+/** Function to add bool value to variable.
+ * @param table - SymTable.
+ * @param key - key of the symbol.
+ * @param value - value to be inserted
+ * @return 1 on success, otherwise returns -1.
+ */
 int insert_bool_value(SymTable *table, char *key, bool value);
-//hodnota boolu

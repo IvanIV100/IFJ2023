@@ -21,25 +21,48 @@ FLOATQ
 typedef struct parametr{
 char *id;
 char *name;
-int length[2]; /*proměnné na alokovaní*/
+int length[2];
 int alloc_size[2]; 
 DataType type;
 struct parametr *next;
 } Parametr;
 
-
+/**
+ * Function which initializes parameter.
+ * @param p - parameter.
+ * @return 1 if it is succesfull, otherwise returns -1.
+*/
 int parametr_init(Parametr *p);
-//inicializace parametru funkce
 
+/**
+ * Function to add a name to a parameter and data type of the parameter.
+ * @param p - parameter.
+ * @param name - name of the parameter.
+ * @param type - Data type.
+ * @return 1 if it is succesfull, otherwise returns -1.
+*/
 int add_parametr_name(Parametr *p, char *name, DataType type);
-//pridavani jmena a typu parametru funkce
 
+/**
+ * Function to add a id to a parameter.
+ * @param p - parameter.
+ * @param id - name of the parameter.
+ * @return 1 if it is succesfull, otherwise returns -1.
+*/
 int add_parametr_id(Parametr *p, char *id);
-//pridavani identifikatoru funkce
 
+/**
+ * Function which clears parameter.
+ * @param p - parameter.
+ * @return 1 if it is succesfull, otherwise returns -1.
+*/
 int clear_parametr(Parametr *p);
-//smázaní hodnoty parametru
 
+/**
+ * Function which frees parameter.
+ * @param p - parameter.
+ * @return 1 if it is succesfull, otherwise returns -1.
+*/
 int parametr_free(Parametr *p);
-//uvolneni hodnoty parametru z pameti
+
 

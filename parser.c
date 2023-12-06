@@ -208,6 +208,10 @@ node_t* handle_function_param(node_t* node){
     node = get_next(node);
     int type = handle_type(node);
     AddParametr(runInfo->globalFrame, runInfo->FID, name , ID, type);
+    InsertSymbol(runInfo->currentLVL->currentTab, ID);
+    AddVarDetails(runInfo->currentLVL->currentTab, ID, type, true, 1);
+    Symbol *result = GetSymbol(runInfo->currentLVL->currentTab, ID);
+    result->variable.parameter = true;
 
     return  node;
 }
@@ -215,7 +219,6 @@ node_t* handle_function_param(node_t* node){
 
 node_t* handle_param_list(node_t* node){
     if (node->current->type == T_RIGHT_PAREN){
-        
         return node;
     }
     
@@ -288,13 +291,14 @@ node_t* handle_func_def(node_t* node){
     }
 
     node = get_next(node);
+    create_level();
     node = handle_param_list(node);
 
     node = get_next(node);
     node = hadnle_func_retType(node);
     if (node->current->type == T_LEFT_BRACE) {  // *add params to symtab*
 
-        create_level();
+        
 
         node = get_next(node);
         node = handle_statement_list(node);   // *somhow check return type if missing*
@@ -940,13 +944,14 @@ node_t* handle_return(node_t* node){
     node = get_next(node);
     int count;
     node_t* start = node;
-    node = expression_token_count(node, &count);
+    node = expression_token_count(start, &count);
     printf("count: %d\n", count);
     DataType retVal = expression_parser(start, runInfo, count); // add type assign
     Symbol *result = GetSymbol(runInfo->globalFrame, runInfo->FID);
     printf("retVal: %d\n", retVal);
     printf("result: %d\n", result->function.ReturnType);
     if (result->function.ReturnType != retVal){
+        printf("curent func: %s\n", runInfo->FID);
         ThrowError(3);
     } else {
         runInfo->FID = NULL;

@@ -396,6 +396,7 @@ node_t* handle_in_param(node_t* node){ // *ADD SEMANTIC CHECK*
                     currentType = FLOAT;
                 }
             }
+            printf("currentTypessssddd: %d\n", currentType);
             Symbol *func= GetSymbol(runInfo->globalFrame, runInfo->leftID);
             Parametr *param = func->function.parametr;
             
@@ -404,14 +405,17 @@ node_t* handle_in_param(node_t* node){ // *ADD SEMANTIC CHECK*
                     ThrowError(3);
                 }
             } else {
-                for(int i = 0; i < func->function.parametr_count ; i++){
+                for(int i = 0; i < inParamCount-1 ; i++){
+                
                     param = param->next;       
                     if(param == NULL){
-                        ThrowError(3);
+                        printf("wrong param count inParamCount: %d\n  func param count: %d\n", inParamCount, func->function.parametr_count);
+                        ThrowError(4);
                     }
                 }
-                if (param->type != currentType){
-                    ThrowError(3);
+                if (param->type != currentType && param->type + 1 != currentType && param->type != currentType + 1){
+                    printf("wrong param type\n ");
+                    ThrowError(4);
                 }
             }
             

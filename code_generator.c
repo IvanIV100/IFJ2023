@@ -231,23 +231,24 @@ void generate_in_param_code(node_t* node) {
 
 void generate_if_statement_code(node_t* node) {
     generate_cond_ops_code(node);
-    node_t * tempn = node;
+    //node_t * tempn = node;
     while(node->right != NULL){
         node = node->right;
-            if (node->right->current->type == T_LEFT_BRACE) {
+            if (node->right != NULL && node->right->current->type == T_LEFT_BRACE) {
                 printf("JUMP_IF_TRUE L%d\n", generate_label());
                 printf("LABEL L%d\n", generate_label()-1);
                 generate_statement_list_code(node);
             } 
-            if (node->right->right->current->type == T_ELSE &&
-            node->right->right->right->current->type == T_LEFT_BRACE) {
+            if (node->right != NULL && node->right->right != NULL &&node->right->right->current->type == T_ELSE &&
+            node->right->right->right != NULL && node->right->right->right->right != NULL &&
+             node->right->right->right->current->type == T_LEFT_BRACE) {
             printf("JUMP_IF_FALSE L%d\n", generate_label());
             printf("LABEL L%d\n", generate_label()-1);
             generate_statement_list_code(node);
             break;
         }
     }
-    node = tempn;
+    //node = tempn;
 }
 
 void generate_cond_ops_code(node_t* node) {
@@ -293,7 +294,7 @@ void generate_statement_list_code(node_t* node) {
             }
             return;
         }
-        
+
         generate_statement_code(node);
 
         if (node->right != NULL) {

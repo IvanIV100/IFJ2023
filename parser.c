@@ -197,6 +197,7 @@ node_t* handle_function_param(node_t* node){
         ThrowError(2);
     }
     char* ID = node->current->value.ID_name;
+    printf("ID: %s\n", ID);
 
     if(strcmp(ID, name) == 0){ // *checks if name and ID are the same(can't be)*
         ThrowError(4);
@@ -207,12 +208,13 @@ node_t* handle_function_param(node_t* node){
     }
     node = get_next(node);
     int type = handle_type(node);
+    printf("type: %d\n", type);
     AddParametr(runInfo->globalFrame, runInfo->FID, name , ID, type);
     InsertSymbol(runInfo->currentLVL->currentTab, ID);
     AddVarDetails(runInfo->currentLVL->currentTab, ID, type, true, 1);
     Symbol *result = GetSymbol(runInfo->currentLVL->currentTab, ID);
     result->variable.parameter = true;
-
+    
     return  node;
 }
 
@@ -270,11 +272,8 @@ node_t* hadnle_func_retType(node_t* node){
     if (node->current->type == T_ARROW){
         node = get_next(node);
         int type = handle_type(node);
-        AddFunctionDetails(runInfo->globalFrame, runInfo->FID, type , true);
         node = get_next(node);
-    } else {
-        AddFunctionDetails(runInfo->globalFrame, runInfo->FID, 0, true);
-    }
+    } 
     return node;
 
 }
@@ -952,7 +951,7 @@ node_t* handle_return(node_t* node){
     printf("result: %d\n", result->function.ReturnType);
     if (result->function.ReturnType != retVal){
         printf("curent func: %s\n", runInfo->FID);
-        ThrowError(3);
+        ThrowError(4);
     } else {
         runInfo->FID = NULL;
     }

@@ -28,15 +28,22 @@ xchoda00
     -add comment headers everywhere
 
 * - Implement
+    -add nillable val for a!
+    -Parse the whole input and put into linked list
+        -parser list for func def
+        -parser for syntax and semantics
     -let check on assign
     -built in functions check input and ret type
     -add semcheck in expressions
 
 * - Check
+    -fid def, addDetails, add prams, add details  ---Will they stay?
+
     -if return can be in void function
     -if im supposed to work with interpret return codes
 
 * - Fix
+    -params in funcall before def
     -expression return types boool etc
 
     -syn types
@@ -46,75 +53,100 @@ xchoda00
 */
 
 runTimeInfo *runInfo;
-
+int inParamCount = 0;
 
 
 Symbol *search_upwards_ST(char* ID){
     symTabLVL *current = runInfo->currentLVL;
+    Symbol *result = NULL;
     while (current != NULL){
-        Symbol *result = GetSymbol(current->currentTab, ID);
+         result = GetSymbol(current->currentTab, ID);
         if (result != NULL){
             return result;
         }
         current = current->parantLVL;
+        
     }
-    return NULL;
+    printf("curId: %s\n", ID);
+    result = GetSymbol(runInfo->globalFrame, ID);
+    if (result == NULL){
+        printf("return NULL\n");
+            return NULL;
+    } else {
+        printf("return\n");
+        return result;
+    }
+    
+        
 
 }
 
 
 
 void fill_builtin_symtab(SymTable *builtIn){ // fill in to check symtab and to global
+    Symbol *ToChange = NULL;
+
     InsertSymbol(builtIn, "readString");
     InsertSymbol(runInfo->globalFrame, "readString");
-    AddFunctionDetails(builtIn, "readString",  6, true);
+    AddFunctionDetails(runInfo->globalFrame, "readString",  6, true);
+    ToChange = GetSymbol(runInfo->globalFrame, "readString");
+    ToChange->function.parametr_count = 0;
+
 
     InsertSymbol(builtIn, "readInt");
     InsertSymbol(runInfo->globalFrame, "readInt");
-    AddFunctionDetails(builtIn, "readInt",  4, true);
+    AddFunctionDetails(runInfo->globalFrame, "readInt",  4, true);
+    ToChange = GetSymbol(runInfo->globalFrame, "readInt");
+    ToChange->function.parametr_count = 0;
 
     InsertSymbol(builtIn, "readDouble");
     InsertSymbol(runInfo->globalFrame, "readDouble");
-    AddFunctionDetails(builtIn, "readDouble",  8, true);
+    AddFunctionDetails(runInfo->globalFrame, "readDouble",  8, true);
+    ToChange = GetSymbol(runInfo->globalFrame, "readDouble");
+    ToChange->function.parametr_count = 0;
+
 
     InsertSymbol(builtIn, "write");
     InsertSymbol(runInfo->globalFrame, "write");
-    AddFunctionDetails(builtIn, "write",  0, true);
-    AddParametr(builtIn, "write", "_", "s", STR);
+    AddFunctionDetails(runInfo->globalFrame, "write",  0, true);
+    AddParametr(runInfo->globalFrame, "write", "_", "s", STR);
+    ToChange = GetSymbol(runInfo->globalFrame, "write");
+    ToChange->function.parametr_count = -1; 
 
 
     InsertSymbol(builtIn, "Int2Double");
     InsertSymbol(runInfo->globalFrame, "Int2Double");
-    AddFunctionDetails(builtIn, "Int2Double",  7, true);
-    AddParametr(builtIn, "Int2Double", "_", "i", INT);
+    AddFunctionDetails(runInfo->globalFrame, "Int2Double",  7, true);
+    AddParametr(runInfo->globalFrame, "Int2Double", "_", "i", INT);
         
     InsertSymbol(builtIn, "Double2Int");
     InsertSymbol(runInfo->globalFrame, "Double2Int");
-    AddFunctionDetails(builtIn, "Double2Int",  3, true);
-    AddParametr(builtIn, "Double2Int", "_", "d", FLOAT);
+    AddFunctionDetails(runInfo->globalFrame, "Double2Int",  3, true);
+    AddParametr(runInfo->globalFrame, "Double2Int", "_", "d", FLOAT);
     
     InsertSymbol(builtIn, "length");
     InsertSymbol(runInfo->globalFrame, "length");
-    AddFunctionDetails(builtIn, "length",  3, true);
-    AddParametr(builtIn, "length", "_", "s", STR);
+    AddFunctionDetails(runInfo->globalFrame, "length",  3, true);
+    AddParametr(runInfo->globalFrame, "length", "_", "s", STR);
+
 
     InsertSymbol(builtIn, "substring");
     InsertSymbol(runInfo->globalFrame, "substring");
-    AddFunctionDetails(builtIn, "substring",  6, true);
-    AddParametr(builtIn, "substring", "of", "s", STR);
-    AddParametr(builtIn, "substring", "startingAt", "i", INT);
-    AddParametr(builtIn, "substring", "endingBefore", "j", INT);
+    AddFunctionDetails(runInfo->globalFrame, "substring",  6, true);
+    AddParametr(runInfo->globalFrame, "substring", "of", "s", STR);
+    AddParametr(runInfo->globalFrame, "substring", "startingAt", "i", INT);
+    AddParametr(runInfo->globalFrame, "substring", "endingBefore", "j", INT);
     //*return nill when cases
 
     InsertSymbol(builtIn, "ord");
     InsertSymbol(runInfo->globalFrame, "ord");
-    AddFunctionDetails(builtIn, "ord",  3, true);
-    AddParametr(builtIn, "ord", "_", "c", STR);
+    AddFunctionDetails(runInfo->globalFrame, "ord",  3, true);
+    AddParametr(runInfo->globalFrame, "ord", "_", "c", STR);
 
     InsertSymbol(builtIn, "chr");
     InsertSymbol(runInfo->globalFrame, "chr");
-    AddFunctionDetails(builtIn, "chr",  5, true);
-    AddParametr(builtIn, "chr", "_", "i", INT);
+    AddFunctionDetails(runInfo->globalFrame, "chr",  5, true);
+    AddParametr(runInfo->globalFrame, "chr", "_", "i", INT);
 
 
 
@@ -140,21 +172,22 @@ void init_runInfo(){
     }
     SymTableInit(&globalFrame);
 
-    SymTable *builtInFunctions;
+    SymTable *builtInFunctions = NULL;
     builtInFunctions = malloc(sizeof(SymTable));
     if (builtInFunctions == NULL){
         ThrowError(99);
     }
     SymTableInit(&builtInFunctions);
-    
+    runInfo->globalFrame = globalFrame;
+    runInfo->builtInFunctions = builtInFunctions;
     fill_builtin_symtab(builtInFunctions);
 
     runInfo->currentLVL = NULL;
-    runInfo->globalFrame = globalFrame;
-    runInfo->builtInFunctions = builtInFunctions;
+    
 
     runInfo->FID = NULL;
-    runInfo->CurID = NULL;
+    runInfo->leftID = NULL;
+    runInfo->rightID = NULL;
     runInfo->vol = NULL;
     runInfo->firstNode = NULL;
     char** funcalls = NULL;
@@ -166,6 +199,7 @@ void init_runInfo(){
 
 node_t* handle_function_param(node_t* node){
     char* name;
+    printf("type: %d\n", node->current->type);
     if (node->current->type == T_UNDERSCORE){
         name = "_";
     } else if (node->current->type == T_IDENTIFIER){
@@ -173,6 +207,7 @@ node_t* handle_function_param(node_t* node){
     } else {
         ThrowError(2);
     }
+    printf("name: %s\n", name);
     
     node = get_next(node);
     
@@ -198,10 +233,11 @@ node_t* handle_function_param(node_t* node){
 
 node_t* handle_param_list(node_t* node){
     if (node->current->type == T_RIGHT_PAREN){
+        
         return node;
-    } else {
-        node = handle_function_param(node);
     }
+    
+    node = handle_function_param(node);
     node = get_next(node);
     if (node->current->type == T_COMMA){    
         node = get_next(node);
@@ -242,7 +278,7 @@ handle_type(node_t* node){ //what is difference between t_int a t_kw_int
         printf("type: %d\n", node->current->type);
         ThrowError(2);
     }
-    
+    printf("type: %d\n", type);
     return  type;
 }
 
@@ -268,15 +304,6 @@ node_t* handle_func_def(node_t* node){
     if (result == 1){
         delete_FID_list(runInfo->FID);
     }
-    if (GetSymbol(runInfo->builtInFunctions, runInfo->FID) != NULL ){
-        ThrowError(3);
-    } else if (GetSymbol(runInfo->globalFrame, runInfo->FID) != NULL ){
-        ThrowError(3);
-    } else {
-        InsertSymbol(runInfo->globalFrame, runInfo->FID);
-    }   
-
-    AddFunctionDetails(runInfo->globalFrame, runInfo->FID, 0, true); // *add type assign*
     node = get_next(node);
     if (node->current->type != T_LEFT_PAREN) {
         ThrowError(2);
@@ -300,11 +327,19 @@ node_t* handle_func_def(node_t* node){
         ThrowError(2);
     }
     pop_level();
+    printf(runInfo->FID);
     if(runInfo->FID != NULL){
         Symbol *result = GetSymbol(runInfo->globalFrame, runInfo->FID);
+        if (result == NULL){
+            printf("pipik\n");
+        } else {
+            printf("pipik2\n");
+        }
         if (result->function.ReturnType != VOID){
+            printf("retType: %d\n", result->function.ReturnType);
             ThrowError(6);
         } else {
+            printf("else\n");   
             runInfo->FID = NULL;
         }
     }
@@ -312,9 +347,7 @@ node_t* handle_func_def(node_t* node){
     return node;
 }
 
-void handle_in_param_type_ST(char* ID){
-    return ;
-}
+
 
 node_t* handle_in_param(node_t* node){ // *ADD SEMANTIC CHECK*
     if (node->current->type == T_IDENTIFIER){
@@ -333,11 +366,13 @@ node_t* handle_in_param(node_t* node){ // *ADD SEMANTIC CHECK*
                 ThrowError(2);
             }
         } 
-        printf("curId: %s\n", runInfo->CurID);
+        printf("curIdd: %s\n", runInfo->leftID);
         return  node;
     } else { // literal assign add semantics
         if(node->current->type == T_INT || node->current->type == T_STRING || node->current->type == T_DOUBLE){
-
+            for(int i = 0; i < runInfo->count; i++){
+                
+            }
             node = get_next(node);
             return  node;
         } else {
@@ -347,17 +382,33 @@ node_t* handle_in_param(node_t* node){ // *ADD SEMANTIC CHECK*
     }
 }
 
-node_t* handle_in_param_list(node_t* node){
-    
 
-    if(node->current->type == T_RIGHT_PAREN){
-        Symbol *result = GetSymbol(runInfo->globalFrame, runInfo->CurID);
-        if(result->function.parametr_count != 0){
-            ThrowError(2);
+node_t* handle_in_param_list(node_t* node){
+    Symbol *result;
+    if (runInfo->rightID == NULL){
+            result = GetSymbol(runInfo->globalFrame, runInfo->leftID);
         } else {
-            return node;
+            result = GetSymbol(runInfo->globalFrame, runInfo->rightID);
+            printf("rightId: %s\n", runInfo->rightID);
         }
+    printf("parm curent: %d\n", node->current->type);
+    if(node->current->type == T_RIGHT_PAREN){
+        printf("inpar\n");
+        if (inParamCount != result->function.parametr_count){
+            ThrowError(4);
+        }
+        inParamCount = 0;
+        runInfo->rightID == NULL;
+        return node;
     }
+    inParamCount++;
+    if (result->function.parametr_count == 0){
+            printf("wrong param count\n ");
+            printf("inParamCount: %d\n", inParamCount);
+            printf("paramCount: %d\n", result->function.parametr_count);
+            ThrowError(4);
+        }
+    printf("inParamCount: %d\n", inParamCount);
     node = handle_in_param(node);
     if (node->current->type == T_COMMA){
         
@@ -371,7 +422,8 @@ node_t* handle_in_param_list(node_t* node){
     if (node->current->type != T_RIGHT_PAREN){
         ThrowError(2);
     }
-    return  node;
+    runInfo->rightID == NULL;
+    return node;
 }
 
 node_t* expression_token_count(node_t* node, int* count){
@@ -390,6 +442,7 @@ node_t* expression_token_count(node_t* node, int* count){
                 if (node->left->current->type == T_IF || node->left->current->type == T_WHILE || 
                 node->left->current->type == T_RETURN || node->left->current->type == T_ASSIGN){
                 } else {
+                    
                     break;
                 }
                 
@@ -419,39 +472,44 @@ node_t* expression_token_count(node_t* node, int* count){
 node_t* handle_assign_ops(node_t* node){ 
 
     if (node->current->type == T_IDENTIFIER){
+        runInfo->rightID = node->current->value.ID_name;
         node = get_next(node);
         if(node->current->type == T_LEFT_PAREN){
+            check_funcall_id(runInfo->rightID); // *checking if valid funcall* assign type
             node = get_next(node);
+            inParamCount = 0;
             node = handle_in_param_list(node);
             node = get_next(node);
             return node;
         } else {
+            
+            Symbol *result = search_upwards_ST(runInfo->rightID);
+            if (result == NULL){
+                printf("Assops\n");
+                ThrowError(5);
+            }
             int count1;
-            ExprType result1;
+            DataType result1;
             node_t* start = node->left;
             node = expression_token_count(node, &count1);
             
             result1 = expression_parser(start, runInfo, count1);
 
-            if (result1%2 == 0){
-                assign_varType_ST(node, result1, 1); 
-            } else {
-                assign_varType_ST(node, result1, 0); 
-            }     
+            Symbol *change = search_upwards_ST(runInfo->leftID);
+            if(change->variable.VoL == 1){
+                ThrowError(9);
+            }
         }
     } else {
+            printf("lit\n");
             int count2;
-            ExprType result2;
+            DataType result2;
             node_t* start = node;
             node = expression_token_count(node, &count2);
             result2 = expression_parser(start, runInfo, count2);
+            assign_varType_ST(runInfo->leftID, result2, runInfo->vol); 
             
-            if (result2 % 2 == 0){
-                assign_varType_ST(node, result2, 1); 
-            } else {
-                assign_varType_ST(node, result2, 0); 
-            }
-               
+            
             
         }
     printf("cu %d\n", node->current->type);
@@ -464,7 +522,7 @@ node_t* handle_var_def_ops(node_t* node){
         node = get_next(node);
 
         int type = handle_type(node);
-        assign_varType_ST(node, type, runInfo->vol);
+        assign_varType_ST(runInfo->leftID, type, runInfo->vol);
 
         node = get_next(node);
 
@@ -472,6 +530,14 @@ node_t* handle_var_def_ops(node_t* node){
             node = get_next(node);
 
             node = handle_assign_ops(node);
+            SymTable *current = NULL;
+            if(runInfo->currentLVL == NULL){
+                current = runInfo->globalFrame;
+            } else {
+                current = runInfo->currentLVL->currentTab;
+            }
+            Symbol *varToChange = GetSymbol(current, runInfo->leftID);
+            varToChange->variable.init = true;
             return node;
         } else {
             return node;
@@ -491,10 +557,13 @@ node_t* handle_var_def_ops(node_t* node){
 
 node_t* handle_var_def(node_t* node){
     if (node->current->type != T_IDENTIFIER) {
-        
         ThrowError(2);
     }
-    runInfo->CurID = node->current->value.ID_name;
+    runInfo->leftID = node->current->value.ID_name;
+    Symbol *result = search_upwards_ST(runInfo->leftID);
+    if (result != NULL){
+        ThrowError(3);
+    }
     
     define_var_ST(node);
     node = get_next(node);
@@ -503,51 +572,36 @@ node_t* handle_var_def(node_t* node){
 }
 
 void check_funcall_id(char* ID){
-    Symbol *result = GetSymbol(runInfo->builtInFunctions, ID);
+    Symbol *result = GetSymbol(runInfo->globalFrame, ID);
     if (result == NULL){
-        result = GetSymbol(runInfo->globalFrame, ID);
+        result = GetSymbol(runInfo->builtInFunctions, ID);
         if (result == NULL){
-            add_funcall(runInfo->CurID);
+            ThrowError(3);
+        } else{
+            return;
         }
-    } // else {
-    //     if (strcmp(result->id, "write") == 0) {
-
-    //     } else if (strcmp(result->id, "Int2Double") == 0) {
-
-    //     } else if (strcmp(result->id, "Double2Int") == 0) {
-
-    //     } else if (strcmp(result->id, "length") == 0) {
-
-    //     } else if (strcmp(result->id, "substring") == 0) {
-
-    //     } else if (strcmp(result->id, "ord") == 0) {
-
-    //     } else if (strcmp(result->id, "chr") == 0) {
-
-    //     }
-    // }
+    } else {
+        return;
+    }
 }
 
 node_t* handle_funcall_ops(node_t* node){
-
+    printf("curId fc: %s\n", runInfo->leftID);
+    runInfo->rightID = NULL;
+    
     if (node->current->type == T_ASSIGN){
-        SymTable *current = NULL;
-        if (runInfo->currentLVL == NULL){
-            current = runInfo->globalFrame;
-        } else {
-            current = runInfo->currentLVL->currentTab;
-        }
-        Symbol *result = GetSymbol(current, node->left->current->value.ID_name); //* add look upwrards
+        Symbol *result = search_upwards_ST(runInfo->leftID);
         if (result == NULL){
+            printf("facll\n");
             ThrowError(5);
         }
         node = get_next(node);
         node = handle_assign_ops(node);
         return node;
     } else if (node->current->type == T_LEFT_PAREN){
-        runInfo->CurID = node->left->current->value.ID_name;
-        check_funcall_id(runInfo->CurID); // *checking if valid funcall*
+        check_funcall_id(runInfo->leftID); // *checking if valid funcall*
         node = get_next(node);
+        inParamCount = 0;
         node = handle_in_param_list(node);
         if (node->current->type != T_RIGHT_PAREN){
             ThrowError(2);
@@ -557,15 +611,29 @@ node_t* handle_funcall_ops(node_t* node){
     } else {
         return node;
     }
+    printf("curId fc: %s\n", runInfo->leftID);
     return node;
 }
+
+
+
 
 node_t* handle_cond_ops(node_t* node){
     //node = get_next(node);
     if (node->current->type == T_LET){  
         node = get_next(node);
         if (node->current->type == T_IDENTIFIER){  // *add variable to next symtabLVL* maybe create lvl here
-            runInfo->CurID = node->current->value.ID_name;
+            Symbol *found =  search_upwards_ST(node->current->value.ID_name);
+            if(found == NULL){
+                printf("hcond\n");
+                ThrowError(3);
+            }
+            if (found)
+            InsertSymbol(runInfo->currentLVL->currentTab, node->current->value.ID_name);
+            AddVarDetails(runInfo->currentLVL->currentTab, node->current->value.ID_name, VOID, false, 1);
+            Symbol *result = GetSymbol(runInfo->currentLVL->currentTab, node->current->value.ID_name);
+            result->variable.nillable = 2;
+
             node = get_next(node);
             return node;
         } else {
@@ -579,11 +647,13 @@ node_t* handle_cond_ops(node_t* node){
             ThrowError(2);
         }
         DataType result =  expression_parser(start, runInfo, count3); // *add type assign*
+        printf("result2: %d\n", result);
         if (result != BOOL){
             printf("result: %d\n", result);
             ThrowError(7);
-        } 
-        return node; // check if the node is {
+        } else {
+            return node;
+        }
     }
 
     
@@ -591,15 +661,16 @@ node_t* handle_cond_ops(node_t* node){
 }
 
 node_t* handle_if(node_t* node){ //check if ( is passed
+    create_level();
     node = handle_cond_ops(node);
     //node = get_next(node);
     if (node->current->type == T_LEFT_BRACE){
-        create_level();
+        
 
         //search upwards
-        InsertSymbol(runInfo->currentLVL->currentTab, runInfo->CurID);
-        Symbol *result = search_upwards_ST(runInfo->CurID);
-        AddVarDetails(runInfo->currentLVL->currentTab, runInfo->CurID, BOOL, result->variable.datatype, 0); // *add type assign*
+        Symbol *result = search_upwards_ST(runInfo->leftID); //*urgent
+
+        
         node = get_next(node);
         node = handle_statement_list(node);
         if (node->current->type != T_RIGHT_BRACE){ 
@@ -673,12 +744,12 @@ node_t* handle_return(node_t* node){
     int count;
     node_t* start = node;
     node = expression_token_count(node, &count);
-    ExprType retVal = expression_parser(start, runInfo, count); // add type assign
+    DataType retVal = expression_parser(start, runInfo, count); // add type assign
     Symbol *result = GetSymbol(runInfo->globalFrame, runInfo->FID);
     printf("retVal: %d\n", retVal);
     printf("result: %d\n", result->function.ReturnType);
     if (result->function.ReturnType != retVal){
-        ThrowError(4);
+        ThrowError(3);
     } else {
         runInfo->FID = NULL;
     }
@@ -701,7 +772,8 @@ node_t* handle_statement(node_t* node){
             break;
 
         case T_IDENTIFIER:
-
+            runInfo->leftID = node->current->value.ID_name;
+            printf("curId: %s\n", runInfo->leftID);
             node = get_next(node);
             node = handle_funcall_ops(node);
             return node;
@@ -742,17 +814,7 @@ void free_node_list(node_t* node){
 }
 
 node_t* get_next(node_t* current){
-    node_t *node = create_node();
-    node->current = scan();
-    if (node->current->type == T_ERORR){
-        int err = node->current->value.integer;
-        free_node_list(node);
-        ThrowError(err);
-    }
-    current->right = node;
-    node->left = current;
-    printf(" current token: %d \n", node->current->type);
-    return node;
+    return current->right;
 }
 
 
@@ -801,15 +863,9 @@ void define_var_ST(node_t* node){
         current = runInfo->currentLVL->currentTab;
     }
 
-    Symbol *result = GetSymbol(current, node->current->value.ID_name);
-    
-    if (result != NULL){
-        ThrowError(3);
-    } else {
-        InsertSymbol(current, node->current->value.ID_name);
-        AddVarDetails(current, node->current->value.ID_name, VOID, false, runInfo->vol);
+    InsertSymbol(current, node->current->value.ID_name);
+    AddVarDetails(current, node->current->value.ID_name, VOID, false, runInfo->vol);
 
-    }
     current = NULL;
 
 }
@@ -842,54 +898,187 @@ int check_FID_list(char* FID){
     return 0;
 }
 
-void add_funcall(char* FID) {
-    runInfo->count++;
-    runInfo->funcalls = realloc(runInfo->funcalls, runInfo->count * sizeof(char*));
-    runInfo->funcalls[runInfo->count - 1] = malloc((strlen(FID) + 1) * sizeof(char));
-    strcpy(runInfo->funcalls[runInfo->count - 1], FID);
-}
 
-void assign_varType_ST(node_t* node, int type, int vol){ // check if nillable is correctly filled and incldues !
+void assign_varType_ST(char* key, int type, int vol){ // check if nillable is correctly filled and incldues !
     SymTable* current = NULL;
     if (runInfo->currentLVL == NULL){
         current = runInfo->globalFrame;
     } else {
         current = runInfo->currentLVL->currentTab;
     }
-    Symbol *updateSymbol = GetSymbol(current,runInfo->CurID);
-    if (updateSymbol == NULL){
-        //err
+    if (runInfo->rightID != NULL){
+        Symbol *updateSymbol = GetSymbol(current,key);
+        if (updateSymbol == NULL){
+            printf("assvartypeST\n");
+            ThrowError(5);
+        }
+        AddVarDetails(current, runInfo->rightID, type, true, vol);
+        runInfo->rightID = NULL;
+        return;
+    } else {
+        Symbol *updateSymbol = GetSymbol(current,key);
+        if (updateSymbol == NULL){
+            printf("assvartypeST\n");
+            ThrowError(5);
+        }
+        AddVarDetails(current, key, type, true, vol);
+        return;
     }
-    AddVarDetails(current, runInfo->CurID, type, true, vol);
+    current = NULL;
+}
+
+node_t* load_next(node_t* current){
+    node_t *node = create_node();
+    node->current = scan();
+    if (node->current->type == T_ERORR){
+        int err = node->current->value.integer;
+        free_node_list(node);
+        ThrowError(err);
+    }
+    current->right = node;
+    node->left = current;
+    printf(" current token: %d \n", node->current->type);
+    return node;
+
+}
+
+
+void load_all_tokens(){
+    node_t *node = create_node();
+    node->current = scan();
+    runInfo->firstNode = node;
+    if (node->current->type == T_EOF){
+        return;
+    } else {
+        while (node->current->type != T_EOF){
+            node = load_next(node);
+        }
+        node = load_next(node);
+    }
+    printf("last token: %d\n", node->current->type);
+}
+
+void parse_for_fdef(){
+    printf("parse for fdef\n");
+    node_t *node = runInfo->firstNode;
+    while(node->current->type != T_EOF){
+        if (node->current->type == T_FUNC){
+            node = get_next(node);
+            if(node->current->type == T_IDENTIFIER){
+                Symbol *builtIn = GetSymbol(runInfo->builtInFunctions, node->current->value.ID_name);
+                if (builtIn != NULL ){
+                        ThrowError(3);
+                    } else if (GetSymbol(runInfo->globalFrame, runInfo->FID) != NULL ){
+                        ThrowError(3);
+                    } else {
+                        runInfo->FID = node->current->value.ID_name;
+                        InsertSymbol(runInfo->globalFrame, runInfo->FID);
+                        Symbol *result1 = GetSymbol(runInfo->globalFrame, runInfo->FID);
+                        
+                    }   // add built in check
+                AddFunctionDetails(runInfo->globalFrame, runInfo->FID, 0, true);
+                node = get_next(node);
+                if(node->current->type == T_LEFT_PAREN){
+                    node = get_next(node);
+                        if (node->current->type == T_RIGHT_PAREN){
+                            return node;
+                        }
+                        char* name;
+                        printf("type: %d\n", node->current->type);
+                        if (node->current->type == T_UNDERSCORE){
+                            name = "_";
+                        } else if (node->current->type == T_IDENTIFIER){
+                            name = node->current->value.ID_name;
+                        } else {
+                            ThrowError(2);
+                        }
+                        printf("name: %s\n", name);
+                        
+                        node = get_next(node);
+                        
+                        if (node->current->type != T_IDENTIFIER){
+                            ThrowError(2);
+                        }
+                        char* ID = node->current->value.ID_name;
+
+                        if(strcmp(ID, name) == 0){ // *checks if name and ID are the same(can't be)*
+                            ThrowError(3);
+                        }
+                        node = get_next(node);
+                        if (node->current->type != T_COLON){
+                            ThrowError(2);
+                        }
+                        node = get_next(node);
+                        int type = handle_type(node);
+                        AddParametr(runInfo->globalFrame, runInfo->FID, name , ID, type);
+                        Symbol *result = GetSymbol(runInfo->globalFrame, runInfo->FID);
+                        printf("param count: %d\n", result->function.parametr_count);
+                        
+                        
+                        node = get_next(node);
+                        if (node->current->type == T_COMMA){    
+                            node = get_next(node);
+                            if (node->current->type == T_RIGHT_PAREN){ 
+                                ThrowError(2);
+                            }
+                            node = handle_param_list(node);
+                            return node;
+                        } else if (node->current->type == T_RIGHT_PAREN){
+                            return node;
+                        } else {
+                            ThrowError(2);
+                        }
+                    if(node->current->type == T_RIGHT_PAREN){
+                        node = get_next(node);
+                        if(node->current->type == T_ARROW){
+                            node = get_next(node);
+                            if(node->current->type == T_KW_INT || node->current->type == T_KW_DOUBLE || node->current->type == T_KW_STRING){
+                                Type type = handle_type(node);
+                                AddFunctionDetails(runInfo->globalFrame, node->current->value.ID_name, type, true);
+                                Symbol *result = GetSymbol(runInfo->globalFrame, runInfo->FID);
+                                printf("param count: %d\n", result->function.parametr_count);
+                                node = get_next(node);
+                            } 
+                        }
+                    }
+                }
+            }
+        }
+        node = get_next(node);
+    }
 }
 
 
 void parser(){
     
-
     init_runInfo();
-    node_t *node = create_node();
-    node->current = scan();
-    runInfo->firstNode = node;
+    load_all_tokens();
+    parse_for_fdef();
+    printf("done\n");
+    node_t *node = runInfo->firstNode;
+
 
     while (true){
-        switch (node->current->type) {
+        switch (node->current->type){
             case T_FUNC:
                 node = get_next(node);
                 node = handle_func_def(node);
                 break;
             case T_EOF:
+
                 if(runInfo->count != 0){
                     ThrowError(3); // *checck err type
                 }
                 start_generator(node); 
                 break;// add clean up
+                
             case T_LET:
             case T_VAR:
             case T_IF:
             case T_WHILE:
             case T_RETURN:
             case T_IDENTIFIER:
+
                 printf("statementss: %d\n", node->current->type);
                 node = handle_statement_list(node);
                 break;

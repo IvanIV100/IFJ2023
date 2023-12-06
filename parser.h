@@ -35,15 +35,19 @@ node_t* create_node();
 node_t* get_next(node_t* node);
 node_t* expression_token_count(node_t* node,int* count);
 
-Symbol *search_upwards_ST(char* ID);
+
 
 void free_node_list(node_t* node);
+
+void parse_for_fdef();
+void load_all_tokens();
+node_t* load_next_token(node_t* current);
 
 void start_generator(node_t* node);
 //void start_generating(node_t* node, runTimeInfo* runInfo);
 void fill_builtin_symtab(SymTable *builtIn);
 void define_var_ST(node_t* node);
-void assign_varType_ST(node_t* node, int type, int vol);
+void assign_varType_ST( char* key , int type, int vol);
 //void check_type(char* id, int retT);
 
 void add_funcall(char* FID);

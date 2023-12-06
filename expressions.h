@@ -22,8 +22,9 @@ typedef struct runTimeInfo {
     struct symTabLVL *currentLVL;
     node_t* firstNode;
 
-    char *FID;
-    char *CurID;
+    char* FID;
+    char* leftID;
+    char* rightID;
     int vol;
 
     char** funcalls;
@@ -96,7 +97,7 @@ typedef struct Stack{
 } *stack;
 
 void start_code_generation(node_t* parse_tree);
-
+Symbol *search_upwards_ST(char* ID);
 void stack_init(stack stack);
 void stack_dispose(stack stack);
 void stack_push(stack stack, stackItem item);

@@ -289,6 +289,11 @@ DataType expression_parser(node_t *node, runTimeInfo *rti, int length){
         }
         printf("overrideType: %d\n", overrideType);
         if (overrideType != VOID){
+            printf("overrideType: %d\n", overrideType);
+            returnTerm = overrideType;
+        }
+        if (overrideType != VOID){
+            printf("overrideType: %d\n", overrideType);
             returnTerm = overrideType;
         }
         return returnTerm;
@@ -354,6 +359,15 @@ DataType expression_parser(node_t *node, runTimeInfo *rti, int length){
 
     }
     stack_dispose(stack);
+    printf("overrideType: %d\n", overrideType);
+        if (overrideType != VOID){
+            printf("overrideType: %d\n", overrideType);
+            returnTerm = overrideType;
+        }
+        if (overrideType != VOID){
+            printf("overrideType: %d\n", overrideType);
+            returnTerm = overrideType;
+        }
     return returnTerm;
 }
 

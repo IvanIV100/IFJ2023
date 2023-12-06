@@ -1,3 +1,12 @@
+/**
+ * Project: Implementace překladače IFJ23
+ *
+ * @brief  main entry point of the program.
+ *
+ * @author Ivan Chodák xchoda00
+ */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>

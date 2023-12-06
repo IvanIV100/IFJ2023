@@ -1,3 +1,13 @@
+
+/**
+ * Project: Implementace překladače IFJ23
+ *
+ * @brief  Scanner that tokeniyzes the input and checks for lexical errors.
+ *
+ * @author Šimon Drábek xdrabe10 
+ */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>

@@ -1,3 +1,14 @@
+
+/**
+ * Project: Implementace překladače IFJ23
+ *
+ * @brief  Scanner .h file.
+ *
+ * @author Šimon Drábek xdrabe10 
+ */
+
+
+
 #ifndef SCANNER_H
 #define SCANNER_H
 

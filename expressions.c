@@ -1,3 +1,12 @@
+/**
+ * Project: Implementace překladače IFJ23
+ *
+ * @brief  Syntax and semantic analysis for expressions
+ *
+ * @author Ivan Chodák xchoda00
+ */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>

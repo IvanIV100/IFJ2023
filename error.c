@@ -1,8 +1,10 @@
-/*
-Error handle for the compiler
-xchoda00
-2023
-*/
+/**
+ * Project: Implementace překladače IFJ23
+ *
+ * @brief Error handling.
+ *
+ * @author Ivan Chodák xchoda00
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include "error.h"

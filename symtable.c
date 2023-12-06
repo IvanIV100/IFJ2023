@@ -1,3 +1,13 @@
+/**
+ * Project: Implementace překladače IFJ23
+ *
+ * @brief  Symtable impleneted as a implcitily chained hash table.
+ *
+ * @author Dominik Šagát xsagat01
+ */
+
+
+
 #include "symtable.h"
 
 
@@ -183,6 +193,7 @@ int AddFunctionDetails(SymTable *table, char *key, DataType returnType, bool def
 }
 
 int AddParametr(SymTable *table, char *key, char *name, char *id, DataType type){
+
     int hash = Searching(table, key);
     if(hash == -1)
         return -1;

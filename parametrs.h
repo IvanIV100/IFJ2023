@@ -1,3 +1,13 @@
+/**
+ * Project: Implementace překladače IFJ23
+ *
+ * @brief  Parametrs functions in for symtable .h file.
+ *
+ * @author Dominik Šagát xsagat01
+ */
+
+
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>

@@ -1,3 +1,12 @@
+/**
+ * Project: Implementace překladače IFJ23
+ *
+ * @brief  Symtable impleneted as a implcitily chained hash table .h file.
+ *
+ * @author Dominik Šagát xsagat01
+ */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,6 +38,7 @@ typedef struct{
 DataType datatype;
 bool init;
 VarOrLet VoL; 
+bool parameter;
 int intVal;        
 double doubleVal; 
 char* strVal;     

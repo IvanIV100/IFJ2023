@@ -1,3 +1,12 @@
+/**
+ * Project: Implementace překladače IFJ23
+ *
+ * @brief  Syntax and semantic analysis for expressions .h file.
+ *
+ * @author Ivan Chodák xchoda00
+ */
+
+
 #ifndef EXPRESSIONS_H
 #define EXPRESSIONS_H
 
@@ -108,7 +117,5 @@ RelationType precedence_table(TermType stackTerm, TermType newTerm);
 TermType token_to_term(Token *token);
 DataType expression_parser(node_t* node, runTimeInfo *rti, int countDown);
 int expression_reduce(stack stack, runTimeInfo *rti);
-//node_t *expression_generate(stack stack, runTimeInfo *rti);
-//int generate_expression_reduce(stack stack, runTimeInfo *rti);
 
 #endif

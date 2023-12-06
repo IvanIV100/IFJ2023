@@ -1,3 +1,14 @@
+/**
+ * Project: Implementace překladače IFJ23
+ *
+ * @brief  Parametrs functions in for symtable
+ *
+ * @author Dominik Šagát xsagat01
+ */
+
+
+
+
 #include "parametrs.h"
 
 int parametr_init(Parametr *p){

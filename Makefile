@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS =  -Wall -Wextra -Wpedantic -g -lm
+CFLAGS =  -g -lm
 SRC = parser.c symtable.c parametrs.c  error.c expressions.c  code_generator.c scanner.c main.c 
 OBJ = $(SRC:.c=.o)
 EXEC = main

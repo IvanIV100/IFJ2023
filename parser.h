@@ -19,7 +19,7 @@ void parser();
 node_t* handle_statement_list(node_t* node);
 node_t* handle_param(node_t* node);
 node_t* handle_param_list(node_t* node);
-int handle_type(node_t* node);
+DataType handle_type(node_t* node);
 node_t* handle_func_def(node_t* node);
 node_t* handle_in_param(node_t* node);
 node_t* handle_in_param_list(node_t* node);
@@ -47,7 +47,7 @@ void start_generator(node_t* node);
 //void start_generating(node_t* node, runTimeInfo* runInfo);
 void fill_builtin_symtab(SymTable *builtIn);
 void define_var_ST(node_t* node);
-void assign_varType_ST( char* key , int type, int vol);
+void assign_varType_ST(char* key, int type);
 //void check_type(char* id, int retT);
 
 void add_funcall(char* FID);

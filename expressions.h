@@ -26,9 +26,7 @@ typedef struct runTimeInfo {
     char* leftID;
     char* rightID;
     int vol;
-
-    char** funcalls;
-    int count;
+    int inDef;
 
 } runTimeInfo;
 

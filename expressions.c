@@ -266,21 +266,45 @@ DataType expression_parser(node_t *node, runTimeInfo *rti, int length){
                 }
 
                 if (checkType->variable.datatype == INT){
-                    returnTerm = INT;
+                    if (checkType->variable.nillable == 1){
+                        returnTerm = INTQ;
+                    } else {
+                        returnTerm = INT;
+                    }   
                 } else if (checkType->variable.datatype == FLOAT){
-                    returnTerm = FLOAT;
+                    if(checkType->variable.nillable == 1){
+                        returnTerm = FLOATQ;
+                    } else {
+                        returnTerm = FLOAT;
+                    }
                 } else if (checkType->variable.datatype == STR){
-                    returnTerm = STR;
+                    if (checkType->variable.nillable == 1){
+                        returnTerm = STRQ;
+                    } else {
+                        returnTerm = STR;
+                    }
                 } else if (checkType->variable.datatype == NIL){
                     returnTerm = NIL;
                 }
             }
         } else if (node->current->type == T_INT){
-            returnTerm = INT;
+            if (node->current->value.nillable == 1){
+                returnTerm = INTQ;
+            } else {
+                returnTerm = INT;
+            }
         } else if (node->current->type == T_DOUBLE){
-            returnTerm = FLOAT;
+            if (node->current->value.nillable == 1){
+                returnTerm = FLOATQ;
+            } else {
+                returnTerm = FLOAT;
+            }
         } else if (node->current->type == T_STRING){
-            returnTerm = STR;
+            if (node->current->value.nillable == 1){
+                returnTerm = STRQ;
+            } else {
+                returnTerm = STR;
+            }
         } else if (node->current->type == T_NIL){
             returnTerm = NIL;
         } else {
@@ -296,6 +320,7 @@ DataType expression_parser(node_t *node, runTimeInfo *rti, int length){
             printf("overrideType: %d\n", overrideType);
             returnTerm = overrideType;
         }
+        printf("returnTerm: %d\n", returnTerm);
         return returnTerm;
     }
 
@@ -368,6 +393,7 @@ DataType expression_parser(node_t *node, runTimeInfo *rti, int length){
             printf("overrideType: %d\n", overrideType);
             returnTerm = overrideType;
         }
+    printf("returnTessrm: %d\n", returnTerm);
     return returnTerm;
 }
 
@@ -451,12 +477,13 @@ int expression_reduce(stack stack, runTimeInfo *rti){
                     break;
                 
                 case T_IDENTIFIER: 
-                    
-                    if (GetSymbol(currentST, item->term->value.ID_name) == NULL){
+                    ;
+                    Symbol *checkType;
+                    checkType = search_upwards_ST( item->term->value.ID_name);
+                    if (checkType == NULL){
                         ThrowError(5);
                     } 
-                    Symbol *checkType;
-                    checkType = GetSymbol(currentST, item->term->value.ID_name);
+                    
                     if (checkType->variable.datatype == INT){
                         item->exprType = INT;
                     } else if (checkType->variable.datatype == FLOAT){

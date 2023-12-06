@@ -7,7 +7,7 @@
 <stmnt> -> id <FuncCallOps>
 <stmnt> -> if <Condition>
 <stmnt> -> while <Loop>
-<stmnt> -> <return> //only if in correct scope
+<stmnt> -> <return>
 <paramListFirst> -> e
 <paramListFirst> -> <param> <paramList>
 <paramList> -> e

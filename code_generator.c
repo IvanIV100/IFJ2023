@@ -355,163 +355,163 @@ void generate_statement_code(node_t* node) {
 
 void generateInt2Double() {
     printf(
-        " LABEL $Int2Double" \
-        "\n PUSHFRAME" \
-        "\n DEFVAR LF@%retval" \
-        "\n INT2FLOAT LF@%retval LF@%%0" \
-        "\n MOVE LF@%retval float@0.0" \ 
-        "\n ADD LF@%retval LF@%retval LF@%%0" \ 
-        "\n POPFRAME" \
-        "\n RETURN \n");
+        "LABEL $Int2Double" 
+        "\nPUSHFRAME" 
+        "\nDEFVAR LF@%retval" 
+        "\nINT2FLOAT LF@%retval LF@%%0"
+        "\nMOVE LF@%retval float@0.0" 
+        "\nADD LF@%retval LF@%retval LF@%%0" 
+        "\nPOPFRAME"
+        "\nRETURN \n");
 }
 
 
 void generateDouble2Int()
 {
     printf(
-    " LABEL $Double2Int" \
-	"\n PUSHFRAME" \
-	"\n DEFVAR LF@%retval" \
-	"\n FLOAT2INT LF@%retval LF@%%0" \
-    "\n MOVE LF @%retval int@0"\
-    "\n ADD LF@%retval LF@%retval LF@%%0"
-	"\n POPFRAME" \
-	"\n RETURN \n");
+    "LABEL $Double2Int"
+	"\nPUSHFRAME" 
+	"\nDEFVAR LF@%retval"
+	"\nFLOAT2INT LF@%retval LF@%%0"
+    "\nMOVE LF @%retval int@0"
+    "\nADD LF@%retval LF@%retval LF@%%0"
+	"\nPOPFRAME" 
+	"\nRETURN \n");
 }
 
 void generatereadString()
 {
     printf(
-    " LABEL $readString" \
-	"\n PUSHFRAME" \
-    "\n DEFVAR LF @%retval"\
-	"\n READ LF@%retval string" \
-	"\n POPFRAME" \
-	"\n RETURN \n");
+    "LABEL $readString" 
+	"\nPUSHFRAME" 
+    "\nDEFVAR LF @%retval"
+	"\nREAD LF@%retval string"
+	"\nPOPFRAME"
+	"\nRETURN \n");
 }
 
 void generatereadInt()
 {
     printf(
-	" LABEL $readInt" \
-	"\n PUSHFRAME" \
-    "\n DEFVAR LF@%retval" \
-	"\n READ LF@%retval int" \
-	"\n POPFRAME" \
-	"\n RETURN \n");
+	"LABEL $readInt" 
+	"\nPUSHFRAME" 
+    "\nDEFVAR LF@%retval" 
+	"\nREAD LF@%retval int" 
+	"\nPOPFRAME"
+	"\nRETURN \n");
 }
 
 void generatereadDouble() {
     printf(
-        " LABEL $readDouble" \
-        "\n PUSHFRAME" \
-        "\n DEFVAR LF@%retval" \
-        "\n READ LF@%retval double" \
-        "\n POPFRAME" \
-        "\n RETURN \n");
+        "LABEL $readDouble"
+        "\nPUSHFRAME" 
+        "\nDEFVAR LF@%retval" 
+        "\nREAD LF@%retval double"
+        "\nPOPFRAME" 
+        "\nRETURN \n");
 }
 
 void generateLength()
 {
     printf(
-	" LABEL $length" \
-	"\n PUSHFRAME" \
-	"\n DEFVAR LF@%retval" \
-	"\n STRLEN LF@%retval LF@%%0" \
-	"\n POPFRAME" \
-	"\n RETURN \n");
+	"LABEL $length" 
+	"\nPUSHFRAME" 
+	"\nDEFVAR LF@%retval" 
+	"\nSTRLEN LF@%retval LF@%%0" 
+	"\nPOPFRAME" 
+	"\nRETURN \n");
 }
 
 void generateSubstring() {
     printf(
-        " LABEL $substring" \
-        "\n PUSHFRAME" \
-        "\n DEFVAR LF@%retval" \
-        "\n MOVE LF@%retval string@" \
-        "\n DEFVAR LF@length_str" \
-        "\n CREATEFRAME" \
-        "\n DEFVAR TF@%%0" \
-        "\n MOVE TF@%%0 LF@%%0" \
-        "\n CALL $length" \
-        "\n MOVE LF@length_str TF@%retval" \
-        "\n DEFVAR LF@ret_cond" \
-        "\n LT LF@ret_cond LF@length_str int@0"	\
-        "\n JUMPIFEQ $substr$return LF@ret_cond bool@true" \
-        "\n EQ LF@ret_cond LF@length_str int@0"	\
-        "\n JUMPIFEQ $substr$return LF@ret_cond bool@true" \
-        "\n LT LF@ret_cond LF@%%1 int@0"	\
-        "\n JUMPIFEQ $substr$return LF@ret_cond bool@true" \
-        "\n EQ LF@ret_cond LF@%%1 int@0"	\
-        "\n JUMPIFEQ $substr$return LF@ret_cond bool@true" \
-        "\n GT LF@ret_cond LF@%%1 LF@length_str"	\
-        "\n JUMPIFEQ $substr$return LF@ret_cond bool@true" \
-        "\n EQ LF@ret_cond LF@%%2 int@0" \
-        "\n JUMPIFEQ $substr$return LF@ret_cond bool@true" \
-        "\n DEFVAR LF@max_n" \
-        "\n MOVE LF@max_n LF@length_str" \
-        "\n SUB LF@max_n LF@max_n LF@%%1" \
-        "\n ADD LF@max_n LF@max_n int@1" \
-        "\n DEFVAR LF@edit_n_cond" \
-        "\n LT LF@edit_n_cond LF@%%2 int@0" \
-        "\n JUMPIFEQ $substr$edit_n LF@edit_n_cond bool@true" \
-        "\n GT LF@edit_n_cond LF@%%2 LF@max_n" \
-        "\n JUMPIFEQ $substr$edit_n LF@edit_n_cond bool@true" \
-        "\n JUMP $substr$process" \
-        "\n LABEL $substr$edit_n" \
-        "\n MOVE LF@%%2 LF@max_n" \
-        "\n LABEL $substr$process" \
-        "\n DEFVAR LF@index" \
-        "\n MOVE LF@index LF@%%1" \
-        "\n SUB LF@index LF@index int@1" \
-        "\n DEFVAR LF@char"	\
-        "\n DEFVAR LF@process_loop_cond" \
-        "\n LABEL $substr$process_loop"	\
-        "\n GETCHAR LF@char LF@%0 LF@index"	\
-        "\n CONCAT LF@%retval LF@%retval LF@char" \
-        "\n ADD LF@index LF@index int@1" \
-        "\n SUB LF@%%2 LF@%%2 int@1" \
-        "\n GT LF@process_loop_cond LF@%%2 int@0" \
-        "\n JUMPIFEQ $substr$process_loop LF@process_loop_cond bool@true" \
-        "\n LABEL $substr$return" \
-        "\n POPFRAME" \
-        "\n RETURN \n");
+        "LABEL $substring" 
+        "\nPUSHFRAME" 
+        "\nDEFVAR LF@%retval" 
+        "\nMOVE LF@%retval string@" 
+        "\nDEFVAR LF@length_str" 
+        "\nCREATEFRAME" 
+        "\nDEFVAR TF@%%0" 
+        "\nMOVE TF@%%0 LF@%%0" 
+        "\nCALL $length" 
+        "\nMOVE LF@length_str TF@%retval" 
+        "\nDEFVAR LF@ret_cond" 
+        "\nLT LF@ret_cond LF@length_str int@0"	
+        "\nJUMPIFEQ $substr$return LF@ret_cond bool@true" 
+        "\nEQ LF@ret_cond LF@length_str int@0"	
+        "\nJUMPIFEQ $substr$return LF@ret_cond bool@true" 
+        "\nLT LF@ret_cond LF@%%1 int@0"	
+        "\nJUMPIFEQ $substr$return LF@ret_cond bool@true" 
+        "\nEQ LF@ret_cond LF@%%1 int@0"	
+        "\nJUMPIFEQ $substr$return LF@ret_cond bool@true" 
+        "\nGT LF@ret_cond LF@%%1 LF@length_str"	
+        "\nJUMPIFEQ $substr$return LF@ret_cond bool@true" 
+        "\nEQ LF@ret_cond LF@%%2 int@0" 
+        "\nJUMPIFEQ $substr$return LF@ret_cond bool@true" 
+        "\nDEFVAR LF@max_n" 
+        "\nMOVE LF@max_n LF@length_str" 
+        "\nSUB LF@max_n LF@max_n LF@%%1" 
+        "\nADD LF@max_n LF@max_n int@1" 
+        "\nDEFVAR LF@edit_n_cond" 
+        "\nLT LF@edit_n_cond LF@%%2 int@0" 
+        "\nJUMPIFEQ $substr$edit_n LF@edit_n_cond bool@true" 
+        "\nGT LF@edit_n_cond LF@%%2 LF@max_n" 
+        "\nJUMPIFEQ $substr$edit_n LF@edit_n_cond bool@true" 
+        "\nJUMP $substr$process" 
+        "\nLABEL $substr$edit_n" 
+        "\nMOVE LF@%%2 LF@max_n" 
+        "\nLABEL $substr$process" 
+        "\nDEFVAR LF@index" 
+        "\nMOVE LF@index LF@%%1" 
+        "\nSUB LF@index LF@index int@1" 
+        "\nDEFVAR LF@char"	
+        "\nDEFVAR LF@process_loop_cond" 
+        "\nLABEL $substr$process_loop"	
+        "\nGETCHAR LF@char LF@%0 LF@index"	
+        "\nCONCAT LF@%retval LF@%retval LF@char" 
+        "\nADD LF@index LF@index int@1" 
+        "\nSUB LF@%%2 LF@%%2 int@1" 
+        "\nGT LF@process_loop_cond LF@%%2 int@0" 
+        "\nJUMPIFEQ $substr$process_loop LF@process_loop_cond bool@true" 
+        "\nLABEL $substr$return"
+        "\nPOPFRAME" 
+        "\nRETURN \n");
 }
 
 
 void generateord() {
     printf(
-        " LABEL $ord" \
-        "\n PUSHFRAME" \
-        "\n DEFVAR LF@%retval" \
-        "\n MOVE LF@%retval int@0" \
-        "\n DEFVAR LF@cond_range" \
-        "\n LT LF@cond_range LF@%%0 int@0" \
-        "\n JUMPIFEQ $ord$return LF@cond_range bool@true" \
-        "\n GT LF@cond_range LF@%%0 int@255" \
-        "\n JUMPIFEQ $ord$return LF@cond_range bool@true" \
-        "\n STR2INT LF@%retval LF@%%0" \
-        "\n LABEL $ord$return" \
-        "\n POPFRAME" \
-        "\n RETURN \n");
+        "LABEL $ord" 
+        "\nPUSHFRAME" 
+        "\nDEFVAR LF@%retval" 
+        "\nMOVE LF@%retval int@0" 
+        "\nDEFVAR LF@cond_range" 
+        "\nLT LF@cond_range LF@%%0 int@0" 
+        "\nJUMPIFEQ $ord$return LF@cond_range bool@true" 
+        "\nGT LF@cond_range LF@%%0 int@255" 
+        "\nJUMPIFEQ $ord$return LF@cond_range bool@true" 
+        "\nSTR2INT LF@%retval LF@%%0" 
+        "\nLABEL $ord$return" 
+        "\nPOPFRAME" 
+        "\nRETURN \n");
 }
 
 
 void generatechr()
 {
     printf(
-	" LABEL $chr"	\
-	"\n PUSHFRAME"	\
-	"\n DEFVAR LF@%retval" \
-	"\n MOVE LF@%retval string@" \
-	"\n DEFVAR LF@cond_range" \
-	"\n LT LF@cond_range LF@%%0 int@0" \
-	"\n JUMPIFEQ $chr$return LF@cond_range bool@true" \
-	"\n GT LF@cond_range LF@%%0 int@255" \
-	"\n JUMPIFEQ $chr$return LF@cond_range bool@true" \
-	"\n INT2CHAR LF@%retval LF@%%0" \
-	"\n LABEL $chr$return" \
-	"\n POPFRAME" \
-	"\n RETURN \n");
+	"LABEL $chr"	
+	"\nPUSHFRAME"	
+	"\nDEFVAR LF@%retval" 
+	"\nMOVE LF@%retval string@" 
+	"\nDEFVAR LF@cond_range" 
+	"\nLT LF@cond_range LF@%%0 int@0" 
+	"\nJUMPIFEQ $chr$return LF@cond_range bool@true" 
+	"\nGT LF@cond_range LF@%%0 int@255" 
+	"\nJUMPIFEQ $chr$return LF@cond_range bool@true" 
+	"\nINT2CHAR LF@%retval LF@%%0" 
+	"\nLABEL $chr$return" 
+	"\nPOPFRAME" 
+	"\nRETURN \n");
 }
 
 void generateWrite(node_t* node)
@@ -520,13 +520,13 @@ void generateWrite(node_t* node)
         node->right = node->right->right;
     }
     printf(
-	" LABEL write" \
-	"\n PUSHFRAME");
+	"LABEL write"
+	"\nPUSHFRAME");
 
     while(node->current->type != T_RIGHT_PAREN){
-    printf("\n WRITE LF@%%0 %s", node->right->current->value.ID_name);
+    printf("\nWRITE LF@%%0 %s", node->right->current->value.ID_name);
     node = node->right->right;
     }
-    printf(	"\n POPFRAME" \
-	"\n RETURN \n");
+    printf(	"\nPOPFRAME"
+	"\nRETURN \n");
 }

@@ -305,11 +305,11 @@ node_t* handle_func_def(node_t* node){
         ThrowError(2);
     }
     pop_level();
-    printf(runInfo->FID);
     if(runInfo->FID != NULL){
         Symbol *result = GetSymbol(runInfo->globalFrame, runInfo->FID);
+        printf("retType: %d\n", result->function.ReturnType);
         if (result->function.ReturnType != VOID){
-            printf("retType: %d\n", result->function.ReturnType);
+            printf( " retType: %d\n", result->function.ReturnType);
             ThrowError(4);
         } else {
             printf("else\n");   
@@ -323,16 +323,72 @@ node_t* handle_func_def(node_t* node){
 
 
 node_t* handle_in_param(node_t* node){ // *ADD SEMANTIC CHECK*
+    Symbol *functionCheck = NULL;
+    if (runInfo->rightID == NULL){
+        functionCheck = GetSymbol(runInfo->globalFrame, runInfo->leftID);
+    } else {
+        functionCheck = GetSymbol(runInfo->globalFrame, runInfo->rightID);
+    }
+    if (functionCheck == NULL){
+        printf("here 300\n");
+        ThrowError(5);
+    }
+
+    Parametr *curPar = functionCheck->function.parametr;
+    for(int i = 0; i < inParamCount-1; i++){
+        curPar = curPar->next;
+        if(curPar == NULL){
+            printf("+565\n");
+            ThrowError(4);
+        }
+    }
+
     if (node->current->type == T_IDENTIFIER){
         node = get_next(node);
         if (node->current->type == T_COLON){
+            if(strcmp(node->left->current->value.ID_name, curPar->name) != 0){
+                ThrowError(4); 
+            }
             node = get_next(node);
             if (node->current->type == T_IDENTIFIER){
-                char* ID = node->left->left->current->value.ID_name;
 
+                char* ID = node->current->value.ID_name;
+                Symbol *var = search_upwards_ST(ID);
+                if (var == NULL){
+                    printf("here 350\n");
+                    ThrowError(5);
+                }
+                if (var->variable.datatype != curPar->type && var->variable.datatype + 1 != curPar->type && var->variable.datatype != curPar->type + 1){
+                
+                    ThrowError(4);
+                }
                 node = get_next(node);
                 return  node;
             } else if (node->current->type == T_INT || node->current->type == T_STRING || node->current->type == T_DOUBLE){
+                DataType currentType;
+                if (node->current->type == T_INT){
+                    if(node->current->value.nillable == 1){
+                        currentType = INTQ;
+                    } else {
+                        currentType = INT;
+                    }
+                } else if (node->current->type == T_STRING){
+                    if(node->current->value.nillable == 1){
+                        currentType = STRQ;
+                    } else {
+                        currentType = STR;
+                    }
+                } else if (node->current->type == T_DOUBLE){
+                    if(node->current->value.nillable == 1){
+                        currentType = FLOATQ;
+                    } else {
+                        currentType = FLOAT;
+                    }
+                }
+                if(curPar->type != currentType && curPar->type + 1 != currentType && curPar->type != currentType + 1){
+                    ThrowError(4);
+                }
+
                 node = get_next(node);
                 return  node;
             } else {
@@ -341,6 +397,7 @@ node_t* handle_in_param(node_t* node){ // *ADD SEMANTIC CHECK*
         } 
         Symbol *var = search_upwards_ST(node->left->current->value.ID_name);
         if (var == NULL){
+            printf("here 400\n");
             ThrowError(5);
         }
         printf("var datatype: %d\n", var->variable.datatype);
@@ -445,12 +502,10 @@ node_t* handle_in_param_list(node_t* node){
             result = GetSymbol(runInfo->globalFrame, runInfo->leftID);
         } else {
             result = GetSymbol(runInfo->globalFrame, runInfo->rightID);
-            printf("rightId: %s\n", runInfo->rightID);
         }
-    printf("parm curent: %d\n", node->current->type);
     if(node->current->type == T_RIGHT_PAREN){
         printf("inpar\n");
-        if (inParamCount != result->function.parametr_count){
+        if (inParamCount != result->function.parametr_count && result->function.parametr_count != -1){
             ThrowError(4);
         }
         inParamCount = 0;
@@ -734,7 +789,7 @@ node_t* handle_funcall_ops(node_t* node){
         ThrowError(2);
         return node;
     }
-    printf("curId fc: %s\n", runInfo->leftID);
+    printf("curId fcd: %s\n", runInfo->leftID);
     return node;
 }
 

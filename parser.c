@@ -340,6 +340,9 @@ node_t* handle_in_param(node_t* node){ // *ADD SEMANTIC CHECK*
             }
         } 
         Symbol *var = search_upwards_ST(node->left->current->value.ID_name);
+        if (var == NULL){
+            ThrowError(5);
+        }
         printf("var datatype: %d\n", var->variable.datatype);
         if (var == NULL){
             ThrowError(3);
@@ -397,13 +400,20 @@ node_t* handle_in_param(node_t* node){ // *ADD SEMANTIC CHECK*
                 }
             }
             printf("currentTypessssddd: %d\n", currentType);
-            Symbol *func= GetSymbol(runInfo->globalFrame, runInfo->leftID);
+            Symbol *func = NULL;
+            if (runInfo->rightID == NULL){
+                func = GetSymbol(runInfo->globalFrame, runInfo->leftID);
+            } else {
+                func = GetSymbol(runInfo->globalFrame, runInfo->rightID);
+            } 
+            printf("func name: %s\n", func->id);
             Parametr *param = func->function.parametr;
             
             if (func->function.parametr_count == -1){
-                if(param->type < 1 && param->type > 8){
+                if(param->type < 1 && param->type > 8){ // *id check
                     ThrowError(3);
                 }
+                
             } else {
                 for(int i = 0; i < inParamCount-1 ; i++){
                 
@@ -479,8 +489,10 @@ node_t* handle_in_param_list(node_t* node){
     printf("inParamCount: %d\n", inParamCount);
     printf("paramCount: %d\n", result->function.parametr_count);
     if(inParamCount != result->function.parametr_count){
-        printf("wrong param count\n ");
-        ThrowError(4);
+        if (result->function.parametr_count != -1){
+            printf("wrong param count\n ");
+            ThrowError(4);
+        }
     }
     return node;
 }

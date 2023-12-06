@@ -476,6 +476,12 @@ node_t* handle_in_param_list(node_t* node){
     }
     
     runInfo->rightID == NULL;
+    printf("inParamCount: %d\n", inParamCount);
+    printf("paramCount: %d\n", result->function.parametr_count);
+    if(inParamCount != result->function.parametr_count){
+        printf("wrong param count\n ");
+        ThrowError(4);
+    }
     return node;
 }
 
@@ -1053,6 +1059,57 @@ void load_all_tokens(){
     printf("last token: %d\n", node->current->type);
 }
 
+
+node_t* handle_param_DEF_list(node_t* node){
+    if (node->current->type == T_RIGHT_PAREN){
+        return node;
+    }
+    
+        char* name;
+    printf("type: %d\n", node->current->type);
+    if (node->current->type == T_UNDERSCORE){
+        name = "_";
+    } else if (node->current->type == T_IDENTIFIER){
+        name = node->current->value.ID_name;
+    } else {
+        ThrowError(2);
+    }
+    printf("name: %s\n", name);
+    
+    node = get_next(node);
+    
+    if (node->current->type != T_IDENTIFIER){
+        ThrowError(2);
+    }
+    char* ID = node->current->value.ID_name;
+
+    if(strcmp(ID, name) == 0){ // *checks if name and ID are the same(can't be)*
+        ThrowError(4);
+    }
+    node = get_next(node);
+    if (node->current->type != T_COLON){
+        ThrowError(2);
+    }
+    node = get_next(node);
+    int type = handle_type(node);
+    AddParametr(runInfo->globalFrame, runInfo->FID, name , ID, type);
+
+    node = get_next(node);
+    if (node->current->type == T_COMMA){    
+        node = get_next(node);
+        if (node->current->type == T_RIGHT_PAREN){ 
+            ThrowError(2);
+        }
+        node = handle_param_DEF_list(node);
+        return node;
+    } else if (node->current->type == T_RIGHT_PAREN){
+        return node;
+    } else {
+        ThrowError(2);
+    }
+}
+
+
 void parse_for_fdef(){
     printf("parse for fdef\n");
     node_t *node = runInfo->firstNode;
@@ -1078,55 +1135,8 @@ void parse_for_fdef(){
                 if(node->current->type == T_LEFT_PAREN){
                     node = get_next(node);
                         if (node->current->type == T_RIGHT_PAREN){
-                            goto skip;
+                            node = handle_param_DEF_list(node);
                         }
-                        char* name;
-                        printf("type: %d\n", node->current->type);
-                        if (node->current->type == T_UNDERSCORE){
-                            name = "_";
-                        } else if (node->current->type == T_IDENTIFIER){
-                            name = node->current->value.ID_name;
-                        } else {
-                            ThrowError(2);
-                        }
-                        printf("name: %s\n", name);
-                        
-                        node = get_next(node);
-                        
-                        if (node->current->type != T_IDENTIFIER){
-                            ThrowError(2);
-                        }
-                        char* ID = node->current->value.ID_name;
-
-                        if(strcmp(ID, name) == 0){ // *checks if name and ID are the same(can't be)*
-                            ThrowError(3);
-                        }
-                        node = get_next(node);
-                        if (node->current->type != T_COLON){
-                            ThrowError(2);
-                        }
-                        node = get_next(node);
-                        int type = handle_type(node);
-                        AddParametr(runInfo->globalFrame, runInfo->FID, name , ID, type);
-                        Symbol *result = GetSymbol(runInfo->globalFrame, runInfo->FID);
-                        printf("param count: %d\n", result->function.parametr_count);
-                        
-                        
-                        node = get_next(node);
-                        if (node->current->type == T_COMMA){    
-                            node = get_next(node);
-                            if (node->current->type == T_RIGHT_PAREN){ 
-                                ThrowError(2);
-                            }
-                            node = handle_param_list(node);
-                            return node;
-                        } else if (node->current->type == T_RIGHT_PAREN){
-                            return node;
-                        } else {
-                            ThrowError(2);
-                        }
-
-                    skip:
                     if(node->current->type == T_RIGHT_PAREN){
                         
                         node = get_next(node);

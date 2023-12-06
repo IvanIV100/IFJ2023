@@ -234,14 +234,13 @@ TermType token_to_term(Token *token){
 }
 
 DataType expression_parser(node_t *node, runTimeInfo *rti, int length){
+    overrideType = VOID;
     countDown = length;
-    printf("length: %d\n", length);
     stack stack = malloc(sizeof(struct Stack));
     stack_init(stack);
 
     if(node->current->type >= 23 && node->current->type <= 33){
         if (node->current->type != T_NIL){
-            printf("error7\n");
             ThrowError(2);
         }
     }
@@ -254,14 +253,12 @@ DataType expression_parser(node_t *node, runTimeInfo *rti, int length){
             Symbol *checkType;
             if (rti->currentLVL != NULL){
                 if (GetSymbol(rti->currentLVL->currentTab, node->current->value.ID_name) == NULL){
-                    printf("error9s\n");
                     ThrowError(5);
                     } else {
                     checkType = GetSymbol(rti->currentLVL->currentTab, node->current->value.ID_name);
                     }
             } else {
                 if (GetSymbol(rti->globalFrame, node->current->value.ID_name) == NULL){
-                    printf("error9\n");
                     ThrowError(5);
                 } else {
                     checkType = GetSymbol(rti->globalFrame, node->current->value.ID_name);
@@ -310,19 +307,11 @@ DataType expression_parser(node_t *node, runTimeInfo *rti, int length){
         } else if (node->current->type == T_NIL){
             returnTerm = NIL;
         } else {
-            printf("error8\n");
             ThrowError(2);
         }
-        printf("overrideType: %d\n", overrideType);
         if (overrideType != VOID){
-            printf("overrideType: %d\n", overrideType);
             returnTerm = overrideType;
         }
-        if (overrideType != VOID){
-            printf("overrideType: %d\n", overrideType);
-            returnTerm = overrideType;
-        }
-        printf("returnTerm: %d\n", returnTerm);
         return returnTerm;
     }
 
@@ -335,11 +324,9 @@ DataType expression_parser(node_t *node, runTimeInfo *rti, int length){
         if (item == NULL){
             ThrowError(99);
         }
-        printf("newTerm: %d, stackTerm: %d\n", newTerm, stackTerm);
         if (newTerm == T_LTGT || newTerm == T_DQ){
             EQcount++;
             if (EQcount > 2){
-                printf("error99\n");
                 ThrowError(2);
             }
         }
@@ -368,16 +355,13 @@ DataType expression_parser(node_t *node, runTimeInfo *rti, int length){
                 break;
 
             case R_ERROR:
-                printf("331 newTerm: %d, stackTerm: %d\n", newTerm, stackTerm);
                 if ((newTerm == T_$ || newTerm == T_RPAREN) && stackTerm == T_$){
                     if (node->current->type == T_RIGHT_PAREN && stack->top >= 0){
                         return stack_pop(stack)->exprType;
                     } else {
-                        printf("error1\n");
                         ThrowError(2);
                     }
                 } else {
-                    printf("error\n");
                     ThrowError(2);
                 }
                 break;
@@ -386,8 +370,6 @@ DataType expression_parser(node_t *node, runTimeInfo *rti, int length){
 
     }
     stack_dispose(stack);
-    printf("overrideType: %d\n", overrideType);
-    printf("returnTessrm: %d\n", returnTerm);
     if (overrideType != VOID){
         returnTerm = overrideType;
     }
@@ -441,7 +423,6 @@ int expression_reduce(stack stack, runTimeInfo *rti){
                 } else if (token_to_term(op->term) == T_EQ || token_to_term(op->term) == T_LTGT){
                     item->exprType = BOOL;
                 } else {
-                    printf("error2\n");
                     ThrowError(7);
                 }
             
@@ -451,7 +432,6 @@ int expression_reduce(stack stack, runTimeInfo *rti){
                 item->term = NULL;
             }
         } else{
-            printf("error3\n");
             ThrowError(2);
         }
     } else if (item->type == TERMINAL){
@@ -476,10 +456,8 @@ int expression_reduce(stack stack, runTimeInfo *rti){
                 case T_IDENTIFIER: 
                     ;
                     Symbol *checkType;
-                    printf("item->term->value.ID_name: %s\n", item->term->value.ID_name);
                     checkType = search_upwards_ST( item->term->value.ID_name);
                     if (checkType == NULL){
-                        printf("error10\n");
                         ThrowError(5);
                     } 
                     
@@ -502,7 +480,6 @@ int expression_reduce(stack stack, runTimeInfo *rti){
                     break;
                 
                 default:
-                    printf("error4\n");
                     ThrowError(2);
             }    
         } else if (token_to_term(item->term) == T_RPAREN){
@@ -515,11 +492,9 @@ int expression_reduce(stack stack, runTimeInfo *rti){
                     item->type = NONTERMINAL;
                 }
             } else { 
-                printf("error5\n");
                 ThrowError(2);
             }
         } else {
-            printf("error6\n");
             ThrowError(2);
             }   
         }

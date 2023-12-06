@@ -8,9 +8,14 @@
 
 #include "code_generator.h"
 
-//TODO
-
 // Function to check if an identifier corresponds to a built-in function
+
+void start_code_generation(node_t* node) {
+    if (node != NULL) {
+        generate_statement_list_code(node);
+    }
+}
+
 bool is_builtin_function(const char* identifier) {
     for (int i = 0; built_in_functions[i] != NULL; ++i) {
         if (strcmp(identifier, built_in_functions[i]) == 0) {
@@ -18,18 +23,6 @@ bool is_builtin_function(const char* identifier) {
         }
     }
     return false;
-}
-
-void start_code_generation(node_t* node) {
-    if(node->current->type == T_EOF)
-    {
-        while(node->left != NULL){
-            node = node->left;
-        }
-    }
-    if (node != NULL) {
-        generate_statement_list_code(node);
-    }
 }
 
 void generate_builtin_function_call(node_t* node) {
@@ -84,17 +77,21 @@ void generate_expression_code(node_t* node) {
             // Integer literal
             if(node->left->left->current->type == T_KW_INT){
             printf("MOVE LF@%s int@%d\n", node->left->left->left->left->current->value.ID_name, node->current->value.integer);
+            node->left->left->left->left->current->value.integer = node->current->value.integer;
             }else{
             printf("MOVE LF@%s int@%d\n", node->left->left->current->value.ID_name, node->current->value.integer);
+            node->left->left->current->value.integer = node->current->value.integer;
             }
             break;
         case T_DOUBLE:
         case T_KW_DOUBLE:
             // Double literal
             if(node->left->left->current->type == T_KW_DOUBLE){
-            printf("MOVE LF@%s int@%f\n", node->left->left->left->left->current->value.ID_name, node->current->value.decimal);
+            printf("MOVE LF@%s float@%f\n", node->left->left->left->left->current->value.ID_name, node->current->value.decimal);
+            node->left->left->left->left->current->value.decimal = node->current->value.decimal;
             }else{
-            printf("MOVE LF@%s int@%f\n", node->left->left->current->value.ID_name, node->current->value.decimal);
+            printf("MOVE LF@%s float@%f\n", node->left->left->current->value.ID_name, node->current->value.decimal);
+            node->left->left->current->value.decimal = node->current->value.decimal;
             }
             break;
         default:
@@ -109,83 +106,120 @@ void generate_binary_arithmetic_code(node_t* node) {
     // Generate code for the binary operation
     switch (node->current->type) {
         case T_PLUS:
+        if(node->left->current->value.integer == 0 && node->right->current->value.integer == 0){
+            if(node->left->left->left->current->type == T_KW_DOUBLE){
+            printf("ADD LF@%s LF@%f LF@%f\n", node->left->left->left->left->left->current->value.ID_name, node->left->current->value.decimal, node->right->current->value.decimal);
+            }else{
+            printf("ADD LF@%s LF@%f LF@%f\n", node->left->left->left->current->value.ID_name, node->left->current->value.decimal, node->right->current->value.decimal);
+            }
+            break;
+
+        }else{
             if(node->left->left->left->current->type == T_KW_INT){
             printf("ADD LF@%s LF@%d LF@%d\n", node->left->left->left->left->left->current->value.ID_name, node->left->current->value.integer, node->right->current->value.integer);
             }else{
-                printf("ADD LF@%s LF@%d LF@%d\n", node->left->left->left->current->value.ID_name, node->left->current->value.integer, node->right->current->value.integer);
+            printf("ADD LF@%s LF@%d LF@%d\n", node->left->left->left->current->value.ID_name, node->left->current->value.integer, node->right->current->value.integer);
             }
             break;
+        }
         case T_MINUS:
+        if(node->left->current->value.integer == 0 && node->right->current->value.integer == 0){
+            if(node->left->left->left->current->type == T_KW_DOUBLE){
+            printf("SUB LF@%s LF@%f LF@%f\n", node->left->left->left->left->left->current->value.ID_name, node->left->current->value.decimal, node->right->current->value.decimal);
+            }else{
+            printf("SUB LF@%s LF@%f LF@%f\n", node->left->left->left->current->value.ID_name, node->left->current->value.decimal, node->right->current->value.decimal);
+            }
+            break;
+        }else{
             if(node->left->left->left->current->type == T_KW_INT){
             printf("SUB LF@%s LF@%d LF@%d\n", node->left->left->left->left->left->current->value.ID_name, node->left->current->value.integer, node->right->current->value.integer);
             }else{
             printf("SUB LF@%s LF@%d LF@%d\n", node->left->left->left->current->value.ID_name, node->left->current->value.integer, node->right->current->value.integer);
             }
             break;
+        }
         case T_MUL:
+        if(node->left->current->value.integer == 0 && node->right->current->value.integer == 0){
+            if(node->left->left->left->current->type == T_KW_DOUBLE){
+            printf("MUL LF@%s LF@%f LF@%f\n", node->left->left->left->left->left->current->value.ID_name, node->left->current->value.decimal, node->right->current->value.decimal);
+            }else{
+            printf("MUL LF@%s LF@%f LF@%f\n", node->left->left->left->current->value.ID_name, node->left->current->value.decimal, node->right->current->value.decimal);
+            }
+            break;
+        }else{
             if(node->left->left->left->current->type == T_KW_INT){
             printf("MUL LF@%s LF@%d LF@%d\n", node->left->left->left->left->left->current->value.ID_name, node->left->current->value.integer, node->right->current->value.integer);
             }else{
             printf("MUL LF@%s LF@%d LF@%d\n", node->left->left->left->current->value.ID_name, node->left->current->value.integer, node->right->current->value.integer);
             }
             break;
+        }
         case T_DIV:
-            if(node->left->left->left->current->type == T_KW_INT){
-            printf("DIV LF@%s LF@%d LF@%d\n", node->left->left->left->left->left->current->value.ID_name, node->left->current->value.integer, node->right->current->value.integer);
+            if(node->right->current->value.decimal == 0){
+                exit(57);
+            }
+            if(node->left->left->left->current->type == T_KW_DOUBLE){
+            printf("DIV LF@%s LF@%f LF@%f\n", node->left->left->left->left->left->current->value.ID_name, node->left->current->value.decimal, node->right->current->value.decimal);
             }else{
-            printf("DIV LF@%s LF@%d LF@%d\n", node->left->left->left->current->value.ID_name, node->left->current->value.integer, node->right->current->value.integer);
+            printf("DIV LF@%s LF@%f LF@%f\n", node->left->left->left->current->value.ID_name, node->left->current->value.decimal, node->right->current->value.decimal);
             }
             break;
         default:
-            // Handle other cases if needed
             break;
     }
 }
 
 void generate_assignment_code(node_t* node) {
     // Generate code for the expression on the right-hand side
-    if(node->right->right->current->type == T_PLUS || node->right->right->current->type == T_MINUS || node->right->right->current->type == T_DIV || node->right->right->current->type == T_MUL)
-    {
+    if(node->right->right->current->type == T_PLUS || node->right->right->current->type == T_MINUS || node->right->right->current->type == T_DIV || node->right->right->current->type == T_MUL){
         generate_expression_code(node->right->right);
     }else{
     generate_expression_code(node->right);
     }
-    // Print the left side of the assignment
+    // Generate the left side of the assignment
     if(node->left->current->Category == TC_TYPE){
         printf("PUSHS LF@%s\n", node->left->left->left->current->value.ID_name);
         printf("POPS LF@%s\n", node->left->left->left->current->value.ID_name);
     }
     else{
         printf("PUSHS LF@%s\n", node->left->current->value.ID_name);
-        printf("POPS LF@%s\n", node->left->current->value.ID_name);
-        
+        printf("POPS LF@%s\n", node->left->current->value.ID_name);  
         }
 }
 void generate_variable_definition_code(node_t* node) {
-    if (node->right->right->right->current->type == T_ASSIGN){
-        generate_assignment_code(node->right->right->right);
-    }
     if(node->right->right->current->type == T_ASSIGN){
         generate_assignment_code(node->right->right);
     }
+    if(node->right->right->current->type == T_KW_STRING){
+        generate_expression_code(node->right->right);
+    }
+    //checking for Token Assign
+    if (node->right->right->right->right->current->type == T_ASSIGN){
+        generate_assignment_code(node->right->right->right->right);
+    }
     if (node->left != NULL && node->left->current->type == T_IDENTIFIER) {
-        printf("DECLARE VAR, %s\n", node->left->current->value.ID_name);
+        printf("DEFVAR %s\n", node->current->value.ID_name);
     }
 }
 
 void generate_function_call_code(node_t* node) {
     // generates all params
-    if (node->right != NULL && node->right->current->type != 3) {
+    if (node->right != NULL && node->right->current->type != T_LEFT_BRACE) {
         generate_in_param_list_code(node->right);
     }
 }
 
 void generate_in_param_list_code(node_t* node) {
     // Generate code for each parameter in the list
-    while (node->right != NULL && node->current->type != 1) {
+
+    while (node->right != NULL) {
         generate_in_param_code(node);
         node = node->right;
+        if(node->current->type == T_RIGHT_PAREN){
+            break;
+        }
     }
+
 }
 
 void generate_in_param_code(node_t* node) {
@@ -193,40 +227,38 @@ void generate_in_param_code(node_t* node) {
         printf("DEFVAR %s\n", node->left->current->value.ID_name);
     } 
     generate_expression_code(node);
-
 }
 
 void generate_if_statement_code(node_t* node) {
-    generate_cond_ops_code(node->left);
-
-    if (node->right != NULL && node->right->current->type == T_LEFT_BRACE) {
-        printf("JUMP_IF_TRUE L%d\n", generate_label());
-        generate_statement_list_code(node->right->right);
-        printf("LABEL L%d\n", generate_label());
-    } 
-
-    if (node->right != NULL && node->right->right != NULL &&
-        node->right->right->current->type == T_ELSE &&
-        node->right->right->right != NULL &&
-        node->right->right->right->current->type == T_LEFT_BRACE) {
-        printf("JUMP L%d\n", generate_label());
-        printf("LABEL L%d\n", generate_label());
-        generate_statement_list_code(node->right->right->right->right);
+    generate_cond_ops_code(node);
+    node_t * tempn = node;
+    while(node->right != NULL){
+        node = node->right;
+            if (node->right->current->type == T_LEFT_BRACE) {
+                printf("JUMP_IF_TRUE L%d\n", generate_label());
+                printf("LABEL L%d\n", generate_label()-1);
+                generate_statement_list_code(node);
+            } 
+            if (node->right->right->current->type == T_ELSE &&
+            node->right->right->right->current->type == T_LEFT_BRACE) {
+            printf("JUMP_IF_FALSE L%d\n", generate_label());
+            printf("LABEL L%d\n", generate_label()-1);
+            generate_statement_list_code(node);
+            break;
+        }
     }
+    node = tempn;
 }
 
 void generate_cond_ops_code(node_t* node) {
     generate_expression_code(node);
-    printf("NOT\n");
-    printf("JUMP_IF_FALSE L%d\n", generate_label());
 }
 
-
+//Helper function for if_statement_code 
 int generate_label() {
     static int label_counter = 0;
-    return label_counter++;
+    label_counter++;
 }
-
 
 void generate_while_loop_code(node_t* node) {
     int loopStartLabel = generate_label();
@@ -253,19 +285,37 @@ void generate_return_statement_code(node_t* node) {
 
 void generate_statement_list_code(node_t* node) {
     while (node != NULL) {
+        if(node->right->current->type == T_LEFT_BRACE && (node->current->type = T_ELSE || node->current->type == T_IF))
+        {
+            while(node->current->type != T_RIGHT_BRACE){
+                generate_statement_code(node);
+                node = node->right;
+            }
+            return;
+        }
+        
         generate_statement_code(node);
+
         if (node->right != NULL) {
         node = node->right;
-        }else {
-             break;  // Break out of the loop if node->right or node->right->current is NULL
+        }else{
+            break;
         }
-        if(node->left->current->type == 24){
-            while(node->current->type != 2){
+        if(node->left->current->type == T_IF && node->current->type == T_LEFT_PAREN){
+            while(node->current->type != T_RIGHT_PAREN){
+                node = node->right;
+            }
+            return;
+        }
+
+
+        if(node->left->current->type == T_VAR && node->current->type == T_IDENTIFIER){
+            node = node->right;
+        }
+        if(node->left->current->type == T_FUNC){
+            while(node->current->type != T_LEFT_BRACE){
             node = node->right;
             }
-        }
-        if(node->current->type == 0 || node->current->type == 1){
-            node = node->right;
         }
     }
 }
@@ -287,7 +337,7 @@ void generate_statement_code(node_t* node) {
             generate_function_call_code(node);
             break;
         case T_IF:
-            generate_if_statement_code(node->right);
+            generate_if_statement_code(node);
             break;
         case T_WHILE:
             generate_while_loop_code(node->right);
@@ -472,7 +522,7 @@ void generateWrite(node_t* node)
 	" LABEL write" \
 	"\n PUSHFRAME");
 
-    while(node->right->current->type != T_RIGHT_PAREN){
+    while(node->current->type != T_RIGHT_PAREN){
     printf("\n WRITE LF@%%0 %s", node->right->current->value.ID_name);
     node = node->right->right;
     }

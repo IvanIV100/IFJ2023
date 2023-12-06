@@ -335,13 +335,17 @@ node_t* handle_in_param(node_t* node){ // *ADD SEMANTIC CHECK*
     }
 
     Parametr *curPar = functionCheck->function.parametr;
-    for(int i = 0; i < inParamCount-1; i++){
-        curPar = curPar->next;
-        if(curPar == NULL){
-            printf("+565\n");
-            ThrowError(4);
+    if (functionCheck->function.parametr_count != -1){
+        for(int i = 0; i < inParamCount-1; i++){
+        
+            if(curPar == NULL){
+                printf("+565\n");
+                ThrowError(4);
+            }
+            curPar = curPar->next;
         }
     }
+    
 
     if (node->current->type == T_IDENTIFIER){
         node = get_next(node);

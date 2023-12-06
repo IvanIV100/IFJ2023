@@ -12,8 +12,8 @@
 //data_types ted v parametrs.h
 typedef enum{
 VOID,
-NIL,
 BOOL,
+NIL,
 INT,
 INTQ,
 STR,

@@ -266,21 +266,45 @@ DataType expression_parser(node_t *node, runTimeInfo *rti, int length){
                 }
 
                 if (checkType->variable.datatype == INT){
-                    returnTerm = INT;
+                    if (checkType->variable.nillable == 1){
+                        returnTerm = INTQ;
+                    } else {
+                        returnTerm = INT;
+                    }   
                 } else if (checkType->variable.datatype == FLOAT){
-                    returnTerm = FLOAT;
+                    if(checkType->variable.nillable == 1){
+                        returnTerm = FLOATQ;
+                    } else {
+                        returnTerm = FLOAT;
+                    }
                 } else if (checkType->variable.datatype == STR){
-                    returnTerm = STR;
+                    if (checkType->variable.nillable == 1){
+                        returnTerm = STRQ;
+                    } else {
+                        returnTerm = STR;
+                    }
                 } else if (checkType->variable.datatype == NIL){
                     returnTerm = NIL;
                 }
             }
         } else if (node->current->type == T_INT){
-            returnTerm = INT;
+            if (node->current->value.nillable == 1){
+                returnTerm = INTQ;
+            } else {
+                returnTerm = INT;
+            }
         } else if (node->current->type == T_DOUBLE){
-            returnTerm = FLOAT;
+            if (node->current->value.nillable == 1){
+                returnTerm = FLOATQ;
+            } else {
+                returnTerm = FLOAT;
+            }
         } else if (node->current->type == T_STRING){
-            returnTerm = STR;
+            if (node->current->value.nillable == 1){
+                returnTerm = STRQ;
+            } else {
+                returnTerm = STR;
+            }
         } else if (node->current->type == T_NIL){
             returnTerm = NIL;
         } else {

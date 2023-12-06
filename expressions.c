@@ -320,6 +320,7 @@ DataType expression_parser(node_t *node, runTimeInfo *rti, int length){
             printf("overrideType: %d\n", overrideType);
             returnTerm = overrideType;
         }
+        printf("returnTerm: %d\n", returnTerm);
         return returnTerm;
     }
 
@@ -392,6 +393,7 @@ DataType expression_parser(node_t *node, runTimeInfo *rti, int length){
             printf("overrideType: %d\n", overrideType);
             returnTerm = overrideType;
         }
+    printf("returnTessrm: %d\n", returnTerm);
     return returnTerm;
 }
 
@@ -475,12 +477,13 @@ int expression_reduce(stack stack, runTimeInfo *rti){
                     break;
                 
                 case T_IDENTIFIER: 
-                    
-                    if (GetSymbol(currentST, item->term->value.ID_name) == NULL){
+                    ;
+                    Symbol *checkType;
+                    checkType = search_upwards_ST( item->term->value.ID_name);
+                    if (checkType == NULL){
                         ThrowError(5);
                     } 
-                    Symbol *checkType;
-                    checkType = GetSymbol(currentST, item->term->value.ID_name);
+                    
                     if (checkType->variable.datatype == INT){
                         item->exprType = INT;
                     } else if (checkType->variable.datatype == FLOAT){

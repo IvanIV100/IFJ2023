@@ -384,7 +384,7 @@ node_t* handle_in_param(node_t* node){ // *ADD SEMANTIC CHECK*
                 printf("var name %s\n", var->id);
                 printf("var type: %d\n", var->variable.datatype);
                 if (param->type != var->variable.datatype){
-                    ThrowError(3);
+                    ThrowError(4);
                 }
                 
             }
@@ -502,16 +502,17 @@ node_t* expression_token_count(node_t* node, int* count){
     while ((6 <= node->current->type && node->current->type <= 16) || 
             (34 <= node->current->type && node->current->type <= 38) ||
             node->current->type == T_LEFT_PAREN || node->current->type == T_RIGHT_PAREN || 
-            node->current->type == T_DOUBLE_QUESTION_MARK || node->current->type == T_NIL){
+            node->current->type == T_DOUBLE_QUESTION_MARK || node->current->type == T_NIL){  //maybe wrong nil
         
         if (node->current->type == T_IDENTIFIER){
             if ((node->left->current->type > 16 || node->left->current->type < 6) && 
             node->left->current->type != T_LEFT_PAREN && 
-            node->left->current->type != T_DOUBLE_QUESTION_MARK){
+            node->left->current->type != T_DOUBLE_QUESTION_MARK  &&
+            node->left->current->type != T_ASSIGN){
                 if (node->left->current->type == T_IF || node->left->current->type == T_WHILE || 
                 node->left->current->type == T_RETURN || node->left->current->type == T_ASSIGN){
+                    printf("valid\n");
                 } else {
-                    
                     break;
                 }
                 
@@ -525,13 +526,13 @@ node_t* expression_token_count(node_t* node, int* count){
 
         (*count)++;
         printf("count: %d\n", *count);
-        printf("current: %d\n", node->current->type);
+        printf("currensst: %d\n", node->current->type);
         node = get_next(node);
     }
     if(parenCount != 0){
         ThrowError(2);
     }
-    printf("curent: %d\n", node->current->type);
+    printf("curent: %d\n", node->left->current->type);
     if (node->left->current->type >= 6 && node->left->current->type <= 16){
         ThrowError(2);
     }
@@ -570,8 +571,9 @@ node_t* handle_assign_ops(node_t* node){
             node = get_next(node);
             return node;
         } else {
-            Symbol *result = search_upwards_ST(runInfo->rightID);
+            
             Symbol *assign = search_upwards_ST(runInfo->leftID);
+            Symbol *result = search_upwards_ST(runInfo->rightID);
 
             DataType exprType = VOID;
             if (result == NULL || assign == NULL){
@@ -580,10 +582,9 @@ node_t* handle_assign_ops(node_t* node){
             }
             int count1;
             node_t* start = node->left;
-            node = expression_token_count(node, &count1);
+            node = expression_token_count(start, &count1);
             if(count1 == 1){
                 assign_varType_ST(runInfo->leftID, result->variable.datatype);
-                printf("1 var type: %d\n", result->variable.datatype);
             } else {
                 exprType = expression_parser(start, runInfo, count1);
                 assign_varType_ST(runInfo->leftID, exprType);
@@ -886,7 +887,6 @@ node_t* handle_statement(node_t* node){
             runInfo->inDef = 1;            
             node = get_next(node);
             node = handle_var_def(node);
-            Symbol *result = search_upwards_ST(runInfo->leftID);
             return node;
             break;
 
@@ -1011,10 +1011,10 @@ void assign_varType_ST(char* key, int type){ // check if nillable is correctly f
         vol = updateSymbol->variable.nillable;
     }
 
-    AddVarDetails(current, runInfo->rightID, type, true, vol);
-    
-    return;
+    AddVarDetails(current, key, type, true, vol);
     current = NULL;
+    return;
+    
 }
 
 node_t* load_next(node_t* current){

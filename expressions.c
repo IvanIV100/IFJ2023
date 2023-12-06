@@ -254,12 +254,14 @@ DataType expression_parser(node_t *node, runTimeInfo *rti, int length){
             Symbol *checkType;
             if (rti->currentLVL != NULL){
                 if (GetSymbol(rti->currentLVL->currentTab, node->current->value.ID_name) == NULL){
+                    printf("error9s\n");
                     ThrowError(5);
                     } else {
                     checkType = GetSymbol(rti->currentLVL->currentTab, node->current->value.ID_name);
                     }
             } else {
                 if (GetSymbol(rti->globalFrame, node->current->value.ID_name) == NULL){
+                    printf("error9\n");
                     ThrowError(5);
                 } else {
                     checkType = GetSymbol(rti->globalFrame, node->current->value.ID_name);
@@ -385,15 +387,10 @@ DataType expression_parser(node_t *node, runTimeInfo *rti, int length){
     }
     stack_dispose(stack);
     printf("overrideType: %d\n", overrideType);
-        if (overrideType != VOID){
-            printf("overrideType: %d\n", overrideType);
-            returnTerm = overrideType;
-        }
-        if (overrideType != VOID){
-            printf("overrideType: %d\n", overrideType);
-            returnTerm = overrideType;
-        }
     printf("returnTessrm: %d\n", returnTerm);
+    if (overrideType != VOID){
+        returnTerm = overrideType;
+    }
     return returnTerm;
 }
 
@@ -479,8 +476,10 @@ int expression_reduce(stack stack, runTimeInfo *rti){
                 case T_IDENTIFIER: 
                     ;
                     Symbol *checkType;
+                    printf("item->term->value.ID_name: %s\n", item->term->value.ID_name);
                     checkType = search_upwards_ST( item->term->value.ID_name);
                     if (checkType == NULL){
+                        printf("error10\n");
                         ThrowError(5);
                     } 
                     

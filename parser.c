@@ -19,35 +19,20 @@ xchoda00
     -free all allocated memory in a dedicated destructor
     -delete in throwerror
 
-* - symtabLVL
-    -clean up
-    -symtab insert
-
 * - Documentation
     -add comments to functions
     -add comment headers everywhere
 
 * - Implement
     -add nillable val for a!
-    -Parse the whole input and put into linked list
-        -parser list for func def
-        -parser for syntax and semantics
-    -let check on assign
-    -built in functions check input and ret type
     -add semcheck in expressions
 
 * - Check
     -when can nil come
-    -fid def, addDetails, add prams, add details  ---Will they stay?
-
     -if return can be in void function
-    -if im supposed to work with interpret return codes
 
 * - Fix
-    -params in funcall before def
-    -expression return types boool etc
-
-    -syn types
+    -NIL
     -fix type check in expressions
     -fix ?? in expressions
 
@@ -89,20 +74,20 @@ void fill_builtin_symtab(SymTable *builtIn){ // fill in to check symtab and to g
 
     InsertSymbol(builtIn, "readString");
     InsertSymbol(runInfo->globalFrame, "readString");
-    AddFunctionDetails(runInfo->globalFrame, "readString",  6, true);
+    AddFunctionDetails(runInfo->globalFrame, "readString",  STRQ, true);
     ToChange = GetSymbol(runInfo->globalFrame, "readString");
     ToChange->function.parametr_count = 0;
 
 
     InsertSymbol(builtIn, "readInt");
     InsertSymbol(runInfo->globalFrame, "readInt");
-    AddFunctionDetails(runInfo->globalFrame, "readInt",  4, true);
+    AddFunctionDetails(runInfo->globalFrame, "readInt",  INTQ, true);
     ToChange = GetSymbol(runInfo->globalFrame, "readInt");
     ToChange->function.parametr_count = 0;
 
     InsertSymbol(builtIn, "readDouble");
     InsertSymbol(runInfo->globalFrame, "readDouble");
-    AddFunctionDetails(runInfo->globalFrame, "readDouble",  8, true);
+    AddFunctionDetails(runInfo->globalFrame, "readDouble",  FLOATQ, true);
     ToChange = GetSymbol(runInfo->globalFrame, "readDouble");
     ToChange->function.parametr_count = 0;
 
@@ -117,23 +102,23 @@ void fill_builtin_symtab(SymTable *builtIn){ // fill in to check symtab and to g
 
     InsertSymbol(builtIn, "Int2Double");
     InsertSymbol(runInfo->globalFrame, "Int2Double");
-    AddFunctionDetails(runInfo->globalFrame, "Int2Double",  7, true);
+    AddFunctionDetails(runInfo->globalFrame, "Int2Double",  FLOAT, true);
     AddParametr(runInfo->globalFrame, "Int2Double", "_", "i", INT);
         
     InsertSymbol(builtIn, "Double2Int");
     InsertSymbol(runInfo->globalFrame, "Double2Int");
-    AddFunctionDetails(runInfo->globalFrame, "Double2Int",  3, true);
+    AddFunctionDetails(runInfo->globalFrame, "Double2Int",  INT, true);
     AddParametr(runInfo->globalFrame, "Double2Int", "_", "d", FLOAT);
     
     InsertSymbol(builtIn, "length");
     InsertSymbol(runInfo->globalFrame, "length");
-    AddFunctionDetails(runInfo->globalFrame, "length",  3, true);
+    AddFunctionDetails(runInfo->globalFrame, "length",  INT, true);
     AddParametr(runInfo->globalFrame, "length", "_", "s", STR);
 
 
     InsertSymbol(builtIn, "substring");
     InsertSymbol(runInfo->globalFrame, "substring");
-    AddFunctionDetails(runInfo->globalFrame, "substring",  6, true);
+    AddFunctionDetails(runInfo->globalFrame, "substring",  STRQ, true);
     AddParametr(runInfo->globalFrame, "substring", "of", "s", STR);
     AddParametr(runInfo->globalFrame, "substring", "startingAt", "i", INT);
     AddParametr(runInfo->globalFrame, "substring", "endingBefore", "j", INT);
@@ -141,12 +126,12 @@ void fill_builtin_symtab(SymTable *builtIn){ // fill in to check symtab and to g
 
     InsertSymbol(builtIn, "ord");
     InsertSymbol(runInfo->globalFrame, "ord");
-    AddFunctionDetails(runInfo->globalFrame, "ord",  3, true);
+    AddFunctionDetails(runInfo->globalFrame, "ord",  INT, true);
     AddParametr(runInfo->globalFrame, "ord", "_", "c", STR);
 
     InsertSymbol(builtIn, "chr");
     InsertSymbol(runInfo->globalFrame, "chr");
-    AddFunctionDetails(runInfo->globalFrame, "chr",  5, true);
+    AddFunctionDetails(runInfo->globalFrame, "chr",  STR, true);
     AddParametr(runInfo->globalFrame, "chr", "_", "i", INT);
 
 
@@ -191,8 +176,6 @@ void init_runInfo(){
     runInfo->rightID = NULL;
     runInfo->vol = NULL;
     runInfo->firstNode = NULL;
-    char** funcalls = NULL;
-    int count = 0;
 
 }
 
@@ -325,14 +308,9 @@ node_t* handle_func_def(node_t* node){
     printf(runInfo->FID);
     if(runInfo->FID != NULL){
         Symbol *result = GetSymbol(runInfo->globalFrame, runInfo->FID);
-        if (result == NULL){
-            printf("pipik\n");
-        } else {
-            printf("pipik2\n");
-        }
         if (result->function.ReturnType != VOID){
             printf("retType: %d\n", result->function.ReturnType);
-            ThrowError(6);
+            ThrowError(4);
         } else {
             printf("else\n");   
             runInfo->FID = NULL;
@@ -383,9 +361,11 @@ node_t* handle_in_param(node_t* node){ // *ADD SEMANTIC CHECK*
                 }
                 printf("var name %s\n", var->id);
                 printf("var type: %d\n", var->variable.datatype);
-                if (param->type != var->variable.datatype){
-                    ThrowError(4);
+                if (param->type != var->variable.datatype && param->type + 1 != var->variable.datatype && param->type != var->variable.datatype + 1){
+                        printf("bb type\n");
+                        ThrowError(4);
                 }
+                    
                 
             }
             
@@ -555,6 +535,7 @@ node_t* handle_assign_ops(node_t* node){
             Symbol *function = GetSymbol(runInfo->globalFrame, runInfo->rightID);
             Symbol *toCheck = search_upwards_ST(runInfo->leftID);
             if (toCheck == NULL){
+                printf("Assopssssssss\n");
                 ThrowError(5);
             }
             if (function->function.ReturnType != toCheck->variable.datatype){
@@ -603,6 +584,7 @@ node_t* handle_assign_ops(node_t* node){
             node = expression_token_count(node, &count2);
             Symbol *assign = search_upwards_ST(runInfo->leftID);
             if (assign == NULL){
+                printf("Assopssaaaaaaa\n");
                 ThrowError(5);
             } else {
                 result2 = expression_parser(start, runInfo, count2);
@@ -612,7 +594,8 @@ node_t* handle_assign_ops(node_t* node){
                     assign_varType_ST(runInfo->leftID, result2); //vol issues
                     printf("assed \n");
                 } else {
-                    if (assign->variable.datatype != result2){
+                    if (assign->variable.datatype != result2 && assign->variable.datatype + 1 != result2 &&
+                    assign->variable.datatype != result2 + 1){
                     printf("bed type\n");
                     ThrowError(7);
                 }
@@ -726,6 +709,7 @@ node_t* handle_funcall_ops(node_t* node){
         node = get_next(node);
         return  node;
     } else {
+        ThrowError(2);
         return node;
     }
     printf("curId fc: %s\n", runInfo->leftID);
@@ -736,21 +720,32 @@ node_t* handle_funcall_ops(node_t* node){
 
 
 node_t* handle_cond_ops(node_t* node){
-    //node = get_next(node);
+    printf("cond ss: %d\n", node->current->type);
     if (node->current->type == T_LET){  
+        printf("let\n");
         node = get_next(node);
         if (node->current->type == T_IDENTIFIER){  // *add variable to next symtabLVL* maybe create lvl here
+            printf("id\n");
             Symbol *found =  search_upwards_ST(node->current->value.ID_name);
             if(found == NULL){
-                ThrowError(3);
+                printf("cond\n");
+                ThrowError(5);
             }
-            if (found)
+            if (found){
+                if (found->variable.VoL == 0){
+                    ThrowError(6);
+                }
+            }
+            
             InsertSymbol(runInfo->currentLVL->currentTab, node->current->value.ID_name);
             AddVarDetails(runInfo->currentLVL->currentTab, node->current->value.ID_name, VOID, false, 1);
             Symbol *result = GetSymbol(runInfo->currentLVL->currentTab, node->current->value.ID_name);
             result->variable.nillable = 2;
-
+            printf("id2\n");
             node = get_next(node);
+            if (node->current->type != T_LEFT_BRACE){
+                ThrowError(2);
+            }
             return node;
         } else {
             ThrowError(2);
@@ -1002,6 +997,7 @@ void assign_varType_ST(char* key, int type){ // check if nillable is correctly f
     }
     Symbol *updateSymbol = GetSymbol(current,key);
     if (updateSymbol == NULL){
+        printf("assign\n");
         ThrowError(5);
     }
     int vol;
@@ -1036,6 +1032,11 @@ node_t* load_next(node_t* current){
 void load_all_tokens(){
     node_t *node = create_node();
     node->current = scan();
+    if (node->current->type == T_ERORR){
+        int err = node->current->value.integer;
+        free_node_list(node);
+        ThrowError(err);
+    }
     runInfo->firstNode = node;
     if (node->current->type == T_EOF){
         return;
@@ -1055,10 +1056,12 @@ void parse_for_fdef(){
         if (node->current->type == T_FUNC){
             node = get_next(node);
             if(node->current->type == T_IDENTIFIER){
+                runInfo->FID = node->current->value.ID_name;
                 Symbol *builtIn = GetSymbol(runInfo->builtInFunctions, node->current->value.ID_name);
                 if (builtIn != NULL ){
                         ThrowError(3);
                     } else if (GetSymbol(runInfo->globalFrame, runInfo->FID) != NULL ){
+                        printf("pipik\n");
                         ThrowError(3);
                     } else {
                         runInfo->FID = node->current->value.ID_name;

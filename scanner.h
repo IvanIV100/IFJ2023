@@ -8,7 +8,7 @@
 
 
 
-enum token_Category {
+extern enum token_Category {
     TC_BRACKET,
     TC_OPERATORS,
     TC_LOGICAL,

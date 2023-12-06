@@ -370,9 +370,41 @@ node_t* handle_in_param(node_t* node){ // *ADD SEMANTIC CHECK*
         return  node;
     } else { // literal assign add semantics
         if(node->current->type == T_INT || node->current->type == T_STRING || node->current->type == T_DOUBLE){
-            for(int i = 0; i < runInfo->count; i++){
-                
+            DataType currentType;
+            if (node->current->type == T_INT){
+                if(node->current->value.nillable == 1){
+                    currentType = INTQ;
+                } else {
+                    currentType = INT;
+                }
+            } else if (node->current->type == T_STRING){
+                if(node->current->value.nillable == 1){
+                    currentType = STRQ;
+                } else {
+                    currentType = STR;
+                }
+            } else if (node->current->type == T_DOUBLE){
+                if(node->current->value.nillable == 1){
+                    currentType = FLOATQ;
+                } else {
+                    currentType = FLOAT;
+                }
             }
+            Symbol *func= GetSymbol(runInfo->globalFrame, runInfo->leftID);
+            Parametr *param = func->function.parametr;
+            for(int i = 0; i < runInfo->count; i++){
+                param = param->next;                
+            }
+            if (func->function.parametr_count == -1){
+                if(param->type < 1 && param->type > 8){
+                    ThrowError(3);
+                }
+            } else {
+                if (param->type != currentType){
+                    ThrowError(3);
+                }
+            }
+            
             node = get_next(node);
             return  node;
         } else {
@@ -422,6 +454,12 @@ node_t* handle_in_param_list(node_t* node){
     if (node->current->type != T_RIGHT_PAREN){
         ThrowError(2);
     }
+    if(result->function.parametr_count != -1){
+        if(inParamCount != result->function.parametr_count){
+        ThrowError(4);
+    }
+    }
+    
     runInfo->rightID == NULL;
     return node;
 }

@@ -16,11 +16,6 @@ Sémantická analýza (detekce chyb): 71 % (321/450) <br />
 Interpretace přeloženého kódu (základní): 0 % (0/272) <br />
 Interpretace přeloženého kódu (výrazy, vest. funkce): 0 % (0/176) <br />
 Interpretace přeloženého kódu (komplexní): 0 % (0/308) <br />
-OVERLOAD 0 % (0/99) <br />
-INTERPOLATION 0 % (0/100) <br />
-BOOLTHEN 0 % (0/97) <br />
-CYCLES 0 % (0/100) <br />
-FUNEXP 0 % (0/151) <br />
 Celkem bez rozšíření: 41 % (652/1583) <br />
 <br />
 CodeGen segfaulted 
